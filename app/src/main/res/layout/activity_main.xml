@@ -3,15 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.eightbitlab.blurview.MainActivity">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin">
         <TextView
             android:id="@+id/textView"
             android:layout_width="wrap_content"
@@ -23,5 +23,15 @@
         android:id="@+id/blurView"
         android:layout_width="match_parent"
         android:layout_gravity="bottom"
-        android:layout_height="100dp"/>
+        android:layout_height="100dp"
+        android:alpha="0.8"
+        android:background="#02ffffff">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:layout_gravity="center"
+            android:textSize="18sp"
+            android:text="Not blurred"/>
+    </com.eightbitlab.blurview.BlurView>
 </FrameLayout>

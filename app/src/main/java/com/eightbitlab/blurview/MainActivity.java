@@ -2,7 +2,7 @@ package com.eightbitlab.blurview;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
@@ -12,12 +12,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TextView viewToBlur = (TextView) findViewById(R.id.textView);
+        final TextView viewToBlur = (TextView) findViewById(R.id.textView);
+        final BlurView blurView = (BlurView) findViewById(R.id.blurView);
+
         fillWithText(viewToBlur);
     }
 
     private void fillWithText(TextView viewToBlur) {
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 300; i++) {
             viewToBlur.append("Blur Me! ");
         }
     }
