@@ -6,6 +6,7 @@
     tools:context="com.eightbitlab.blurview.MainActivity">
 
     <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingBottom="@dimen/activity_vertical_margin"
@@ -16,6 +17,7 @@
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="20sp"
             tools:text="Blur me" />
     </ScrollView>
 
@@ -24,7 +26,6 @@
         android:layout_width="match_parent"
         android:layout_gravity="bottom"
         android:layout_height="100dp"
-        android:alpha="0.9"
         android:background="#02ffffff">
         <TextView
             android:layout_width="wrap_content"
