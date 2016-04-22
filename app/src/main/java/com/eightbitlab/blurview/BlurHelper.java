@@ -8,10 +8,9 @@ import android.support.v8.renderscript.RenderScript;
 import android.support.v8.renderscript.ScriptIntrinsicBlur;
 import android.view.View;
 
-//TODO minimize memory allocation
+//TODO optimize memory allocation
 public class BlurHelper {
     private RenderScript renderScript;
-
     private Canvas internalCanvas;
     private Bitmap internalBitmap;
     private Bitmap overlay;
@@ -28,6 +27,7 @@ public class BlurHelper {
     public void prepare(View rootView) {
         internalBitmap = Bitmap.createBitmap(rootView.getMeasuredWidth(), rootView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
         internalCanvas = new Canvas(internalBitmap);
+        //draw whole view hierarchy on canvas
         rootView.draw(internalCanvas);
     }
 
@@ -42,13 +42,13 @@ public class BlurHelper {
         canvas.translate(-view.getLeft(), -view.getTop());
         canvas.drawBitmap(background, 0, 0, null);
 
-        Allocation overlayAlloc = Allocation.createFromBitmap(renderScript, overlay);
-        ScriptIntrinsicBlur blur = ScriptIntrinsicBlur.create(renderScript, overlayAlloc.getElement());
+        Allocation overlayAllocation = Allocation.createFromBitmap(renderScript, overlay);
+        ScriptIntrinsicBlur blur = ScriptIntrinsicBlur.create(renderScript, overlayAllocation.getElement());
 
-        blur.setInput(overlayAlloc);
+        blur.setInput(overlayAllocation);
         blur.setRadius(radius);
-        blur.forEach(overlayAlloc);
-        overlayAlloc.copyTo(overlay);
+        blur.forEach(overlayAllocation);
+        overlayAllocation.copyTo(overlay);
         return overlay;
     }
 

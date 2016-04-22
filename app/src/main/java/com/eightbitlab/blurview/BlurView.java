@@ -40,8 +40,6 @@ public class BlurView extends FrameLayout {
                 blurHelper = new BlurHelper(getContext(), BlurView.this);
                 bitmapPaint = new Paint();
                 blurHelper.prepare(getRootView());
-                setDrawingCacheEnabled(false);
-                setLayerType(LAYER_TYPE_SOFTWARE, null);
                 getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
