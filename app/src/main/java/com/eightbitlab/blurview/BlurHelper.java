@@ -29,7 +29,7 @@ public class BlurHelper {
         renderScript = RenderScript.create(context);
         //downscale bitmap
         overlay = Bitmap.createBitmap((int) (blurView.getMeasuredWidth() / SCALE_FACTOR),
-                (int) (blurView.getMeasuredHeight() / SCALE_FACTOR), Bitmap.Config.RGB_565);
+                (int) (blurView.getMeasuredHeight() / SCALE_FACTOR), Bitmap.Config.ARGB_8888);
 
         blurScript = ScriptIntrinsicBlur.create(renderScript, Element.U8_4(renderScript));
         blurScript.setRadius(RADIUS);
