@@ -1,2 +1,2 @@
 # BlurView
-Just testing concept of View that blurs it's underlying content
+Just testing the concept of View that blurs it's underlying content
