@@ -13,7 +13,7 @@ import android.view.View;
 //TODO draw only needed part of View hierarchy
 public class BlurHelper {
     public static final float SCALE_FACTOR = 8f;
-    private static final int RADIUS = 8;
+    private static final int BLUR_RADIUS = 8;
 
     private RenderScript renderScript;
     private ScriptIntrinsicBlur blurScript;
@@ -36,7 +36,7 @@ public class BlurHelper {
 
         this.blurView = blurView;
         blurScript = ScriptIntrinsicBlur.create(renderScript, Element.U8_4(renderScript));
-        blurScript.setRadius(RADIUS);
+        blurScript.setRadius(BLUR_RADIUS);
     }
 
     public boolean isInternalCanvas(Canvas canvas) {
@@ -46,10 +46,10 @@ public class BlurHelper {
     public void setRootView(View view) {
         rootView = view;
         internalBitmap = Bitmap.createBitmap(rootView.getMeasuredWidth(), rootView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        internalCanvas = new Canvas(internalBitmap);
     }
 
-    public void prepare() {
-        internalCanvas = new Canvas(internalBitmap);
+    public void drawUnderlyingViews() {
         //draw whole view hierarchy on canvas
         windowBackground.draw(internalCanvas);
         rootView.draw(internalCanvas);
@@ -66,7 +66,7 @@ public class BlurHelper {
         overlayCanvas.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
         overlayCanvas.drawBitmap(internalBitmap, 0, 0, null);
 
-        return FastBlur.doBlur(overlay, RADIUS, true);
+        return FastBlur.doBlur(overlay, BLUR_RADIUS, true);
 //        return renderScriptBlur();
     }
 
