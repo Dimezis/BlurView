@@ -1,5 +1,6 @@
 package com.eightbitlab.blurview;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -15,15 +16,18 @@ public class MainActivity extends AppCompatActivity {
         final TextView viewToBlur = (TextView) findViewById(R.id.textView);
         final BlurView blurView = (BlurView) findViewById(R.id.blurView);
 
-//        View rootView = getWindow().getDecorView().findViewById(android.R.id.content);
-        View rootView = getWindow().getDecorView().getRootView();
-
-        blurView.setRootView(rootView);
-        final View scrollView = findViewById(R.id.scrollView);
-
-        blurView.setDependencyView(scrollView);
-
+        setupBlurView(blurView);
         fillWithText(viewToBlur);
+    }
+
+    private void setupBlurView(BlurView blurView) {
+        final View scrollView = findViewById(R.id.scrollView);
+        final View decorView = getWindow().getDecorView();
+        final View rootView = decorView.findViewById(android.R.id.content);
+        final Drawable windowBackgroundDrawable = decorView.getBackground();
+        blurView.setRootView(rootView);
+        blurView.setWindowBackground(windowBackgroundDrawable);
+        blurView.setDependencyView(scrollView);
     }
 
     private void fillWithText(TextView viewToBlur) {
