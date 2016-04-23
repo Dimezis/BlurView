@@ -2,6 +2,9 @@ package com.eightbitlab.blurview;
 
 import android.graphics.Bitmap;
 
+/**
+ * More effective on small bitmaps
+ */
 public class FastBlur {
 
     public static Bitmap doBlur(Bitmap sentBitmap, int radius, boolean canReuseInBitmap) {
