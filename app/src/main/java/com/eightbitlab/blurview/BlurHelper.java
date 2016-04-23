@@ -14,7 +14,7 @@ import android.view.View;
 //TODO add fast blur option, to ger rid of renderscript Bitmap copy
 public class BlurHelper {
     public static final float SCALE_FACTOR = 4f;
-    private static final float RADIUS = 5;
+    private static final int RADIUS = 10;
 
     private RenderScript renderScript;
     private Canvas internalCanvas;
@@ -62,10 +62,14 @@ public class BlurHelper {
         canvas.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
         canvas.drawBitmap(background, 0, 0, null);
 
+        return FastBlur.doBlur(overlay, RADIUS, true);
+//        return renderScriptBlur();
+    }
+
+    private Bitmap renderScriptBlur() {
         Allocation overlayAllocation = Allocation.createFromBitmap(renderScript, overlay);
         blurScript.setInput(overlayAllocation);
         blurScript.forEach(overlayAllocation);
-
         overlayAllocation.copyTo(overlay);
         return overlay;
     }
