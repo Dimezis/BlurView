@@ -11,7 +11,8 @@ import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 public class BlurView extends FrameLayout {
-    public static final String TAG = "BlurView";
+    private static final String TAG = "BlurView";
+
     private BlurHelper blurHelper;
     private Paint bitmapPaint;
     private View rootView;
@@ -44,44 +45,11 @@ public class BlurView extends FrameLayout {
             @Override
             public void onGlobalLayout() {
                 //can create blurHelper only after layout completion
-                blurHelper = new BlurHelper(getContext(), BlurView.this);
+                blurHelper = new BlurHelper(BlurView.this);
                 blurHelper.setWindowBackground(windowBackground);
                 blurHelper.setRootView(rootView);
                 blurHelper.drawUnderlyingViews();
                 getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-        });
-    }
-
-    public void setRootView(View view) {
-        rootView = view;
-    }
-
-    public void setDependencyView(View view) {
-        view.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
-            @Override
-            public void onScrollChanged() {
-                Log.d(TAG, "listener onScrollChanged()");
-                reBlur();
-            }
-        });
-
-        view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                Log.d(TAG, "listener onGlobalLayout()");
-                if (blurHelper != null) { //remove null-check later
-                    reBlur();
-                }
-            }
-        });
-
-        view.getViewTreeObserver().addOnDrawListener(new ViewTreeObserver.OnDrawListener() {
-            @Override
-            public void onDraw() {
-                //looks like it doesn't do the trick to listen other View draw() calls :c
-                Log.d(TAG, "listener onDraw()");
-                reBlur();
             }
         });
     }
@@ -116,15 +84,43 @@ public class BlurView extends FrameLayout {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        Log.d(TAG, "onDraw()");
-        super.onDraw(canvas);
-    }
-
-    @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         blurHelper.destroy();
+    }
+
+
+    public void setRootView(View view) {
+        rootView = view;
+    }
+
+    public void setDependencyView(View view) {
+        view.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
+            @Override
+            public void onScrollChanged() {
+                Log.d(TAG, "listener onScrollChanged()");
+                reBlur();
+            }
+        });
+
+        view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                Log.d(TAG, "listener onGlobalLayout()");
+                if (blurHelper != null) { //remove null-check later
+                    reBlur();
+                }
+            }
+        });
+
+        view.getViewTreeObserver().addOnDrawListener(new ViewTreeObserver.OnDrawListener() {
+            @Override
+            public void onDraw() {
+                //looks like it doesn't do the trick to listen other View draw() calls :c
+                Log.d(TAG, "listener onDraw()");
+                reBlur();
+            }
+        });
     }
 
     public void setWindowBackground(Drawable windowBackgroundDrawable) {

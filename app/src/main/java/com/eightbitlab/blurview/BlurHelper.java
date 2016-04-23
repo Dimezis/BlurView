@@ -1,22 +1,14 @@
 package com.eightbitlab.blurview;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.support.v8.renderscript.Allocation;
-import android.support.v8.renderscript.Element;
-import android.support.v8.renderscript.RenderScript;
-import android.support.v8.renderscript.ScriptIntrinsicBlur;
 import android.view.View;
 
 //TODO draw only needed part of View hierarchy
 public class BlurHelper {
     public static final float SCALE_FACTOR = 8f;
     private static final int BLUR_RADIUS = 8;
-
-    private RenderScript renderScript;
-    private ScriptIntrinsicBlur blurScript;
 
     private Canvas internalCanvas;
     private Bitmap internalBitmap;
@@ -28,25 +20,16 @@ public class BlurHelper {
      */
     private Drawable windowBackground;
 
-    public BlurHelper(Context context, BlurView blurView) {
-        renderScript = RenderScript.create(context);
+    public BlurHelper(BlurView blurView) {
         //downscale bitmap
         overlay = Bitmap.createBitmap((int) (blurView.getMeasuredWidth() / SCALE_FACTOR),
                 (int) (blurView.getMeasuredHeight() / SCALE_FACTOR), Bitmap.Config.ARGB_8888);
 
         this.blurView = blurView;
-        blurScript = ScriptIntrinsicBlur.create(renderScript, Element.U8_4(renderScript));
-        blurScript.setRadius(BLUR_RADIUS);
     }
 
     public boolean isInternalCanvas(Canvas canvas) {
         return internalCanvas == canvas;
-    }
-
-    public void setRootView(View view) {
-        rootView = view;
-        internalBitmap = Bitmap.createBitmap(rootView.getMeasuredWidth(), rootView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-        internalCanvas = new Canvas(internalBitmap);
     }
 
     public void drawUnderlyingViews() {
@@ -67,26 +50,19 @@ public class BlurHelper {
         overlayCanvas.drawBitmap(internalBitmap, 0, 0, null);
 
         return FastBlur.doBlur(overlay, BLUR_RADIUS, true);
-//        return renderScriptBlur();
-    }
-
-    /**
-     * More effective on large bitmaps
-     */
-    private Bitmap renderScriptBlur() {
-        Allocation overlayAllocation = Allocation.createFromBitmap(renderScript, overlay);
-        blurScript.setInput(overlayAllocation);
-        blurScript.forEach(overlayAllocation);
-        overlayAllocation.copyTo(overlay);
-        return overlay;
     }
 
     public void destroy() {
-        renderScript.destroy();
         rootView = null;
         blurView = null;
         overlay.recycle();
         internalBitmap.recycle();
+    }
+
+    public void setRootView(View view) {
+        rootView = view;
+        internalBitmap = Bitmap.createBitmap(rootView.getMeasuredWidth(), rootView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        internalCanvas = new Canvas(internalBitmap);
     }
 
     public void setWindowBackground(Drawable windowBackground) {
