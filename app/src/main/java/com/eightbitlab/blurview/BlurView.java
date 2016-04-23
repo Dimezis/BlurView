@@ -3,6 +3,7 @@ package com.eightbitlab.blurview;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -14,6 +15,7 @@ public class BlurView extends FrameLayout {
     private BlurHelper blurHelper;
     private Paint bitmapPaint;
     private View rootView;
+    private Drawable windowBackground;
 
     public BlurView(Context context) {
         super(context);
@@ -39,6 +41,7 @@ public class BlurView extends FrameLayout {
             @Override
             public void onGlobalLayout() {
                 blurHelper = new BlurHelper(getContext(), BlurView.this);
+                blurHelper.setWindowBackground(windowBackground);
                 bitmapPaint = new Paint();
                 bitmapPaint.setFlags(Paint.FILTER_BITMAP_FLAG);
                 blurHelper.setRootView(rootView);
@@ -78,14 +81,13 @@ public class BlurView extends FrameLayout {
         });
     }
 
-    private void reBlur() {
+    protected void reBlur() {
         if (blurHelper != null) {
             blurHelper.prepare();
             invalidate();
         }
     }
 
-    //TODO do not draw it's content into blurred bitmap
     @Override
     public void draw(Canvas canvas) {
         Log.d(TAG, "draw()");
@@ -94,12 +96,20 @@ public class BlurView extends FrameLayout {
             return;
         }
         if (!blurHelper.isInternalCanvas(canvas)) {
-            canvas.scale(1 * BlurHelper.SCALE_FACTOR, 1 * BlurHelper.SCALE_FACTOR);
-            canvas.drawBitmap(blurHelper.blur(blurHelper.getInternalBitmap(), this), getMatrix(), bitmapPaint);
-            canvas.scale(1 / BlurHelper.SCALE_FACTOR, 1 / BlurHelper.SCALE_FACTOR);
-            canvas.drawColor(getContext().getResources().getColor(R.color.colorOverlay));
+            drawBlurredContent(canvas);
             super.draw(canvas);
         }
+    }
+
+    protected void drawBlurredContent(Canvas canvas) {
+        canvas.scale(1 * BlurHelper.SCALE_FACTOR, 1 * BlurHelper.SCALE_FACTOR);
+        canvas.drawBitmap(blurHelper.blur(), getMatrix(), bitmapPaint);
+        canvas.scale(1 / BlurHelper.SCALE_FACTOR, 1 / BlurHelper.SCALE_FACTOR);
+        drawColorOverlay(canvas);
+    }
+
+    protected void drawColorOverlay(Canvas canvas) {
+        canvas.drawColor(getContext().getResources().getColor(R.color.colorOverlay));
     }
 
     @Override
@@ -112,5 +122,9 @@ public class BlurView extends FrameLayout {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         blurHelper.destroy();
+    }
+
+    public void setWindowBackground(Drawable windowBackgroundDrawable) {
+        this.windowBackground = windowBackgroundDrawable;
     }
 }
