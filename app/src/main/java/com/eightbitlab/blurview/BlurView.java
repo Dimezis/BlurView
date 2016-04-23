@@ -93,12 +93,11 @@ public class BlurView extends FrameLayout {
             super.draw(canvas);
             return;
         }
-        if (blurHelper.isInternalCanvas(canvas)) {
-            super.draw(canvas);
-        } else {
+        if (!blurHelper.isInternalCanvas(canvas)) {
             canvas.scale(1 * BlurHelper.SCALE_FACTOR, 1 * BlurHelper.SCALE_FACTOR);
             canvas.drawBitmap(blurHelper.blur(blurHelper.getInternalBitmap(), this), getMatrix(), bitmapPaint);
             canvas.scale(1 / BlurHelper.SCALE_FACTOR, 1 / BlurHelper.SCALE_FACTOR);
+            canvas.drawColor(getContext().getResources().getColor(R.color.colorOverlay));
             super.draw(canvas);
         }
     }
