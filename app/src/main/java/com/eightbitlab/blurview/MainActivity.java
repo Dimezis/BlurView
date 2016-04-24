@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fillWithText(TextView viewToBlur) {
-        for (int i = 0; i < 300; i++) {
+        for (int i = 0; i < 100; i++) {
             viewToBlur.append("Blur Me! ");
         }
     }
