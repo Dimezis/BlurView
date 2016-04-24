@@ -55,6 +55,6 @@
             android:textColor="@android:color/black"
             android:layout_gravity="center"
             android:textSize="18sp"
-            android:text="Not blurred content"/>
+            android:text="BlurView"/>
     </com.eightbitlab.blurview.BlurView>
 </FrameLayout>
