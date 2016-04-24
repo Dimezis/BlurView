@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             xmlns:app="http://schemas.android.com/apk/res-auto"
-             tools:context="com.eightbitlab.blurview.MainActivity">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.eightbitlab.blurview.MainActivity">
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -14,6 +14,7 @@
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -25,22 +26,27 @@
                 android:layout_height="wrap_content"
                 android:textSize="20sp"
                 tools:text="Blur me" />
+
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Blur me"/>
+
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Blur me"/>
+
             <ImageView
                 android:layout_width="180dp"
                 android:layout_height="180dp"
                 android:src="@mipmap/ic_launcher"/>
+
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@mipmap/ic_launcher"/>
+
         </LinearLayout>
     </ScrollView>
 
@@ -51,6 +57,7 @@
         android:layout_height="100dp"
         app:overlayColor="@color/colorOverlay"
         android:background="#02ffffff">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -58,5 +65,6 @@
             android:layout_gravity="center"
             android:textSize="18sp"
             android:text="BlurView"/>
+
     </com.eightbitlab.blurview.BlurView>
 </FrameLayout>
