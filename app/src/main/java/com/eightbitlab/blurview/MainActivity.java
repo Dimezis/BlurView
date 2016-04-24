@@ -21,13 +21,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupBlurView(BlurView blurView) {
-        final View scrollView = findViewById(R.id.scrollView);
         final View decorView = getWindow().getDecorView();
         final View rootView = decorView.findViewById(android.R.id.content);
         final Drawable windowBackgroundDrawable = decorView.getBackground();
         blurView.setRootView(rootView);
         blurView.setWindowBackground(windowBackgroundDrawable);
-        blurView.setDependencyView(scrollView);
     }
 
     private void fillWithText(TextView viewToBlur) {

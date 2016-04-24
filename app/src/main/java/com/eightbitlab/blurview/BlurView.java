@@ -13,11 +13,13 @@ import android.widget.FrameLayout;
 public class BlurView extends FrameLayout {
     private static final String TAG = "BlurView";
 
-    private BlurHelper blurHelper;
-    private Paint bitmapPaint;
+    protected BlurHelper blurHelper;
+    protected Paint bitmapPaint;
+
     private View rootView;
     private Drawable windowBackground;
     private boolean isDrawing;
+
     private Runnable setNotDrawingTask = new Runnable() {
         @Override
         public void run() {
@@ -56,7 +58,22 @@ public class BlurView extends FrameLayout {
                 blurHelper.setWindowBackground(windowBackground);
                 blurHelper.setRootView(rootView);
                 blurHelper.drawUnderlyingViews();
+                observeDrawCalls();
                 getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
+    }
+
+    private void observeDrawCalls() {
+        getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                //ignore onPreDraw calls from this view
+                if (!isDrawing) {
+                    Log.d(TAG, "listener onPreDraw()");
+                    reBlur();
+                }
+                return true;
             }
         });
     }
@@ -87,11 +104,6 @@ public class BlurView extends FrameLayout {
         post(setNotDrawingTask);
     }
 
-    @Override
-    public void onDrawForeground(Canvas canvas) {
-        super.onDrawForeground(canvas);
-    }
-
     protected void drawBlurredContent(Canvas canvas) {
         canvas.scale(1 * BlurHelper.SCALE_FACTOR, 1 * BlurHelper.SCALE_FACTOR);
         canvas.drawBitmap(blurHelper.blur(), getMatrix(), bitmapPaint);
@@ -109,24 +121,13 @@ public class BlurView extends FrameLayout {
         blurHelper.destroy();
     }
 
-
     public void setRootView(View view) {
         rootView = view;
     }
 
-    public void setDependencyView(View view) {
-        view.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                if (!isDrawing) {
-                    Log.d(TAG, "listener onPreDraw()");
-                    reBlur();
-                }
-                return true;
-            }
-        });
-    }
-
+    /**
+     * Use this method to pass windowBackground from your activity
+     */
     public void setWindowBackground(Drawable windowBackgroundDrawable) {
         this.windowBackground = windowBackgroundDrawable;
     }
