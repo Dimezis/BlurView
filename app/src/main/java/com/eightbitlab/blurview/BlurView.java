@@ -17,6 +17,13 @@ public class BlurView extends FrameLayout {
     private Paint bitmapPaint;
     private View rootView;
     private Drawable windowBackground;
+    private boolean isDrawing;
+    private Runnable setNotDrawingTask = new Runnable() {
+        @Override
+        public void run() {
+            isDrawing = false;
+        }
+    };
 
     public BlurView(Context context) {
         super(context);
@@ -55,12 +62,14 @@ public class BlurView extends FrameLayout {
     }
 
     protected void reBlur() {
+        isDrawing = true;
         blurHelper.drawUnderlyingViews();
         invalidate();
     }
 
     @Override
     public void draw(Canvas canvas) {
+        isDrawing = true;
         Log.d(TAG, "draw()");
         if (isInEditMode()) {
             super.draw(canvas);
@@ -70,6 +79,17 @@ public class BlurView extends FrameLayout {
             drawBlurredContent(canvas);
             super.draw(canvas);
         }
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        post(setNotDrawingTask);
+    }
+
+    @Override
+    public void onDrawForeground(Canvas canvas) {
+        super.onDrawForeground(canvas);
     }
 
     protected void drawBlurredContent(Canvas canvas) {
@@ -95,30 +115,14 @@ public class BlurView extends FrameLayout {
     }
 
     public void setDependencyView(View view) {
-        view.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
+        view.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
-            public void onScrollChanged() {
-                Log.d(TAG, "listener onScrollChanged()");
-                reBlur();
-            }
-        });
-
-        view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                Log.d(TAG, "listener onGlobalLayout()");
-                if (blurHelper != null) { //remove null-check later
+            public boolean onPreDraw() {
+                if (!isDrawing) {
+                    Log.d(TAG, "listener onPreDraw()");
                     reBlur();
                 }
-            }
-        });
-
-        view.getViewTreeObserver().addOnDrawListener(new ViewTreeObserver.OnDrawListener() {
-            @Override
-            public void onDraw() {
-                //looks like it doesn't do the trick to listen other View draw() calls :c
-                Log.d(TAG, "listener onDraw()");
-                reBlur();
+                return true;
             }
         });
     }
