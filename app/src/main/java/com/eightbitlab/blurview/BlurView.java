@@ -105,9 +105,9 @@ public class BlurView extends FrameLayout {
     }
 
     protected void drawBlurredContent(Canvas canvas) {
-        canvas.scale(1 * BlurHelper.SCALE_FACTOR, 1 * BlurHelper.SCALE_FACTOR);
+        canvas.scale(1 * blurHelper.scaleFactor, 1 * blurHelper.scaleFactor);
         canvas.drawBitmap(blurHelper.blur(), getMatrix(), bitmapPaint);
-        canvas.scale(1 / BlurHelper.SCALE_FACTOR, 1 / BlurHelper.SCALE_FACTOR);
+        canvas.scale(1 / blurHelper.scaleFactor, 1 / blurHelper.scaleFactor);
         drawColorOverlay(canvas);
     }
 

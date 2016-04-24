@@ -5,27 +5,34 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 
-//TODO draw only needed part of View hierarchy
 public class BlurHelper {
-    public static final float SCALE_FACTOR = 8f;
-    private static final int BLUR_RADIUS = 8;
+    public float scaleFactor = 10f;
+    public int blurRadius = 8;
 
     private Canvas internalCanvas;
+    private Canvas overlayCanvas;
     private Bitmap internalBitmap;
     private Bitmap overlay;
     private View rootView;
-    private BlurView blurView;
     /**
      * By default, window's background is not drawn on canvas. We need to draw in manually
      */
     private Drawable windowBackground;
 
     public BlurHelper(BlurView blurView) {
-        //downscale bitmap
-        overlay = Bitmap.createBitmap((int) (blurView.getMeasuredWidth() / SCALE_FACTOR),
-                (int) (blurView.getMeasuredHeight() / SCALE_FACTOR), Bitmap.Config.ARGB_8888);
+        int measuredWidth = blurView.getMeasuredWidth();
+        int measuredHeight = blurView.getMeasuredHeight();
 
-        this.blurView = blurView;
+        //downscale overlay (blurred) bitmap
+        overlay = Bitmap.createBitmap((int) (measuredWidth / scaleFactor),
+                (int) (measuredHeight / scaleFactor), Bitmap.Config.ARGB_8888);
+        overlayCanvas = new Canvas(overlay);
+
+        //draw starting from blurView's position
+        internalBitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888);
+        internalCanvas = new Canvas(internalBitmap);
+        internalCanvas.translate(-blurView.getLeft() / scaleFactor, -blurView.getTop() / scaleFactor);
+        internalCanvas.scale(1 / scaleFactor, 1 / scaleFactor);
     }
 
     public boolean isInternalCanvas(Canvas canvas) {
@@ -43,26 +50,18 @@ public class BlurHelper {
     }
 
     public Bitmap blur() {
-        Canvas overlayCanvas = new Canvas(overlay);
-        //move to blurView's position
-        overlayCanvas.translate(-blurView.getLeft() / SCALE_FACTOR, -blurView.getTop() / SCALE_FACTOR);
-        overlayCanvas.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
         overlayCanvas.drawBitmap(internalBitmap, 0, 0, null);
-
-        return FastBlur.doBlur(overlay, BLUR_RADIUS, true);
+        return FastBlur.doBlur(overlay, blurRadius, true);
     }
 
     public void destroy() {
         rootView = null;
-        blurView = null;
         overlay.recycle();
         internalBitmap.recycle();
     }
 
     public void setRootView(View view) {
         rootView = view;
-        internalBitmap = Bitmap.createBitmap(rootView.getMeasuredWidth(), rootView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-        internalCanvas = new Canvas(internalBitmap);
     }
 
     public void setWindowBackground(Drawable windowBackground) {
