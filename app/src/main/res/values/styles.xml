@@ -8,4 +8,7 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <declare-styleable name="BlurView">
+        <attr name="overlayColor" format="color"/>
+    </declare-styleable>
 </resources>

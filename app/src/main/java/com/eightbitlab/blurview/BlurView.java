@@ -1,6 +1,7 @@
 package com.eightbitlab.blurview;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
@@ -19,6 +20,7 @@ public class BlurView extends FrameLayout {
     private View rootView;
     private Drawable windowBackground;
     private boolean isDrawing;
+    private int overlayColor;
 
     private Runnable setNotDrawingTask = new Runnable() {
         @Override
@@ -29,27 +31,37 @@ public class BlurView extends FrameLayout {
 
     public BlurView(Context context) {
         super(context);
-        init();
+        init(null, 0);
     }
 
     public BlurView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
+        init(attrs, 0);
     }
 
     public BlurView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
+        init(attrs, defStyleAttr);
     }
 
-    private void init() {
+    private void init(AttributeSet attrs, int defStyleAttr) {
         if (isInEditMode()) {
             return;
         }
 
+        TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.BlurView, defStyleAttr, 0);
+        overlayColor = getContext().getResources()
+                .getColor(a.getResourceId(R.styleable.BlurView_overlayColor, android.R.color.transparent));
+        a.recycle();
+
+
         bitmapPaint = new Paint();
         bitmapPaint.setFlags(Paint.FILTER_BITMAP_FLAG);
 
+        observeGlobalLayout();
+    }
+
+    private void observeGlobalLayout() {
         getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -112,7 +124,7 @@ public class BlurView extends FrameLayout {
     }
 
     protected void drawColorOverlay(Canvas canvas) {
-        canvas.drawColor(getContext().getResources().getColor(R.color.colorOverlay));
+        canvas.drawColor(overlayColor);
     }
 
     @Override

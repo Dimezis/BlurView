@@ -7,7 +7,7 @@ import android.view.View;
 
 public class BlurHelper {
     public float scaleFactor = 10f;
-    public int blurRadius = 8;
+    public int blurRadius = 6;
 
     private Canvas internalCanvas;
     private Canvas overlayCanvas;
