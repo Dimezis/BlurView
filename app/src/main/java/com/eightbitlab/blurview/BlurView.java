@@ -2,32 +2,18 @@ package com.eightbitlab.blurview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 public class BlurView extends FrameLayout {
-    private static final String TAG = "BlurView";
+    private static final String TAG = BlurView.class.getSimpleName();
 
-    protected BlurHelper blurHelper;
-    protected Paint bitmapPaint;
+    protected BlurController blurController;
 
-    private View rootView;
-    private Drawable windowBackground;
-    private boolean isDrawing;
     private int overlayColor;
-
-    private Runnable setNotDrawingTask = new Runnable() {
-        @Override
-        public void run() {
-            isDrawing = false;
-        }
-    };
 
     public BlurView(Context context) {
         super(context);
@@ -46,66 +32,19 @@ public class BlurView extends FrameLayout {
 
     private void init(AttributeSet attrs, int defStyleAttr) {
         if (isInEditMode()) {
-            return;
+            createStubControllerForEditMode();
         }
-
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.BlurView, defStyleAttr, 0);
-        overlayColor = getContext().getResources()
-                .getColor(a.getResourceId(R.styleable.BlurView_overlayColor, android.R.color.transparent));
+        int colorId = a.getResourceId(R.styleable.BlurView_overlayColor, android.R.color.transparent);
+        overlayColor = ContextCompat.getColor(getContext(), colorId);
         a.recycle();
-
-
-        bitmapPaint = new Paint();
-        bitmapPaint.setFlags(Paint.FILTER_BITMAP_FLAG);
-
-        observeGlobalLayout();
-    }
-
-    private void observeGlobalLayout() {
-        getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                //can create blurHelper only after layout completion
-                blurHelper = new BlurHelper(BlurView.this);
-                blurHelper.setWindowBackground(windowBackground);
-                blurHelper.setRootView(rootView);
-                blurHelper.drawUnderlyingViews();
-                observeDrawCalls();
-                getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-        });
-    }
-
-    private void observeDrawCalls() {
-        getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                //ignore onPreDraw calls from this view
-                if (!isDrawing) {
-                    Log.d(TAG, "listener onPreDraw()");
-                    reBlur();
-                }
-                return true;
-            }
-        });
-    }
-
-    protected void reBlur() {
-        isDrawing = true;
-        blurHelper.drawUnderlyingViews();
-        invalidate();
     }
 
     @Override
     public void draw(Canvas canvas) {
-        isDrawing = true;
-        Log.d(TAG, "draw()");
-        if (isInEditMode()) {
-            super.draw(canvas);
-            return;
-        }
-        if (!blurHelper.isInternalCanvas(canvas)) {
-            drawBlurredContent(canvas);
+        if (!blurController.isInternalCanvas(canvas)) {
+            blurController.drawBlurredContent(canvas);
+            drawColorOverlay(canvas);
             super.draw(canvas);
         }
     }
@@ -113,15 +52,7 @@ public class BlurView extends FrameLayout {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        post(setNotDrawingTask);
-    }
-
-    protected void drawBlurredContent(Canvas canvas) {
-        canvas.save();
-        canvas.scale(blurHelper.scaleFactor, blurHelper.scaleFactor);
-        canvas.drawBitmap(blurHelper.blur(), 0, 0, bitmapPaint);
-        canvas.restore();
-        drawColorOverlay(canvas);
+        blurController.onDrawEnd(canvas);
     }
 
     protected void drawColorOverlay(Canvas canvas) {
@@ -130,18 +61,37 @@ public class BlurView extends FrameLayout {
 
     @Override
     protected void onDetachedFromWindow() {
+        blurController.destroy();
         super.onDetachedFromWindow();
-        blurHelper.destroy();
     }
 
-    public void setRootView(View view) {
-        rootView = view;
+    public void setBlurController(BlurController blurController) {
+        this.blurController = blurController;
     }
 
-    /**
-     * Use this method to pass windowBackground from your activity
-     */
-    public void setWindowBackground(Drawable windowBackgroundDrawable) {
-        this.windowBackground = windowBackgroundDrawable;
+    private void createStubControllerForEditMode() {
+        blurController = new BlurController() {
+            @Override
+            public boolean isInternalCanvas(Canvas canvas) {
+                return false;
+            }
+
+            @Override
+            public void drawBlurredContent(Canvas canvas) {
+            }
+
+            @Override
+            public void onDrawEnd(Canvas canvas) {
+            }
+
+            @Override
+            public void destroy() {
+            }
+
+            @Override
+            public Bitmap getBlurredBitmap() {
+                return null;
+            }
+        };
     }
 }

@@ -23,9 +23,14 @@ public class MainActivity extends AppCompatActivity {
     private void setupBlurView(BlurView blurView) {
         final View decorView = getWindow().getDecorView();
         final View rootView = decorView.findViewById(android.R.id.content);
-        final Drawable windowBackgroundDrawable = decorView.getBackground();
-        blurView.setRootView(rootView);
-        blurView.setWindowBackground(windowBackgroundDrawable);
+        final Drawable windowBackground = decorView.getBackground();
+
+        BlurController blurController = new DefaultBlurController.Builder()
+                .withViews(blurView, rootView)
+                .windowBackground(windowBackground)
+                .build();
+
+        blurView.setBlurController(blurController);
     }
 
     private void fillWithText(TextView viewToBlur) {

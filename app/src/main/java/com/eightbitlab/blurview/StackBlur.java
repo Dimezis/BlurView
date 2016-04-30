@@ -3,21 +3,19 @@ package com.eightbitlab.blurview;
 import android.graphics.Bitmap;
 
 /**
+ * Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
+ *
  * More effective on small bitmaps
  */
-public class FastBlur {
+public final class StackBlur implements BlurAlgorithm {
+    private boolean canReuseInBitmap;
 
-    public static Bitmap doBlur(Bitmap sentBitmap, int radius, boolean canReuseInBitmap) {
+    public StackBlur(boolean canReuseInBitmap) {
+        this.canReuseInBitmap = canReuseInBitmap;
+    }
 
-        // Stack Blur v1.0 from
-        // http://www.quasimondo.com/StackBlurForCanvas/StackBlurDemo.html
-        //
-        // Java Author: Mario Klingemann <mario at quasimondo.com>
-        // http://incubator.quasimondo.com
-        // created Feburary 29, 2004
-        // Android port : Yahel Bouaziz <yahel at kayenko.com>
-        // http://www.kayenko.com
-        // ported april 5th, 2012
+    @Override
+    public Bitmap blur(Bitmap sentBitmap, int radius) {
 
         // This is a compromise between Gaussian Blur and Box blur
         // It creates much better looking blurs than Box Blur, but is
@@ -31,11 +29,6 @@ public class FastBlur {
         // colors on the topmost layer of the stack are either added on
         // or reduced by one, depending on if they are on the right or
         // on the left side of the stack.
-        //
-        // If you are using this algorithm in your code please add
-        // the following line:
-        //
-        // Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
 
         Bitmap bitmap;
         if (canReuseInBitmap) {
