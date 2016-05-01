@@ -1,4 +1,4 @@
-package com.eightbitlab.blurview;
+package eightbitlab.com.blurview;
 
 import android.graphics.Canvas;
 

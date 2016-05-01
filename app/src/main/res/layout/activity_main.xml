@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context="com.eightbitlab.blurview.MainActivity">
+    tools:context="com.eightbitlab.blurview_sample.MainActivity">
 
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
@@ -58,7 +58,7 @@
         </ScrollView>
     </android.support.v7.widget.CardView>
 
-    <com.eightbitlab.blurview.BlurView
+    <eightbitlab.com.blurview.BlurView
         android:id="@+id/blurView"
         android:layout_width="100dp"
         android:layout_gravity="center"
@@ -76,5 +76,5 @@
             android:textSize="18sp"
             android:text="BlurView"/>
 
-    </com.eightbitlab.blurview.BlurView>
+    </eightbitlab.com.blurview.BlurView>
 </FrameLayout>
