@@ -40,6 +40,8 @@ public class BlurView extends FrameLayout {
         int defaultColor = ContextCompat.getColor(getContext(), android.R.color.transparent);
         overlayColor = a.getColor(R.styleable.BlurView_overlayColor, defaultColor);
         a.recycle();
+
+        setWillNotDraw(false);
     }
 
     @Override
