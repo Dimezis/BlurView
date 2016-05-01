@@ -6,75 +6,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.eightbitlab.blurview_sample.MainActivity">
 
-    <android.support.v7.widget.CardView
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewPager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        app:cardElevation="4dp">
-
-        <ScrollView
-            android:id="@+id/scrollView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/activity_vertical_margin">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/textView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    tools:text="Blur me" />
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Blur me"/>
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Blur me"/>
-
-                <ImageView
-                    android:layout_width="180dp"
-                    android:layout_height="180dp"
-                    android:src="@mipmap/ic_launcher"/>
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@mipmap/ic_launcher"/>
-
-            </LinearLayout>
-        </ScrollView>
-    </android.support.v7.widget.CardView>
+        android:layout_height="wrap_content"/>
 
     <eightbitlab.com.blurview.BlurView
         android:id="@+id/blurView"
-        android:layout_width="100dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="100dp"
-        android:layout_height="100dp"
-        android:background="#02ffffff"
-        android:elevation="4dp"
+        android:layout_width="match_parent"
+        android:layout_gravity="bottom"
+        android:layout_height="wrap_content"
         app:overlayColor="@color/colorOverlay">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@android:color/black"
-            android:layout_gravity="center"
-            android:textSize="18sp"
-            android:text="BlurView"/>
+        <android.support.design.widget.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_tab_height"
+            android:background="@android:color/transparent"/>
 
     </eightbitlab.com.blurview.BlurView>
 </FrameLayout>
