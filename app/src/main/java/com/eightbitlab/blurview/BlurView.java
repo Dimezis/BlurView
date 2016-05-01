@@ -2,8 +2,9 @@ package com.eightbitlab.blurview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.support.annotation.ColorInt;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
@@ -13,6 +14,7 @@ public class BlurView extends FrameLayout {
 
     protected BlurController blurController;
 
+    @ColorInt
     private int overlayColor;
 
     public BlurView(Context context) {
@@ -35,14 +37,14 @@ public class BlurView extends FrameLayout {
             createStubControllerForEditMode();
         }
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.BlurView, defStyleAttr, 0);
-        int colorId = a.getResourceId(R.styleable.BlurView_overlayColor, android.R.color.transparent);
-        overlayColor = ContextCompat.getColor(getContext(), colorId);
+        int defaultColor = ContextCompat.getColor(getContext(), android.R.color.transparent);
+        overlayColor = a.getColor(R.styleable.BlurView_overlayColor, defaultColor);
         a.recycle();
     }
 
     @Override
     public void draw(Canvas canvas) {
-        if (!blurController.isInternalCanvas(canvas)) {
+        if (blurController.isSystemCanvas(canvas)) {
             blurController.drawBlurredContent(canvas);
             drawColorOverlay(canvas);
             super.draw(canvas);
@@ -61,37 +63,37 @@ public class BlurView extends FrameLayout {
 
     @Override
     protected void onDetachedFromWindow() {
-        blurController.destroy();
         super.onDetachedFromWindow();
+        blurController.destroy();
     }
 
-    public void setBlurController(BlurController blurController) {
+    public void setBlurController(@NonNull BlurController blurController) {
         this.blurController = blurController;
+    }
+
+    public void setOverlayColor(@ColorInt int overlayColor) {
+        this.overlayColor = overlayColor;
+        invalidate();
     }
 
     private void createStubControllerForEditMode() {
         blurController = new BlurController() {
             @Override
-            public boolean isInternalCanvas(Canvas canvas) {
-                return false;
+            public boolean isSystemCanvas(Canvas canvas) {
+                return true;
             }
 
             @Override
-            public void drawBlurredContent(Canvas canvas) {
-            }
+            public void drawBlurredContent(Canvas canvas) {}
 
             @Override
-            public void onDrawEnd(Canvas canvas) {
-            }
+            public void onDrawEnd(Canvas canvas) {}
 
             @Override
-            public void destroy() {
-            }
+            public void updateBlur() {}
 
             @Override
-            public Bitmap getBlurredBitmap() {
-                return null;
-            }
+            public void destroy() {}
         };
     }
 }

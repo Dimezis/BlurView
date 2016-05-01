@@ -25,10 +25,9 @@ public class MainActivity extends AppCompatActivity {
         final View rootView = decorView.findViewById(android.R.id.content);
         final Drawable windowBackground = decorView.getBackground();
 
-        BlurController blurController = new DefaultBlurController.Builder()
-                .withViews(blurView, rootView)
-                .windowBackground(windowBackground)
-                .build();
+        float scaleFactor = DefaultBlurController.DEFAULT_SCALE_FACTOR;
+        DefaultBlurController blurController = new DefaultBlurController(blurView, rootView, scaleFactor);
+        blurController.setWindowBackground(windowBackground);
 
         blurView.setBlurController(blurController);
     }

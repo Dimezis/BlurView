@@ -6,41 +6,51 @@ import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
 public class DefaultBlurController implements BlurController {
     private static final String TAG = DefaultBlurController.class.getSimpleName();
+
     public static final float DEFAULT_SCALE_FACTOR = 10f;
     public static final int DEFAULT_BLUR_RADIUS = 6;
 
-    private float scaleFactor = DEFAULT_SCALE_FACTOR;
-    private int blurRadius = DEFAULT_BLUR_RADIUS;
+    protected final float scaleFactor;
+    protected int blurRadius = DEFAULT_BLUR_RADIUS;
 
-    private BlurAlgorithm blurAlgorithm = new StackBlur(true);
-    private Paint bitmapPaint;
+    protected BlurAlgorithm blurAlgorithm;
+    @Nullable
+    protected Paint blurredBitmapPaint;
 
-    private Canvas internalCanvas;
-    private Canvas overlayCanvas;
+    Canvas internalCanvas;
+    Canvas overlayCanvas;
 
     /**
      * View hierarchy is drawn here
      */
-    private Bitmap internalBitmap;
+    Bitmap internalBitmap;
     /**
      * Blurred content is drawn here
      */
-    private Bitmap blurredOverlay;
+    Bitmap blurredOverlay;
 
     private View blurView;
     private View rootView;
     private ViewTreeObserver.OnPreDrawListener drawListener;
 
+    /**
+     * Used to distinct parent draw() calls from Controller's draw() calls
+     */
     private boolean isMeDrawingNow;
 
-    private Handler handler;
+    @NonNull
+    protected Handler handler;
+
     //must be set from message queue
-    private Runnable onDrawEndTask = new Runnable() {
+    @NonNull
+    private final Runnable onDrawEndTask = new Runnable() {
         @Override
         public void run() {
             isMeDrawingNow = false;
@@ -50,16 +60,26 @@ public class DefaultBlurController implements BlurController {
     /**
      * By default, window's background is not drawn on canvas. We need to draw in manually
      */
+    @Nullable
     private Drawable windowBackground;
 
-    private DefaultBlurController(View blurView, View rootView) {
-        bitmapPaint = new Paint();
-        bitmapPaint.setFlags(Paint.FILTER_BITMAP_FLAG);
+    /**
+     * @param blurView    View which will draw it's blurred underlying content
+     * @param rootView    Root View where blurView's underlying content starts drawing.
+     * @param scaleFactor sets scale factor to downscale blurred bitmap for faster calculations
+     *                    Default scale factor is {@link DefaultBlurController#DEFAULT_SCALE_FACTOR}
+     *                    Can be Activity's root content layout (android.R.id.content)
+     */
+    public DefaultBlurController(@NonNull View blurView, @NonNull View rootView, float scaleFactor) {
+        blurredBitmapPaint = new Paint();
+        blurredBitmapPaint.setFlags(Paint.FILTER_BITMAP_FLAG);
 
         handler = new Handler(Looper.getMainLooper());
 
+        this.scaleFactor = scaleFactor;
         this.rootView = rootView;
         this.blurView = blurView;
+        this.blurAlgorithm = new StackBlur(true);
 
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();
@@ -75,7 +95,7 @@ public class DefaultBlurController implements BlurController {
     private void init(int measuredWidth, int measuredHeight) {
         allocateBitmaps(measuredWidth, measuredHeight);
         overlayCanvas = new Canvas(blurredOverlay);
-        setupInternalCanvas(blurView);
+        setupInternalCanvas();
         observeDrawCalls();
     }
 
@@ -84,7 +104,7 @@ public class DefaultBlurController implements BlurController {
             @Override
             public boolean onPreDraw() {
                 if (!isMeDrawingNow) {
-                    reBlur();
+                    updateBlur();
                 }
                 return true;
             }
@@ -92,7 +112,15 @@ public class DefaultBlurController implements BlurController {
         blurView.getViewTreeObserver().addOnPreDrawListener(drawListener);
     }
 
-    private void reBlur() {
+    /**
+     * Can be used to stop ViewTreeObserver.OnPreDrawListener and update BlurController manually
+     */
+    public void stopAutoBlurUpdate() {
+        rootView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
+    }
+
+    @Override
+    public void updateBlur() {
         isMeDrawingNow = true;
         drawUnderlyingViews();
         blurView.invalidate();
@@ -121,10 +149,10 @@ public class DefaultBlurController implements BlurController {
         int scaledHeight = (int) (measuredHeight / scaleFactor);
 
         blurredOverlay = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.ARGB_8888);
-        internalBitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888);
+        internalBitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.ARGB_8888);
     }
 
-    private void setupInternalCanvas(View blurView) {
+    private void setupInternalCanvas() {
         internalCanvas = new Canvas(internalBitmap);
         //draw starting from blurView's position
         float scaledLeftPosition = -blurView.getLeft() / scaleFactor;
@@ -134,9 +162,14 @@ public class DefaultBlurController implements BlurController {
         internalCanvas.scale(1 / scaleFactor, 1 / scaleFactor);
     }
 
+    /**
+     * Used to distinct BlurController's Canvas from System Canvas.
+     * A View that uses BlurController should draw only on System Canvas.
+     * Otherwise their content will be blurred too.
+     */
     @Override
-    public boolean isInternalCanvas(Canvas canvas) {
-        return internalCanvas == canvas;
+    public boolean isSystemCanvas(Canvas canvas) {
+        return internalCanvas != canvas;
     }
 
     protected void drawUnderlyingViews() {
@@ -150,9 +183,16 @@ public class DefaultBlurController implements BlurController {
 
     @Override
     public void drawBlurredContent(Canvas canvas) {
+        isMeDrawingNow = true;
+        prepareOverlayForBlur();
+        blurAndSave();
+        draw(canvas);
+    }
+
+    protected void draw(Canvas canvas) {
         canvas.save();
         canvas.scale(scaleFactor, scaleFactor);
-        canvas.drawBitmap(getBlurredBitmap(), 0, 0, bitmapPaint);
+        canvas.drawBitmap(blurredOverlay, 0, 0, blurredBitmapPaint);
         canvas.restore();
     }
 
@@ -161,88 +201,52 @@ public class DefaultBlurController implements BlurController {
         handler.post(onDrawEndTask);
     }
 
-    @Override
-    public Bitmap getBlurredBitmap() {
-        overlayCanvas.drawBitmap(internalBitmap, 0, 0, null);
+    protected void blurAndSave() {
         blurredOverlay = blurAlgorithm.blur(blurredOverlay, blurRadius);
-        return blurredOverlay;
+    }
+
+    protected void prepareOverlayForBlur() {
+        overlayCanvas.drawBitmap(internalBitmap, 0, 0, null);
     }
 
     @Override
     public void destroy() {
-        rootView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
+        stopAutoBlurUpdate();
         rootView = null;
         blurView = null;
         blurredOverlay.recycle();
         internalBitmap.recycle();
     }
 
-    static class Builder {
-        private DefaultBlurController instance;
+    /**
+     * @param paint sets the Paint to draw blurred bitmap.
+     *              Default implementation uses flag {@link Paint#FILTER_BITMAP_FLAG}
+     */
+    public void setBlurredBitmapPaint(Paint paint) {
+        this.blurredBitmapPaint = paint;
+    }
 
-        /**
-         * @param blurView View which will draw it's blurred underlying content
-         * @param rootView Root View where blurView's underlying content starts drawing.
-         * Can be Activity's root content layout (android.R.id.content)
-         * @return Builder
-         */
-        public Builder withViews(View blurView, View rootView) {
-            instance = new DefaultBlurController(blurView, rootView);
-            return this;
-        }
+    /**
+     * @param radius sets the blur radius
+     *               Default implementation uses field {@link DefaultBlurController#DEFAULT_BLUR_RADIUS}
+     */
+    public void setBlurRadius(int radius) {
+        this.blurRadius = radius;
+    }
 
-        /**
-         * @param paint sets the Paint to draw blurred bitmap.
-         * Default implementation uses flag {@link Paint#FILTER_BITMAP_FLAG}
-         * @return Builder
-         */
-        public Builder bitmapPaint(Paint paint) {
-            instance.bitmapPaint = paint;
-            return this;
-        }
+    /**
+     * @param algorithm sets the blur algorithm
+     *                  Default implementation uses {@link StackBlur}
+     */
+    public void setBlurAlgorithm(BlurAlgorithm algorithm) {
+        this.blurAlgorithm = algorithm;
+    }
 
-        /**
-         * @param radius sets the blur radius
-         * Default implementation uses field {@link DefaultBlurController#DEFAULT_BLUR_RADIUS}
-         * @return Builder
-         */
-        public Builder blurRadius(int radius) {
-            instance.blurRadius = radius;
-            return this;
-        }
-
-        /**
-         * @param scaleFactor sets scale factor to downscale blurred bitmap for faster calculations
-         * Default implementation uses field {@link DefaultBlurController#DEFAULT_SCALE_FACTOR}
-         * @return Builder
-         */
-        public Builder scaleFactor(float scaleFactor) {
-            instance.scaleFactor = scaleFactor;
-            return this;
-        }
-
-        /**
-         * @param algorithm sets the blur algorithm
-         * Default implementation uses {@link StackBlur}
-         * @return Builder
-         */
-        public Builder algorithm(BlurAlgorithm algorithm) {
-            instance.blurAlgorithm = algorithm;
-            return this;
-        }
-
-        /**
-         * @param windowBackground sets the background to draw before view hierarchy.
-         * Can be used to draw Activity's window background if your root layout doesn't provide any background
-         * @return Builder
-         */
-        public Builder windowBackground(Drawable windowBackground) {
-            instance.windowBackground = windowBackground;
-            return this;
-        }
-
-        public DefaultBlurController build() {
-            return instance;
-        }
+    /**
+     * @param windowBackground sets the background to draw before view hierarchy.
+     *                         Can be used to draw Activity's window background if your root layout doesn't provide any background
+     */
+    public void setWindowBackground(@Nullable Drawable windowBackground) {
+        this.windowBackground = windowBackground;
     }
 }
