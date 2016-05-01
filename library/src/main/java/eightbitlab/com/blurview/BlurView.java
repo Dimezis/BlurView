@@ -9,6 +9,10 @@ import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
+/**
+ * FrameLayout that blurs its underlying content.
+ * Can have children and draw them over blurred background.
+ */
 public class BlurView extends FrameLayout {
     private static final String TAG = BlurView.class.getSimpleName();
 
