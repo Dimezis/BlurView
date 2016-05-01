@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -133,7 +134,11 @@ public class DefaultBlurController implements BlurController {
         blurView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                blurView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    blurView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                } else {
+                    blurView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                }
 
                 int measuredWidth = blurView.getMeasuredWidth();
                 int measuredHeight = blurView.getMeasuredHeight();
