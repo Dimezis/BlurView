@@ -44,7 +44,7 @@ public class BlurView extends FrameLayout {
 
     @Override
     public void draw(Canvas canvas) {
-        if (blurController.isSystemCanvas(canvas)) {
+        if (!blurController.isInternalCanvas(canvas)) {
             blurController.drawBlurredContent(canvas);
             drawColorOverlay(canvas);
             super.draw(canvas);
@@ -79,8 +79,8 @@ public class BlurView extends FrameLayout {
     private void createStubControllerForEditMode() {
         blurController = new BlurController() {
             @Override
-            public boolean isSystemCanvas(Canvas canvas) {
-                return true;
+            public boolean isInternalCanvas(Canvas canvas) {
+                return false;
             }
 
             @Override

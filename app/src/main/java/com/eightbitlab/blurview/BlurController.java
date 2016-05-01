@@ -3,7 +3,7 @@ package com.eightbitlab.blurview;
 import android.graphics.Canvas;
 
 public interface BlurController {
-    boolean isSystemCanvas(Canvas canvas);
+    boolean isInternalCanvas(Canvas canvas);
 
     void drawBlurredContent(Canvas canvas);
 

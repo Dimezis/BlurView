@@ -168,8 +168,8 @@ public class DefaultBlurController implements BlurController {
      * Otherwise their content will be blurred too.
      */
     @Override
-    public boolean isSystemCanvas(Canvas canvas) {
-        return internalCanvas != canvas;
+    public boolean isInternalCanvas(Canvas canvas) {
+        return internalCanvas == canvas;
     }
 
     protected void drawUnderlyingViews() {
