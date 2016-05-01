@@ -167,11 +167,6 @@ public class DefaultBlurController implements BlurController {
         internalCanvas.scale(1 / scaleFactor, 1 / scaleFactor);
     }
 
-    /**
-     * Used to distinct BlurController's Canvas from System Canvas.
-     * A View that uses BlurController should draw only on System Canvas.
-     * Otherwise their content will be blurred too.
-     */
     @Override
     public boolean isInternalCanvas(Canvas canvas) {
         return internalCanvas == canvas;
