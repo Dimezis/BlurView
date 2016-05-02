@@ -16,7 +16,7 @@ public class DefaultBlurController implements BlurController {
     private static final String TAG = DefaultBlurController.class.getSimpleName();
 
     public static final float DEFAULT_SCALE_FACTOR = 10f;
-    public static final int DEFAULT_BLUR_RADIUS = 6;
+    public static final int DEFAULT_BLUR_RADIUS = 16;
 
     protected final float scaleFactor;
     protected int blurRadius = DEFAULT_BLUR_RADIUS;
@@ -80,7 +80,7 @@ public class DefaultBlurController implements BlurController {
         this.scaleFactor = scaleFactor;
         this.rootView = rootView;
         this.blurView = blurView;
-        this.blurAlgorithm = new StackBlur(true);
+        this.blurAlgorithm = new RenderScriptBlur(blurView.getContext(), true);
 
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();
@@ -240,7 +240,7 @@ public class DefaultBlurController implements BlurController {
 
     /**
      * @param algorithm sets the blur algorithm
-     *                  Default implementation uses {@link StackBlur}
+     *                  Default implementation uses {@link RenderScriptBlur}
      */
     public void setBlurAlgorithm(BlurAlgorithm algorithm) {
         this.blurAlgorithm = algorithm;
