@@ -3,9 +3,10 @@ package eightbitlab.com.blurview;
 import android.graphics.Bitmap;
 
 /**
+ * @author Mario Klingemann
  * Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
  *
- * More effective on small bitmaps
+ * Effective on small bitmaps, doesn't create additional copy of input Bitmap
  */
 public final class StackBlur implements BlurAlgorithm {
     private boolean canReuseInBitmap;
@@ -233,5 +234,13 @@ public final class StackBlur implements BlurAlgorithm {
         bitmap.setPixels(pix, 0, w, 0, 0, w, h);
 
         return (bitmap);
+    }
+
+    @Override
+    public void destroy() {}
+
+    @Override
+    public boolean canReuseBitmap() {
+        return canReuseInBitmap;
     }
 }
