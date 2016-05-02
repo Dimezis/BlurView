@@ -240,7 +240,7 @@ public final class StackBlur implements BlurAlgorithm {
     public void destroy() {}
 
     @Override
-    public boolean canReuseBitmap() {
+    public boolean canModifyBitmap() {
         return canReuseInBitmap;
     }
 }

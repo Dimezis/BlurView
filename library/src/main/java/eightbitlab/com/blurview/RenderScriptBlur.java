@@ -8,16 +8,17 @@ import android.support.v8.renderscript.RenderScript;
 import android.support.v8.renderscript.ScriptIntrinsicBlur;
 
 /**
+ * @author Dmitry Saviuk
  * Blur using RenderScript. Currently the fastest blur algorithm
  * but has additional overhead because of Bitmap copying to Allocation object.
  */
-public class RenderScriptBlur implements BlurAlgorithm {
+public final class RenderScriptBlur implements BlurAlgorithm {
     private RenderScript renderScript;
     private ScriptIntrinsicBlur blurScript;
-    private boolean canReuseBitmap;
+    private boolean canModifyBitmap;
 
-    public RenderScriptBlur(Context context, boolean canReuseBitmap) {
-        this.canReuseBitmap = canReuseBitmap;
+    public RenderScriptBlur(Context context, boolean canModifyBitmap) {
+        this.canModifyBitmap = canModifyBitmap;
         renderScript = RenderScript.create(context);
         blurScript = ScriptIntrinsicBlur.create(renderScript, Element.U8_4(renderScript));
     }
@@ -28,11 +29,11 @@ public class RenderScriptBlur implements BlurAlgorithm {
      * @return blurred bitmap
      */
     @Override
-    public Bitmap blur(Bitmap bitmap, int blurRadius) {
+    public final Bitmap blur(Bitmap bitmap, int blurRadius) {
         Allocation inAllocation = Allocation.createFromBitmap(renderScript, bitmap);
         Bitmap outputBitmap;
 
-        if (canReuseBitmap) {
+        if (canModifyBitmap) {
             outputBitmap = bitmap;
         } else {
             outputBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
@@ -56,7 +57,7 @@ public class RenderScriptBlur implements BlurAlgorithm {
     }
 
     @Override
-    public boolean canReuseBitmap() {
-        return canReuseBitmap;
+    public boolean canModifyBitmap() {
+        return canModifyBitmap;
     }
 }

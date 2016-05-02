@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupBlurView() {
         final int radius = 16;
-        float scaleFactor = DefaultBlurController.DEFAULT_SCALE_FACTOR;
+        final float scaleFactor = DefaultBlurController.DEFAULT_SCALE_FACTOR;
 
         final View decorView = getWindow().getDecorView();
         final View rootView = decorView.findViewById(android.R.id.content);
@@ -53,8 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
     static class ViewPagerAdapter extends FragmentPagerAdapter {
 
-        public ViewPagerAdapter(FragmentManager fm) {
-            super(fm);
+        public ViewPagerAdapter(FragmentManager fragmentManager) {
+            super(fragmentManager);
         }
 
         @Override

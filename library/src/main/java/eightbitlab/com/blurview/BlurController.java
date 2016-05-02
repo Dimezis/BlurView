@@ -10,6 +10,9 @@ public interface BlurController {
      */
     boolean isInternalCanvas(Canvas canvas);
 
+    /**
+     * Draws blurred content on given canvas
+     */
     void drawBlurredContent(Canvas canvas);
 
     /**
@@ -27,5 +30,8 @@ public interface BlurController {
      */
     void updateBlur();
 
+    /**
+     * Frees allocated resources
+     */
     void destroy();
 }

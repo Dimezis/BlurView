@@ -12,6 +12,8 @@ import android.widget.FrameLayout;
 /**
  * FrameLayout that blurs its underlying content.
  * Can have children and draw them over blurred background.
+ *
+ * Must have {@link BlurController} to be set to work properly
  */
 public class BlurView extends FrameLayout {
     private static final String TAG = BlurView.class.getSimpleName();
@@ -37,9 +39,7 @@ public class BlurView extends FrameLayout {
     }
 
     private void init(AttributeSet attrs, int defStyleAttr) {
-        if (isInEditMode()) {
-            createStubControllerForEditMode();
-        }
+        createStubController();
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.BlurView, defStyleAttr, 0);
         int defaultColor = ContextCompat.getColor(getContext(), android.R.color.transparent);
         overlayColor = a.getColor(R.styleable.BlurView_overlayColor, defaultColor);
@@ -84,12 +84,19 @@ public class BlurView extends FrameLayout {
         this.blurController = blurController;
     }
 
+    /**
+     * Sets the color overlay to be drawn on top of blurred content
+     * @param overlayColor int color
+     */
     public void setOverlayColor(@ColorInt int overlayColor) {
         this.overlayColor = overlayColor;
         invalidate();
     }
 
-    private void createStubControllerForEditMode() {
+    /**
+     * Used in edit mode and in case if no BlurController was set
+     */
+    private void createStubController() {
         blurController = new BlurController() {
             @Override
             public boolean isInternalCanvas(Canvas canvas) {

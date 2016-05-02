@@ -13,7 +13,13 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 
 /**
- * Blur Controller that handles all blur logic for attached View
+ * Blur Controller that handles all blur logic for attached View.
+ * It honors View size changes, View animation and Visibility changes.
+ *
+ * The basic idea is to draw view hierarchy on internal bitmap, excluding the attached View.
+ * After that, BlurController blurs this bitmap and draws it on system Canvas.
+ * Default implementation uses {@link ViewTreeObserver.OnPreDrawListener} to detect when
+ * blur should be redrawn.
  */
 public class DefaultBlurController implements BlurController {
     private static final String TAG = DefaultBlurController.class.getSimpleName();
@@ -70,9 +76,10 @@ public class DefaultBlurController implements BlurController {
     /**
      * @param blurView    View which will draw it's blurred underlying content
      * @param rootView    Root View where blurView's underlying content starts drawing.
+     *                    Can be Activity's root content layout (android.R.id.content)
+     *                    or some of your custom root layouts.
      * @param scaleFactor sets scale factor to downscale blurred bitmap for faster calculations
      *                    Default scale factor is {@link DefaultBlurController#DEFAULT_SCALE_FACTOR}
-     *                    Can be Activity's root content layout (android.R.id.content)
      */
     public DefaultBlurController(@NonNull View blurView, @NonNull View rootView, float scaleFactor) {
         blurredBitmapPaint = new Paint();
@@ -140,6 +147,9 @@ public class DefaultBlurController implements BlurController {
         rootView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
     }
 
+    /**
+     * Triggers blur redraw
+     */
     @Override
     public void updateBlur() {
         isMeDrawingNow = true;
@@ -189,7 +199,9 @@ public class DefaultBlurController implements BlurController {
         float scaledTranslationY = blurView.getTranslationY() / scaleFactor;
 
         internalCanvas.translate(scaledLeftPosition - scaledTranslationX, scaledTopPosition - scaledTranslationY);
-        internalCanvas.scale(blurView.getScaleX() / scaleFactor, blurView.getScaleY() / scaleFactor);
+        float scaleX = blurView.getScaleX() / scaleFactor;
+        float scaleY = blurView.getScaleY() / scaleFactor;
+        internalCanvas.scale(scaleX, scaleY);
     }
 
     @Override
@@ -197,12 +209,14 @@ public class DefaultBlurController implements BlurController {
         return internalCanvas == canvas;
     }
 
+    /**
+     * Draws whole view hierarchy on internal canvas
+     */
     protected void drawUnderlyingViews() {
         //draw activity window background
         if (windowBackground != null) {
             windowBackground.draw(internalCanvas);
         }
-        //draw whole view hierarchy on canvas
         rootView.draw(internalCanvas);
     }
 
@@ -228,7 +242,7 @@ public class DefaultBlurController implements BlurController {
 
     protected void blurAndSave() {
         blurredOverlay = blurAlgorithm.blur(blurredOverlay, blurRadius);
-        if (!blurAlgorithm.canReuseBitmap()) {
+        if (!blurAlgorithm.canModifyBitmap()) {
             overlayCanvas.setBitmap(blurredOverlay);
         }
     }
@@ -251,9 +265,9 @@ public class DefaultBlurController implements BlurController {
         drawListener = null;
         rootView = null;
         blurView = null;
+        blurAlgorithm.destroy();
         blurredOverlay.recycle();
         internalBitmap.recycle();
-        blurAlgorithm.destroy();
     }
 
     /**
