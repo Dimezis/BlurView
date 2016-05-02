@@ -13,6 +13,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import eightbitlab.com.blurview.BlurView;
 import eightbitlab.com.blurview.DefaultBlurController;
+import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class MainActivity extends AppCompatActivity {
     @BindView(R.id.viewPager) ViewPager viewPager;
@@ -42,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
         float scaleFactor = DefaultBlurController.DEFAULT_SCALE_FACTOR;
         DefaultBlurController blurController = new DefaultBlurController(blurView, rootView, scaleFactor);
         blurController.setWindowBackground(windowBackground);
+        blurController.setBlurAlgorithm(new RenderScriptBlur(this, true));
+        blurController.setBlurRadius(16);
 
         blurView.setBlurController(blurController);
     }
