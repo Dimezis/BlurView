@@ -36,15 +36,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupBlurView() {
+        final int radius = 16;
+        float scaleFactor = DefaultBlurController.DEFAULT_SCALE_FACTOR;
+
         final View decorView = getWindow().getDecorView();
         final View rootView = decorView.findViewById(android.R.id.content);
         final Drawable windowBackground = decorView.getBackground();
 
-        float scaleFactor = DefaultBlurController.DEFAULT_SCALE_FACTOR;
-        DefaultBlurController blurController = new DefaultBlurController(blurView, rootView, scaleFactor);
+        final DefaultBlurController blurController = new DefaultBlurController(blurView, rootView, scaleFactor);
         blurController.setWindowBackground(windowBackground);
         blurController.setBlurAlgorithm(new RenderScriptBlur(this, true));
-        blurController.setBlurRadius(16);
+        blurController.setBlurRadius(radius);
 
         blurView.setBlurController(blurController);
     }
