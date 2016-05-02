@@ -39,13 +39,15 @@ public final class RenderScriptBlur implements BlurAlgorithm {
 
         }
         //do not use inAllocation in forEach. it will cause visual artifacts on blurred Bitmap
-        Allocation outAllocation = Allocation.createFromBitmap(renderScript, outputBitmap);
+        Allocation outAllocation = Allocation.createTyped(renderScript, inAllocation.getType());
 
         blurScript.setRadius(blurRadius);
         blurScript.setInput(inAllocation);
         blurScript.forEach(outAllocation);
         outAllocation.copyTo(outputBitmap);
 
+        inAllocation.destroy();
+        outAllocation.destroy();
         return outputBitmap;
     }
 
