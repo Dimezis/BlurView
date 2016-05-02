@@ -4,8 +4,10 @@ import android.graphics.Bitmap;
 
 /**
  * @author Mario Klingemann
+ */
+
+/**
  * Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
- *
  * Effective on small bitmaps, doesn't create additional copy of input Bitmap
  */
 public final class StackBlur implements BlurAlgorithm {

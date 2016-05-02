@@ -8,7 +8,6 @@ import android.support.v8.renderscript.RenderScript;
 import android.support.v8.renderscript.ScriptIntrinsicBlur;
 
 /**
- * @author Dmitry Saviuk
  * Blur using RenderScript. Currently the fastest blur algorithm
  * but has additional overhead because of Bitmap copying to Allocation object.
  */
