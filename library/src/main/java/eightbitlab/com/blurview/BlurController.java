@@ -13,6 +13,11 @@ public interface BlurController {
     void drawBlurredContent(Canvas canvas);
 
     /**
+     * Must be used to notify Controller when BlurView's size has changed
+     */
+    void updateBlurViewSize();
+
+    /**
      * Must be called by View when it ends its drawing
      */
     void onDrawEnd(Canvas canvas);

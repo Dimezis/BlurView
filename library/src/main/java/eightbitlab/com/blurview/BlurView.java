@@ -45,6 +45,7 @@ public class BlurView extends FrameLayout {
         overlayColor = a.getColor(R.styleable.BlurView_overlayColor, defaultColor);
         a.recycle();
 
+        //we need to draw even without background set
         setWillNotDraw(false);
     }
 
@@ -55,6 +56,12 @@ public class BlurView extends FrameLayout {
             drawColorOverlay(canvas);
             super.draw(canvas);
         }
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        blurController.updateBlurViewSize();
     }
 
     @Override
@@ -91,6 +98,9 @@ public class BlurView extends FrameLayout {
 
             @Override
             public void drawBlurredContent(Canvas canvas) {}
+
+            @Override
+            public void updateBlurViewSize() {}
 
             @Override
             public void onDrawEnd(Canvas canvas) {}
