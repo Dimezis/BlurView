@@ -59,7 +59,7 @@ public class DefaultBlurController implements BlurController {
     };
 
     /**
-     * By default, window's background is not drawn on canvas. We need to draw in manually
+     * By default, window's background is not drawn on canvas. We need to draw it manually
      */
     @Nullable
     private Drawable windowBackground;
@@ -150,8 +150,8 @@ public class DefaultBlurController implements BlurController {
 
     private void allocateBitmaps(int measuredWidth, int measuredHeight) {
         //downscale overlay (blurred) bitmap
-        int scaledWidth = (int) (measuredWidth / scaleFactor);
-        int scaledHeight = (int) (measuredHeight / scaleFactor);
+        int scaledWidth = (int) Math.ceil(measuredWidth / scaleFactor);
+        int scaledHeight = (int) Math.ceil(measuredHeight / scaleFactor);
 
         blurredOverlay = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.ARGB_8888);
         internalBitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.ARGB_8888);
@@ -203,6 +203,9 @@ public class DefaultBlurController implements BlurController {
 
     protected void blurAndSave() {
         blurredOverlay = blurAlgorithm.blur(blurredOverlay, blurRadius);
+        if (!blurAlgorithm.canReuseBitmap()) {
+            overlayCanvas.setBitmap(blurredOverlay);
+        }
     }
 
     protected void prepareOverlayForBlur() {
@@ -216,6 +219,7 @@ public class DefaultBlurController implements BlurController {
         blurView = null;
         blurredOverlay.recycle();
         internalBitmap.recycle();
+        blurAlgorithm.destroy();
     }
 
     /**
