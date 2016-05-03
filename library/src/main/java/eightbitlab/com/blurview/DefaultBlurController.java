@@ -48,7 +48,7 @@ public class DefaultBlurController implements BlurController {
 
     protected View blurView;
     protected View rootView;
-    private ViewTreeObserver.OnPreDrawListener drawListener;
+    protected ViewTreeObserver.OnPreDrawListener drawListener;
 
     /**
      * Used to distinct parent draw() calls from Controller's draw() calls
