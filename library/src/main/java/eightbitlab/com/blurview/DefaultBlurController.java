@@ -24,8 +24,8 @@ import android.view.ViewTreeObserver;
 public class DefaultBlurController implements BlurController {
     private static final String TAG = DefaultBlurController.class.getSimpleName();
 
-    public static final float DEFAULT_SCALE_FACTOR = 10f;
-    public static final int DEFAULT_BLUR_RADIUS = 6;
+    public static final float DEFAULT_SCALE_FACTOR = 8f;
+    public static final int DEFAULT_BLUR_RADIUS = 8;
 
     protected final float scaleFactor;
     protected int blurRadius = DEFAULT_BLUR_RADIUS;
