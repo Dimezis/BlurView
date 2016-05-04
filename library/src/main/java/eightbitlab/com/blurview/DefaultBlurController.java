@@ -82,6 +82,8 @@ public class DefaultBlurController implements BlurController {
      *                    Default scale factor is {@link DefaultBlurController#DEFAULT_SCALE_FACTOR}
      */
     public DefaultBlurController(@NonNull View blurView, @NonNull View rootView, float scaleFactor) {
+        throwIfInvalidScaleFactor(scaleFactor);
+
         blurredBitmapPaint = new Paint();
         blurredBitmapPaint.setFlags(Paint.FILTER_BITMAP_FLAG);
 
@@ -101,6 +103,12 @@ public class DefaultBlurController implements BlurController {
         }
 
         init(measuredWidth, measuredHeight);
+    }
+
+    private void throwIfInvalidScaleFactor(float scaleFactor) {
+        if (scaleFactor < 1) {
+            throw new RuntimeException("scaleFactor can't be < 1");
+        }
     }
 
     private int downScaleSize(float value) {
