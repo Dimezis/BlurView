@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import eightbitlab.com.blurview.BlurView;
@@ -40,11 +41,14 @@ public class MainActivity extends AppCompatActivity {
         final float scaleFactor = DefaultBlurController.DEFAULT_SCALE_FACTOR;
 
         final View decorView = getWindow().getDecorView();
+        //Activity's root View. Can also be root View of your layout
         final View rootView = decorView.findViewById(android.R.id.content);
+        //set background, if your root layout doesn't have one
         final Drawable windowBackground = decorView.getBackground();
 
         final DefaultBlurController blurController = new DefaultBlurController(blurView, rootView, scaleFactor);
         blurController.setWindowBackground(windowBackground);
+        //Preferable algorithm, needs RenderScript support mode enabled
         blurController.setBlurAlgorithm(new RenderScriptBlur(this, true));
         blurController.setBlurRadius(radius);
 
