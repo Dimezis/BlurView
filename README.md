@@ -32,6 +32,7 @@ It honors its position and size changes, including view animation and property a
     final Drawable windowBackground = decorView.getBackground();
 
     final DefaultBlurController blurController = new DefaultBlurController(blurView, rootView, scaleFactor);
+    //set background, if your root layout doesn't have one
     blurController.setWindowBackground(windowBackground);
     //Preferable algorithm, needs RenderScript support mode enabled
     blurController.setBlurAlgorithm(new RenderScriptBlur(this, true));
