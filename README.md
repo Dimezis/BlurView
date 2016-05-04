@@ -50,4 +50,4 @@ It honors its position and size changes, including view animation and property a
 ```
 
 ## Perfomance
-It takes 1-4ms on Nexus 5 to draw BlurView with the setup given in example project
+It takes 1-4ms on Nexus 5 and Nexus 4 to draw BlurView with the setup given in example project
