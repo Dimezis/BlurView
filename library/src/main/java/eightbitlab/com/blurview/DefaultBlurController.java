@@ -107,7 +107,7 @@ public class DefaultBlurController implements BlurController {
 
     private void throwIfInvalidScaleFactor(float scaleFactor) {
         if (scaleFactor < 1) {
-            throw new RuntimeException("scaleFactor can't be < 1");
+            throw new IllegalArgumentException("scaleFactor can't be < 1");
         }
     }
 
