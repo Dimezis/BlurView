@@ -28,7 +28,7 @@ public final class RenderScriptBlur implements BlurAlgorithm {
      * @return blurred bitmap
      */
     @Override
-    public final Bitmap blur(Bitmap bitmap, int blurRadius) {
+    public final Bitmap blur(Bitmap bitmap, float blurRadius) {
         Allocation inAllocation = Allocation.createFromBitmap(renderScript, bitmap);
         Bitmap outputBitmap;
 

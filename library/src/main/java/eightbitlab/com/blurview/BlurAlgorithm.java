@@ -8,7 +8,7 @@ public interface BlurAlgorithm {
      * @param blurRadius blur radius
      * @return blurred bitmap
      */
-    Bitmap blur(Bitmap bitmap, int blurRadius);
+    Bitmap blur(Bitmap bitmap, float blurRadius);
 
     /**
      * Frees allocated resources
