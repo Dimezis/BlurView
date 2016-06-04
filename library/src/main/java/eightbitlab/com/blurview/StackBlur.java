@@ -18,7 +18,7 @@ public final class StackBlur implements BlurAlgorithm {
     }
 
     @Override
-    public Bitmap blur(Bitmap sentBitmap, int radius) {
+    public Bitmap blur(Bitmap sentBitmap, float floatRadius) {
 
         // This is a compromise between Gaussian Blur and Box blur
         // It creates much better looking blurs than Box Blur, but is
@@ -32,6 +32,8 @@ public final class StackBlur implements BlurAlgorithm {
         // colors on the topmost layer of the stack are either added on
         // or reduced by one, depending on if they are on the right or
         // on the left side of the stack.
+
+        int radius = (int) floatRadius;
 
         Bitmap bitmap;
         if (canReuseInBitmap) {

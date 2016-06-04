@@ -21,42 +21,39 @@ import android.view.ViewTreeObserver;
  * Default implementation uses {@link ViewTreeObserver.OnPreDrawListener} to detect when
  * blur should be redrawn.
  */
-public class DefaultBlurController implements BlurController {
+class DefaultBlurController implements BlurController {
     private static final String TAG = DefaultBlurController.class.getSimpleName();
 
-    public static final float DEFAULT_SCALE_FACTOR = 10f;
-    public static final int DEFAULT_BLUR_RADIUS = 6;
+    private float scaleFactor = DEFAULT_SCALE_FACTOR;
+    private float blurRadius = DEFAULT_BLUR_RADIUS;
 
-    protected final float scaleFactor;
-    protected int blurRadius = DEFAULT_BLUR_RADIUS;
-
-    protected BlurAlgorithm blurAlgorithm;
+    private BlurAlgorithm blurAlgorithm;
     @Nullable
-    protected Paint blurredBitmapPaint;
+    private Paint blurredBitmapPaint;
 
-    protected Canvas internalCanvas;
-    protected Canvas overlayCanvas;
+    private Canvas internalCanvas;
+    private Canvas overlayCanvas;
 
     /**
      * View hierarchy is drawn here
      */
-    protected Bitmap internalBitmap;
+    private Bitmap internalBitmap;
     /**
      * Blurred content is drawn here
      */
-    protected Bitmap blurredOverlay;
+    private Bitmap blurredOverlay;
 
-    protected View blurView;
-    protected View rootView;
+    private View blurView;
+    private View rootView;
     private ViewTreeObserver.OnPreDrawListener drawListener;
 
     /**
      * Used to distinct parent draw() calls from Controller's draw() calls
      */
-    protected boolean isMeDrawingNow;
+    private boolean isMeDrawingNow;
 
     @NonNull
-    protected Handler handler;
+    private Handler handler;
 
     //must be set from message queue
     @NonNull
@@ -78,16 +75,13 @@ public class DefaultBlurController implements BlurController {
      * @param rootView    Root View where blurView's underlying content starts drawing.
      *                    Can be Activity's root content layout (android.R.id.content)
      *                    or some of your custom root layouts.
-     * @param scaleFactor sets scale factor to downscale blurred bitmap for faster calculations
-     *                    Default scale factor is {@link DefaultBlurController#DEFAULT_SCALE_FACTOR}
      */
-    public DefaultBlurController(@NonNull View blurView, @NonNull View rootView, float scaleFactor) {
+    public DefaultBlurController(@NonNull View blurView, @NonNull View rootView) {
         blurredBitmapPaint = new Paint();
         blurredBitmapPaint.setFlags(Paint.FILTER_BITMAP_FLAG);
 
         handler = new Handler(Looper.getMainLooper());
 
-        this.scaleFactor = scaleFactor;
         this.rootView = rootView;
         this.blurView = blurView;
         this.blurAlgorithm = new StackBlur(true);
@@ -137,19 +131,14 @@ public class DefaultBlurController implements BlurController {
                 return true;
             }
         };
-        blurView.getViewTreeObserver().addOnPreDrawListener(drawListener);
+        rootView.getViewTreeObserver().addOnPreDrawListener(drawListener);
     }
 
-    /**
-     * Can be used to stop ViewTreeObserver.OnPreDrawListener and update BlurController manually
-     */
+    @Override
     public void stopAutoBlurUpdate() {
         rootView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
     }
 
-    /**
-     * Triggers blur redraw
-     */
     @Override
     public void updateBlur() {
         isMeDrawingNow = true;
@@ -212,7 +201,7 @@ public class DefaultBlurController implements BlurController {
     /**
      * Draws whole view hierarchy on internal canvas
      */
-    protected void drawUnderlyingViews() {
+    private void drawUnderlyingViews() {
         //draw activity window background
         if (windowBackground != null) {
             windowBackground.draw(internalCanvas);
@@ -228,7 +217,7 @@ public class DefaultBlurController implements BlurController {
         draw(canvas);
     }
 
-    protected void draw(Canvas canvas) {
+    private void draw(Canvas canvas) {
         canvas.save();
         canvas.scale(scaleFactor, scaleFactor);
         canvas.drawBitmap(blurredOverlay, 0, 0, blurredBitmapPaint);
@@ -240,14 +229,14 @@ public class DefaultBlurController implements BlurController {
         handler.post(onDrawEndTask);
     }
 
-    protected void blurAndSave() {
+    private void blurAndSave() {
         blurredOverlay = blurAlgorithm.blur(blurredOverlay, blurRadius);
         if (!blurAlgorithm.canModifyBitmap()) {
             overlayCanvas.setBitmap(blurredOverlay);
         }
     }
 
-    protected void prepareOverlayForBlur() {
+    private void prepareOverlayForBlur() {
         overlayCanvas.drawBitmap(internalBitmap, 0, 0, null);
     }
 
@@ -270,34 +259,17 @@ public class DefaultBlurController implements BlurController {
         internalBitmap.recycle();
     }
 
-    /**
-     * @param paint sets the Paint to draw blurred bitmap.
-     *              Default implementation uses flag {@link Paint#FILTER_BITMAP_FLAG}
-     */
-    public void setBlurredBitmapPaint(@Nullable Paint paint) {
-        this.blurredBitmapPaint = paint;
-    }
-
-    /**
-     * @param radius sets the blur radius
-     *               Default implementation uses field {@link DefaultBlurController#DEFAULT_BLUR_RADIUS}
-     */
-    public void setBlurRadius(int radius) {
+    @Override
+    public void setBlurRadius(float radius) {
         this.blurRadius = radius;
     }
 
-    /**
-     * @param algorithm sets the blur algorithm
-     *                  Default implementation uses {@link StackBlur}
-     */
+    @Override
     public void setBlurAlgorithm(BlurAlgorithm algorithm) {
         this.blurAlgorithm = algorithm;
     }
 
-    /**
-     * @param windowBackground sets the background to draw before view hierarchy.
-     *                         Can be used to draw Activity's window background if your root layout doesn't provide any background
-     */
+    @Override
     public void setWindowBackground(@Nullable Drawable windowBackground) {
         this.windowBackground = windowBackground;
     }

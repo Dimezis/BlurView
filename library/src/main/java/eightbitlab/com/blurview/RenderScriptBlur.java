@@ -28,7 +28,7 @@ public final class RenderScriptBlur implements BlurAlgorithm {
      * @return blurred bitmap
      */
     @Override
-    public final Bitmap blur(Bitmap bitmap, int blurRadius) {
+    public final Bitmap blur(Bitmap bitmap, float blurRadius) {
         Allocation inAllocation = Allocation.createFromBitmap(renderScript, bitmap);
         Bitmap outputBitmap;
 
@@ -36,8 +36,8 @@ public final class RenderScriptBlur implements BlurAlgorithm {
             outputBitmap = bitmap;
         } else {
             outputBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
-
         }
+        
         //do not use inAllocation in forEach. it will cause visual artifacts on blurred Bitmap
         Allocation outAllocation = Allocation.createTyped(renderScript, inAllocation.getType());
 
