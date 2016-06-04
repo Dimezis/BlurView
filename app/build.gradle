@@ -9,7 +9,7 @@ android {
         renderscriptTargetApi 19
         renderscriptSupportModeEnabled true
         applicationId "com.eightbitlab.blurview_sample"
-        minSdkVersion 16
+        minSdkVersion 14
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
