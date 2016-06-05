@@ -57,7 +57,7 @@ compile 'com.eightbitlab:blurview:1.0'
 License
 -------
 
-    Copyright 2013 Dmitry Saviuk
+    Copyright 2016 Dmitry Saviuk
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
