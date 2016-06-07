@@ -196,6 +196,11 @@ public class BlurView extends FrameLayout {
             }
 
             @Override
+            public void startAutoBlurUpdate() {
+
+            }
+
+            @Override
             public void updateBlur() {
             }
 
