@@ -149,6 +149,11 @@ class DefaultBlurController implements BlurController {
     }
 
     @Override
+    public void startAutoBlurUpdate() {
+        rootView.getViewTreeObserver().addOnPreDrawListener(drawListener);
+    }
+
+    @Override
     public void updateBlur() {
         isMeDrawingNow = true;
         internalCanvas.save();

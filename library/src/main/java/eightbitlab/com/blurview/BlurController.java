@@ -57,6 +57,11 @@ interface BlurController {
     void stopAutoBlurUpdate();
 
     /**
+     * Can be used to start blur auto update
+     */
+    void startAutoBlurUpdate();
+
+    /**
      * Frees allocated resources
      */
     void destroy();
