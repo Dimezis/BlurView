@@ -69,6 +69,14 @@ public class BlurView extends FrameLayout {
     }
 
     /**
+     * Can be used to start blur auto update
+     */
+    public void startAutoBlurUpdate() {
+        blurController.startAutoBlurUpdate();
+    }
+
+
+    /**
      * Can be called to redraw blurred content manually
      */
     public void updateBlur() {
@@ -185,6 +193,11 @@ public class BlurView extends FrameLayout {
 
             @Override
             public void stopAutoBlurUpdate() {
+            }
+
+            @Override
+            public void startAutoBlurUpdate() {
+
             }
 
             @Override
