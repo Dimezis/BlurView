@@ -5,12 +5,13 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Blur Controller that handles all blur logic for attached View.
@@ -22,7 +23,9 @@ import android.view.ViewTreeObserver;
  * blur should be redrawn.
  */
 class DefaultBlurController implements BlurController {
+
     private static final String TAG = DefaultBlurController.class.getSimpleName();
+    private static final ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
 
     private float scaleFactor = DEFAULT_SCALE_FACTOR;
     private float blurRadius = DEFAULT_BLUR_RADIUS;
@@ -52,9 +55,6 @@ class DefaultBlurController implements BlurController {
      */
     private boolean isMeDrawingNow;
 
-    @NonNull
-    private Handler handler;
-
     //must be set from message queue
     @NonNull
     private final Runnable onDrawEndTask = new Runnable() {
@@ -64,11 +64,22 @@ class DefaultBlurController implements BlurController {
         }
     };
 
+    @NonNull
+    private final Runnable invalidateTask = new Runnable() {
+        @Override
+        public void run() {
+            if (blurView != null) {
+                blurView.invalidate();
+            }
+        }
+    };
+
     /**
      * By default, window's background is not drawn on canvas. We need to draw it manually
      */
     @Nullable
     private Drawable windowBackground;
+    private Future<?> blurFuture;
 
     /**
      * @param blurView    View which will draw it's blurred underlying content
@@ -79,8 +90,6 @@ class DefaultBlurController implements BlurController {
     public DefaultBlurController(@NonNull View blurView, @NonNull View rootView) {
         blurredBitmapPaint = new Paint();
         blurredBitmapPaint.setFlags(Paint.FILTER_BITMAP_FLAG);
-
-        handler = new Handler(Looper.getMainLooper());
 
         this.rootView = rootView;
         this.blurView = blurView;
@@ -145,8 +154,8 @@ class DefaultBlurController implements BlurController {
         internalCanvas.save();
         setupInternalCanvasMatrix();
         drawUnderlyingViews();
-        blurView.invalidate();
         internalCanvas.restore();
+        blurAndSave();
     }
 
     /**
@@ -213,7 +222,9 @@ class DefaultBlurController implements BlurController {
     public void drawBlurredContent(Canvas canvas) {
         isMeDrawingNow = true;
         prepareOverlayForBlur();
-        blurAndSave();
+        if (!blurAlgorithm.canModifyBitmap()) {
+            overlayCanvas.setBitmap(blurredOverlay);
+        }
         draw(canvas);
     }
 
@@ -226,14 +237,21 @@ class DefaultBlurController implements BlurController {
 
     @Override
     public void onDrawEnd(Canvas canvas) {
-        handler.post(onDrawEndTask);
+        blurView.post(onDrawEndTask);
     }
 
     private void blurAndSave() {
-        blurredOverlay = blurAlgorithm.blur(blurredOverlay, blurRadius);
-        if (!blurAlgorithm.canModifyBitmap()) {
-            overlayCanvas.setBitmap(blurredOverlay);
+        if (blurFuture != null) {
+            blurFuture.cancel(true);
         }
+        blurView.removeCallbacks(invalidateTask);
+        blurFuture = EXECUTOR_SERVICE.submit(new Runnable() {
+            @Override
+            public void run() {
+                blurredOverlay = blurAlgorithm.blur(internalBitmap, blurRadius);
+                blurView.post(invalidateTask);
+            }
+        });
     }
 
     private void prepareOverlayForBlur() {
@@ -251,6 +269,8 @@ class DefaultBlurController implements BlurController {
     @Override
     public void destroy() {
         stopAutoBlurUpdate();
+        blurView.removeCallbacks(invalidateTask);
+        blurView.removeCallbacks(onDrawEndTask);
         drawListener = null;
         rootView = null;
         blurView = null;
