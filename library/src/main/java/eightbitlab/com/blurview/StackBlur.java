@@ -7,7 +7,7 @@ import android.graphics.Bitmap;
  */
 
 /**
- * Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
+ * Stack Blur Algorithm by Mario Klingemann mario@quasimondo.com
  */
 public final class StackBlur implements BlurAlgorithm {
     private boolean canReuseInBitmap;

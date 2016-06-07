@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="BlurView">
-        <attr name="overlayColor" format="color"/>
+        <attr name="blurOverlayColor" format="color"/>
     </declare-styleable>
 </resources>

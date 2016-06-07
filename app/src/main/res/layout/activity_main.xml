@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_gravity="bottom"
         android:layout_height="wrap_content"
-        app:overlayColor="@color/colorOverlay">
+        app:blurOverlayColor="@color/colorOverlay">
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tabLayout"

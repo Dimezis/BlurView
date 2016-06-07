@@ -15,7 +15,6 @@ import android.widget.FrameLayout;
 /**
  * FrameLayout that blurs its underlying content.
  * Can have children and draw them over blurred background.
- * <p/>
  * Must have {@link BlurController} to be set to work properly
  */
 public class BlurView extends FrameLayout {
@@ -45,7 +44,7 @@ public class BlurView extends FrameLayout {
         createStubController();
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.BlurView, defStyleAttr, 0);
         int defaultColor = ContextCompat.getColor(getContext(), android.R.color.transparent);
-        overlayColor = a.getColor(R.styleable.BlurView_overlayColor, defaultColor);
+        overlayColor = a.getColor(R.styleable.BlurView_blurOverlayColor, defaultColor);
         a.recycle();
 
         //we need to draw even without background set
