@@ -2,11 +2,8 @@ package eightbitlab.com.blurview;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
@@ -23,25 +20,23 @@ import android.view.ViewTreeObserver;
  */
 class DefaultBlurController implements BlurController {
     private static final String TAG = DefaultBlurController.class.getSimpleName();
+    //Bitmap size should be divisible by 16 to meet stride requirement
+    private static final int ROUNDING_VALUE = 16;
 
-    private float scaleFactor = DEFAULT_SCALE_FACTOR;
+    private final float scaleFactor = DEFAULT_SCALE_FACTOR;
     private float blurRadius = DEFAULT_BLUR_RADIUS;
+    private float roundingWidthScaleFactor;
+    private float roundingHeightScaleFactor;
 
     private BlurAlgorithm blurAlgorithm;
-    @Nullable
-    private Paint blurredBitmapPaint;
-
     private Canvas internalCanvas;
-    private Canvas overlayCanvas;
 
     /**
-     * View hierarchy is drawn here
+     * Draw view hierarchy here.
+     * Blur it.
+     * Draw it on BlurView's canvas.
      */
     private Bitmap internalBitmap;
-    /**
-     * Blurred content is drawn here
-     */
-    private Bitmap blurredOverlay;
 
     private View blurView;
     private View rootView;
@@ -52,11 +47,7 @@ class DefaultBlurController implements BlurController {
      */
     private boolean isMeDrawingNow;
 
-    @NonNull
-    private Handler handler;
-
     //must be set from message queue
-    @NonNull
     private final Runnable onDrawEndTask = new Runnable() {
         @Override
         public void run() {
@@ -77,11 +68,6 @@ class DefaultBlurController implements BlurController {
      *                    or some of your custom root layouts.
      */
     public DefaultBlurController(@NonNull View blurView, @NonNull View rootView) {
-        blurredBitmapPaint = new Paint();
-        blurredBitmapPaint.setFlags(Paint.FILTER_BITMAP_FLAG);
-
-        handler = new Handler(Looper.getMainLooper());
-
         this.rootView = rootView;
         this.blurView = blurView;
         this.blurAlgorithm = new StackBlur(true);
@@ -90,7 +76,7 @@ class DefaultBlurController implements BlurController {
         int measuredHeight = blurView.getMeasuredHeight();
 
         if (isZeroSized(measuredWidth, measuredHeight)) {
-            deferBitmapsCreation();
+            deferBitmapCreation();
             return;
         }
 
@@ -101,17 +87,25 @@ class DefaultBlurController implements BlurController {
         return (int) Math.ceil(value / scaleFactor);
     }
 
+    /**
+     * Rounds a value to the nearest divisible by {@link #ROUNDING_VALUE} to meet stride requirement
+     */
+    private int roundSize(int value) {
+        if (value % ROUNDING_VALUE == 0) {
+            return value;
+        }
+        return value - (value % ROUNDING_VALUE) + ROUNDING_VALUE;
+    }
+
     private void init(int measuredWidth, int measuredHeight) {
         if (isZeroSized(measuredWidth, measuredHeight)) {
             blurView.setWillNotDraw(true);
             return;
         }
         blurView.setWillNotDraw(false);
-        allocateBitmaps(measuredWidth, measuredHeight);
-        overlayCanvas = new Canvas(blurredOverlay);
+        allocateBitmap(measuredWidth, measuredHeight);
         internalCanvas = new Canvas(internalBitmap);
         observeDrawCalls();
-        updateBlur();
     }
 
     private boolean isZeroSized(int measuredWidth, int measuredHeight) {
@@ -139,20 +133,15 @@ class DefaultBlurController implements BlurController {
         rootView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
     }
 
-    @Override
-    public void updateBlur() {
+    private void updateBlur() {
         isMeDrawingNow = true;
-        internalCanvas.save();
-        setupInternalCanvasMatrix();
-        drawUnderlyingViews();
         blurView.invalidate();
-        internalCanvas.restore();
     }
 
     /**
      * Deferring initialization until view is laid out
      */
-    private void deferBitmapsCreation() {
+    private void deferBitmapCreation() {
         blurView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -170,27 +159,33 @@ class DefaultBlurController implements BlurController {
         });
     }
 
-    private void allocateBitmaps(int measuredWidth, int measuredHeight) {
+    private void allocateBitmap(int measuredWidth, int measuredHeight) {
         //downscale overlay (blurred) bitmap
-        int scaledWidth = downScaleSize(measuredWidth);
-        int scaledHeight = downScaleSize(measuredHeight);
+        int nonRoundedScaledWidth = downScaleSize(measuredWidth);
+        int nonRoundedScaledHeight = downScaleSize(measuredHeight);
 
-        blurredOverlay = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.ARGB_8888);
+        int scaledWidth = roundSize(nonRoundedScaledWidth);
+        int scaledHeight = roundSize(nonRoundedScaledHeight);
+
+        roundingHeightScaleFactor = (float) scaledHeight / nonRoundedScaledHeight;
+        roundingWidthScaleFactor = (float) scaledWidth / nonRoundedScaledWidth;
+
         internalBitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.ARGB_8888);
     }
 
+    //draw starting from blurView's position
     private void setupInternalCanvasMatrix() {
-        //draw starting from blurView's position
-        float scaledLeftPosition = -blurView.getLeft() / scaleFactor;
-        float scaledTopPosition = -blurView.getTop() / scaleFactor;
+        float scaleFactorX = scaleFactor / roundingWidthScaleFactor;
+        float scaleFactorY = scaleFactor / roundingHeightScaleFactor;
 
-        float scaledTranslationX = blurView.getTranslationX() / scaleFactor;
-        float scaledTranslationY = blurView.getTranslationY() / scaleFactor;
+        float scaledLeftPosition = -blurView.getLeft() / scaleFactorX;
+        float scaledTopPosition = -blurView.getTop() / scaleFactorY;
+
+        float scaledTranslationX = blurView.getTranslationX() / scaleFactorX;
+        float scaledTranslationY = blurView.getTranslationY() / scaleFactorY;
 
         internalCanvas.translate(scaledLeftPosition - scaledTranslationX, scaledTopPosition - scaledTranslationY);
-        float scaleX = blurView.getScaleX() / scaleFactor;
-        float scaleY = blurView.getScaleY() / scaleFactor;
-        internalCanvas.scale(scaleX, scaleY);
+        internalCanvas.scale(1f / scaleFactorX, 1f / scaleFactorY);
     }
 
     @Override
@@ -212,32 +207,30 @@ class DefaultBlurController implements BlurController {
     @Override
     public void drawBlurredContent(Canvas canvas) {
         isMeDrawingNow = true;
-        prepareOverlayForBlur();
+
+        internalCanvas.save();
+        setupInternalCanvasMatrix();
+        drawUnderlyingViews();
+        internalCanvas.restore();
+
         blurAndSave();
         draw(canvas);
     }
 
     private void draw(Canvas canvas) {
         canvas.save();
-        canvas.scale(scaleFactor, scaleFactor);
-        canvas.drawBitmap(blurredOverlay, 0, 0, blurredBitmapPaint);
+        canvas.scale(scaleFactor * roundingWidthScaleFactor, scaleFactor * roundingHeightScaleFactor);
+        canvas.drawBitmap(internalBitmap, 0, 0, null);
         canvas.restore();
     }
 
     @Override
     public void onDrawEnd(Canvas canvas) {
-        handler.post(onDrawEndTask);
+        blurView.post(onDrawEndTask);
     }
 
     private void blurAndSave() {
-        blurredOverlay = blurAlgorithm.blur(blurredOverlay, blurRadius);
-        if (!blurAlgorithm.canModifyBitmap()) {
-            overlayCanvas.setBitmap(blurredOverlay);
-        }
-    }
-
-    private void prepareOverlayForBlur() {
-        overlayCanvas.drawBitmap(internalBitmap, 0, 0, null);
+        internalBitmap = blurAlgorithm.blur(internalBitmap, blurRadius);
     }
 
     @Override
@@ -255,7 +248,6 @@ class DefaultBlurController implements BlurController {
         rootView = null;
         blurView = null;
         blurAlgorithm.destroy();
-        blurredOverlay.recycle();
         internalBitmap.recycle();
     }
 

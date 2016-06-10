@@ -6,7 +6,7 @@ import android.support.annotation.Nullable;
 
 interface BlurController {
     float DEFAULT_SCALE_FACTOR = 8f;
-    int DEFAULT_BLUR_RADIUS = 8;
+    float DEFAULT_BLUR_RADIUS = 8f;
 
     /**
      * Used to distinct BlurController's Canvas from System Canvas.
@@ -29,11 +29,6 @@ interface BlurController {
      * Must be called by View when it ends its drawing
      */
     void onDrawEnd(Canvas canvas);
-
-    /**
-     * Can be called to redraw blurred content manually
-     */
-    void updateBlur();
 
     /**
      * @param radius sets the blur radius

@@ -71,7 +71,7 @@ public class BlurView extends FrameLayout {
      * Can be called to redraw blurred content manually
      */
     public void updateBlur() {
-        blurController.updateBlur();
+        invalidate();
     }
 
     @Override
@@ -184,10 +184,6 @@ public class BlurView extends FrameLayout {
 
             @Override
             public void stopAutoBlurUpdate() {
-            }
-
-            @Override
-            public void updateBlur() {
             }
 
             @Override
