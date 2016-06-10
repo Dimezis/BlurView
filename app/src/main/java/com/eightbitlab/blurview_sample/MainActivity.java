@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupBlurView() {
-        final float radius = 16;
+        final float radius = 16f;
 
         final View decorView = getWindow().getDecorView();
         //Activity's root View. Can also be root View of your layout
