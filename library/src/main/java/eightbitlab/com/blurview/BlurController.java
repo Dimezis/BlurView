@@ -6,7 +6,7 @@ import android.support.annotation.Nullable;
 
 interface BlurController {
     float DEFAULT_SCALE_FACTOR = 8f;
-    float DEFAULT_BLUR_RADIUS = 8f;
+    float DEFAULT_BLUR_RADIUS = 16f;
 
     /**
      * Used to distinct BlurController's Canvas from System Canvas.
