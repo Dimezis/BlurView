@@ -9,7 +9,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import eightbitlab.com.blurview.BlurView;
@@ -36,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupBlurView() {
-        final int radius = 16;
+        final float radius = 16;
 
         final View decorView = getWindow().getDecorView();
         //Activity's root View. Can also be root View of your layout

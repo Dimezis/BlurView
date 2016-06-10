@@ -23,7 +23,7 @@ It honors its position and size changes, including view animation and property a
 ```
 
 ```Java
-    final int radius = 16;
+    final float radius = 16;
 
     final View decorView = getWindow().getDecorView();
     //Activity's root View. Can also be root View of your layout
