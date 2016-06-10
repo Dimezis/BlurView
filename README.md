@@ -15,7 +15,7 @@ It honors its position and size changes, including view animation and property a
       android:id="@+id/blurView"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      app:overlayColor="@color/colorOverlay">
+      app:blurOverlayColor="@color/colorOverlay">
 
        <!--Any child View here, TabLayout for example-->
 
