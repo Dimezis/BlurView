@@ -1,6 +1,7 @@
 package eightbitlab.com.blurview;
 
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 
 /**
  * @author Mario Klingemann
@@ -240,10 +241,17 @@ public final class StackBlur implements BlurAlgorithm {
     }
 
     @Override
-    public void destroy() {}
+    public void destroy() {
+    }
 
     @Override
     public boolean canModifyBitmap() {
         return canReuseInBitmap;
+    }
+
+    @NonNull
+    @Override
+    public Bitmap.Config getSupportedBitmapConfig() {
+        return Bitmap.Config.RGB_565;
     }
 }

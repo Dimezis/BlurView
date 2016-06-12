@@ -170,7 +170,7 @@ class DefaultBlurController implements BlurController {
         roundingHeightScaleFactor = (float) scaledHeight / nonRoundedScaledHeight;
         roundingWidthScaleFactor = (float) scaledWidth / nonRoundedScaledWidth;
 
-        internalBitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.ARGB_8888);
+        internalBitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, blurAlgorithm.getSupportedBitmapConfig());
     }
 
     //draw starting from blurView's position

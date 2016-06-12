@@ -2,6 +2,7 @@ package eightbitlab.com.blurview;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 import android.support.v8.renderscript.Allocation;
 import android.support.v8.renderscript.Element;
 import android.support.v8.renderscript.RenderScript;
@@ -23,7 +24,7 @@ public final class RenderScriptBlur implements BlurAlgorithm {
     }
 
     /**
-     * @param bitmap bitmap to blur
+     * @param bitmap     bitmap to blur
      * @param blurRadius blur radius (1..25)
      * @return blurred bitmap
      */
@@ -37,7 +38,7 @@ public final class RenderScriptBlur implements BlurAlgorithm {
         } else {
             outputBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
         }
-        
+
         //do not use inAllocation in forEach. it will cause visual artifacts on blurred Bitmap
         Allocation outAllocation = Allocation.createTyped(renderScript, inAllocation.getType());
 
@@ -60,5 +61,11 @@ public final class RenderScriptBlur implements BlurAlgorithm {
     @Override
     public boolean canModifyBitmap() {
         return canModifyBitmap;
+    }
+
+    @NonNull
+    @Override
+    public Bitmap.Config getSupportedBitmapConfig() {
+        return Bitmap.Config.ARGB_8888;
     }
 }
