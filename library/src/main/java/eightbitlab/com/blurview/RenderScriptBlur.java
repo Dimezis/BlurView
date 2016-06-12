@@ -9,8 +9,7 @@ import android.support.v8.renderscript.RenderScript;
 import android.support.v8.renderscript.ScriptIntrinsicBlur;
 
 /**
- * Blur using RenderScript. Currently the fastest blur algorithm
- * but has additional overhead because of Bitmap copying to Allocation object.
+ * Blur using RenderScript, processed on GPU. Currently the fastest blur algorithm.
  */
 public final class RenderScriptBlur implements BlurAlgorithm {
     private RenderScript renderScript;
@@ -39,6 +38,7 @@ public final class RenderScriptBlur implements BlurAlgorithm {
      */
     @Override
     public final Bitmap blur(Bitmap bitmap, float blurRadius) {
+        //Allocation will use the same backing array of pixels as bitmap if created with USAGE_SHARED flag
         Allocation inAllocation = Allocation.createFromBitmap(renderScript, bitmap);
         Bitmap outputBitmap;
 
