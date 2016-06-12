@@ -15,12 +15,21 @@ import android.support.v8.renderscript.ScriptIntrinsicBlur;
 public final class RenderScriptBlur implements BlurAlgorithm {
     private RenderScript renderScript;
     private ScriptIntrinsicBlur blurScript;
+    private Allocation outAllocation;
+
     private boolean canModifyBitmap;
+
+    private int lastBitmapWidth;
+    private int lastBitmapHeight;
 
     public RenderScriptBlur(Context context, boolean canModifyBitmap) {
         this.canModifyBitmap = canModifyBitmap;
         renderScript = RenderScript.create(context);
         blurScript = ScriptIntrinsicBlur.create(renderScript, Element.U8_4(renderScript));
+    }
+
+    private boolean canReuseAllocation(Bitmap bitmap) {
+        return bitmap.getHeight() == lastBitmapHeight && bitmap.getWidth() == lastBitmapWidth;
     }
 
     /**
@@ -39,16 +48,22 @@ public final class RenderScriptBlur implements BlurAlgorithm {
             outputBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
         }
 
-        //do not use inAllocation in forEach. it will cause visual artifacts on blurred Bitmap
-        Allocation outAllocation = Allocation.createTyped(renderScript, inAllocation.getType());
+        if (!canReuseAllocation(bitmap)) {
+            if (outAllocation != null) {
+                outAllocation.destroy();
+            }
+            outAllocation = Allocation.createTyped(renderScript, inAllocation.getType());
+            lastBitmapWidth = bitmap.getWidth();
+            lastBitmapHeight = bitmap.getHeight();
+        }
 
         blurScript.setRadius(blurRadius);
         blurScript.setInput(inAllocation);
+        //do not use inAllocation in forEach. it will cause visual artifacts on blurred Bitmap
         blurScript.forEach(outAllocation);
         outAllocation.copyTo(outputBitmap);
 
         inAllocation.destroy();
-        outAllocation.destroy();
         return outputBitmap;
     }
 
@@ -56,6 +71,7 @@ public final class RenderScriptBlur implements BlurAlgorithm {
     public void destroy() {
         blurScript.destroy();
         renderScript.destroy();
+        outAllocation.destroy();
     }
 
     @Override
