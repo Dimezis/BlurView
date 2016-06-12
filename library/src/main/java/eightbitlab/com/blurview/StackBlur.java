@@ -12,9 +12,13 @@ import android.support.annotation.NonNull;
  */
 public final class StackBlur implements BlurAlgorithm {
     private boolean canReuseInBitmap;
+    private int[] pix;
+    private int[] dv;
 
     public StackBlur(boolean canReuseInBitmap) {
         this.canReuseInBitmap = canReuseInBitmap;
+        pix = new int[1];
+        dv = new int[1];
     }
 
     @Override
@@ -49,7 +53,9 @@ public final class StackBlur implements BlurAlgorithm {
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();
 
-        int[] pix = new int[w * h];
+        if (pix.length != w * h) {
+            pix = new int[w * h];
+        }
         bitmap.getPixels(pix, 0, w, 0, 0, w, h);
 
         int wm = w - 1;
@@ -62,7 +68,9 @@ public final class StackBlur implements BlurAlgorithm {
 
         int divsum = (div + 1) >> 1;
         divsum *= divsum;
-        int dv[] = new int[256 * divsum];
+        if (dv.length != 256 * divsum) {
+            dv = new int[256 * divsum];
+        }
         for (i = 0; i < 256 * divsum; i++) {
             dv[i] = (i / divsum);
         }
@@ -242,6 +250,8 @@ public final class StackBlur implements BlurAlgorithm {
 
     @Override
     public void destroy() {
+        pix = null;
+        dv = null;
     }
 
     @Override
