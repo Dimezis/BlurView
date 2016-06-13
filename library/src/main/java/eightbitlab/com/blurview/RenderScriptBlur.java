@@ -18,8 +18,8 @@ public final class RenderScriptBlur implements BlurAlgorithm {
 
     private boolean canModifyBitmap;
 
-    private int lastBitmapWidth;
-    private int lastBitmapHeight;
+    private int lastBitmapWidth = -1;
+    private int lastBitmapHeight = -1;
 
     public RenderScriptBlur(Context context, boolean canModifyBitmap) {
         this.canModifyBitmap = canModifyBitmap;
@@ -71,7 +71,9 @@ public final class RenderScriptBlur implements BlurAlgorithm {
     public void destroy() {
         blurScript.destroy();
         renderScript.destroy();
-        outAllocation.destroy();
+        if (outAllocation != null) {
+            outAllocation.destroy();
+        }
     }
 
     @Override
