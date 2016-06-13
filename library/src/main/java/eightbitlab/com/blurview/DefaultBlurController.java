@@ -248,7 +248,9 @@ class DefaultBlurController implements BlurController {
         rootView = null;
         blurView = null;
         blurAlgorithm.destroy();
-        internalBitmap.recycle();
+        if (internalBitmap != null) {
+            internalBitmap.recycle();
+        }
     }
 
     @Override
