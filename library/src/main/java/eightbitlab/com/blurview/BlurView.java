@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -24,6 +23,7 @@ public class BlurView extends FrameLayout {
 
     @ColorInt
     private int overlayColor;
+    private static final int TRANSPARENT = 0x00000000;
 
     public BlurView(Context context) {
         super(context);
@@ -43,7 +43,7 @@ public class BlurView extends FrameLayout {
     private void init(AttributeSet attrs, int defStyleAttr) {
         createStubController();
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.BlurView, defStyleAttr, 0);
-        int defaultColor = ContextCompat.getColor(getContext(), android.R.color.transparent);
+        int defaultColor = TRANSPARENT;
         overlayColor = a.getColor(R.styleable.BlurView_blurOverlayColor, defaultColor);
         a.recycle();
 
@@ -96,7 +96,7 @@ public class BlurView extends FrameLayout {
         blurController.destroy();
     }
 
-    public void setBlurController(@NonNull BlurController blurController) {
+    private void setBlurController(@NonNull BlurController blurController) {
         this.blurController.destroy();
         this.blurController = blurController;
     }
