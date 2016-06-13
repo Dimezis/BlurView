@@ -18,12 +18,13 @@ import android.widget.FrameLayout;
  */
 public class BlurView extends FrameLayout {
     private static final String TAG = BlurView.class.getSimpleName();
+    @ColorInt
+    private static final int TRANSPARENT = 0x00000000;
 
     private BlurController blurController;
 
     @ColorInt
     private int overlayColor;
-    private static final int TRANSPARENT = 0x00000000;
 
     public BlurView(Context context) {
         super(context);
@@ -43,8 +44,7 @@ public class BlurView extends FrameLayout {
     private void init(AttributeSet attrs, int defStyleAttr) {
         createStubController();
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.BlurView, defStyleAttr, 0);
-        int defaultColor = TRANSPARENT;
-        overlayColor = a.getColor(R.styleable.BlurView_blurOverlayColor, defaultColor);
+        overlayColor = a.getColor(R.styleable.BlurView_blurOverlayColor, TRANSPARENT);
         a.recycle();
 
         //we need to draw even without background set
