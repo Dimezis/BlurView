@@ -68,6 +68,13 @@ public class BlurView extends FrameLayout {
     }
 
     /**
+     * Can be used to resume blur auto update if it was stopped before
+     */
+    public void startAutoBlurUpdate() {
+        blurController.startBlurAutoUpdate();
+    }
+
+    /**
      * Can be called to redraw blurred content manually
      */
     public void updateBlur() {
@@ -93,7 +100,13 @@ public class BlurView extends FrameLayout {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        blurController.destroy();
+        stopAutoBlurUpdate();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        startAutoBlurUpdate();
     }
 
     private void setBlurController(@NonNull BlurController blurController) {
@@ -111,7 +124,6 @@ public class BlurView extends FrameLayout {
         invalidate();
     }
 
-    //TODO mb move this into ControllerSettings
     /**
      * @param rootView Root View where BlurView's underlying content starts drawing.
      *                 Can be Activity's root content layout (android.R.id.content)
@@ -124,7 +136,6 @@ public class BlurView extends FrameLayout {
         return new ControllerSettings(blurController);
     }
 
-    //TODO mb add interface for this
     public static class ControllerSettings {
         BlurController blurController;
 
@@ -184,6 +195,10 @@ public class BlurView extends FrameLayout {
 
             @Override
             public void stopAutoBlurUpdate() {
+            }
+
+            @Override
+            public void startBlurAutoUpdate() {
             }
 
             @Override
