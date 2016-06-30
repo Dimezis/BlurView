@@ -14,7 +14,6 @@ import android.widget.FrameLayout;
 /**
  * FrameLayout that blurs its underlying content.
  * Can have children and draw them over blurred background.
- * Must have {@link BlurController} to be set to work properly
  */
 public class BlurView extends FrameLayout {
     private static final String TAG = BlurView.class.getSimpleName();
