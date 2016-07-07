@@ -11,7 +11,7 @@ android {
     buildToolsVersion "23.0.3"
 
     defaultConfig {
-        renderscriptTargetApi 19
+        renderscriptTargetApi 23
         renderscriptSupportModeEnabled true
         minSdkVersion 14
         targetSdkVersion 23
