@@ -25,8 +25,8 @@ class DefaultBlurController implements BlurController {
 
     private final float scaleFactor = DEFAULT_SCALE_FACTOR;
     private float blurRadius = DEFAULT_BLUR_RADIUS;
-    private float roundingWidthScaleFactor;
-    private float roundingHeightScaleFactor;
+    private float roundingWidthScaleFactor = 1f;
+    private float roundingHeightScaleFactor = 1f;
 
     private BlurAlgorithm blurAlgorithm;
     private Canvas internalCanvas;
@@ -175,8 +175,8 @@ class DefaultBlurController implements BlurController {
 
     //draw starting from blurView's position
     private void setupInternalCanvasMatrix() {
-        float scaleFactorX = scaleFactor / roundingWidthScaleFactor;
-        float scaleFactorY = scaleFactor / roundingHeightScaleFactor;
+        float scaleFactorX = scaleFactor * roundingWidthScaleFactor;
+        float scaleFactorY = scaleFactor * roundingHeightScaleFactor;
 
         float scaledLeftPosition = -blurView.getLeft() / scaleFactorX;
         float scaledTopPosition = -blurView.getTop() / scaleFactorY;
