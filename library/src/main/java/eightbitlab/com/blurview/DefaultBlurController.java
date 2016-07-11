@@ -167,8 +167,8 @@ class DefaultBlurController implements BlurController {
         int scaledWidth = roundSize(nonRoundedScaledWidth);
         int scaledHeight = roundSize(nonRoundedScaledHeight);
 
-        roundingHeightScaleFactor = (float) scaledHeight / nonRoundedScaledHeight;
-        roundingWidthScaleFactor = (float) scaledWidth / nonRoundedScaledWidth;
+        roundingHeightScaleFactor = (float) nonRoundedScaledHeight / scaledHeight;
+        roundingWidthScaleFactor = (float) nonRoundedScaledWidth  / scaledWidth;
 
         internalBitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, blurAlgorithm.getSupportedBitmapConfig());
     }
