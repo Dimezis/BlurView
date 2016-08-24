@@ -212,14 +212,15 @@ class DefaultBlurController implements BlurController {
 
     @Override
     public void drawBlurredContent(Canvas canvas) {
-        isMeDrawingNow = true;
-
-        internalCanvas.save();
-        setupInternalCanvasMatrix();
-        drawUnderlyingViews();
-        internalCanvas.restore();
-
         if (enabled) {
+
+            isMeDrawingNow = true;
+
+            internalCanvas.save();
+            setupInternalCanvasMatrix();
+            drawUnderlyingViews();
+            internalCanvas.restore();
+
             blurAndSave();
             draw(canvas);
         }
