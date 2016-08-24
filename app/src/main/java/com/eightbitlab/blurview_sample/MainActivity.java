@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import eightbitlab.com.blurview.BlurView;
 import eightbitlab.com.blurview.RenderScriptBlur;
 
@@ -19,8 +20,7 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.tabLayout) TabLayout tabLayout;
     @BindView(R.id.blurView) BlurView blurView;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -45,8 +45,9 @@ public class MainActivity extends AppCompatActivity {
 
         blurView.setupWith(rootView)
                 .windowBackground(windowBackground)
-                .blurAlgorithm(new RenderScriptBlur(this, true)) //Preferable algorithm, needs RenderScript support mode enabled
-                .blurRadius(radius);
+                .blurAlgorithm(new RenderScriptBlur(this, true))
+                .blurRadius(radius)
+                .isEnabledOnStart(true);
     }
 
     static class ViewPagerAdapter extends FragmentPagerAdapter {
@@ -55,8 +56,7 @@ public class MainActivity extends AppCompatActivity {
             super(fragmentManager);
         }
 
-        @Override
-        public Fragment getItem(int position) {
+        @Override public Fragment getItem(int position) {
             switch (Page.values()[position]) {
                 case FIRST:
                     return new ScrollFragment();
@@ -68,13 +68,11 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
-        @Override
-        public CharSequence getPageTitle(int position) {
+        @Override public CharSequence getPageTitle(int position) {
             return Page.values()[position].getTitle();
         }
 
-        @Override
-        public int getCount() {
+        @Override public int getCount() {
             return Page.values().length;
         }
     }
@@ -93,5 +91,13 @@ public class MainActivity extends AppCompatActivity {
         public String getTitle() {
             return title;
         }
+    }
+
+    @OnClick(R.id.enable) void enable() {
+        blurView.enableBlur();
+    }
+
+    @OnClick(R.id.disable) void disable() {
+        blurView.disableBlur();
     }
 }
