@@ -67,12 +67,12 @@ interface BlurController {
     void enabledOnStart(boolean enabled);
 
     /**
-     *  Can be used to enable blur on fly
+     * Can be used to enable blur on fly
      */
     void enableBlur();
 
     /**
-     *  Can be used to disable blur on fly
+     * Can be used to disable blur on fly
      */
     void disableBlur();
 }

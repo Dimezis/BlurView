@@ -12,7 +12,7 @@ import android.view.ViewTreeObserver;
 /**
  * Blur Controller that handles all blur logic for attached View.
  * It honors View size changes, View animation and Visibility changes.
- *
+ * <p>
  * The basic idea is to draw view hierarchy on internal bitmap, excluding the attached View.
  * After that, BlurController blurs this bitmap and draws it on system Canvas.
  * Default implementation uses {@link ViewTreeObserver.OnPreDrawListener} to detect when
@@ -44,7 +44,8 @@ class DefaultBlurController implements BlurController {
 
     private ViewTreeObserver.OnPreDrawListener drawListener =
             new ViewTreeObserver.OnPreDrawListener() {
-                @Override public boolean onPreDraw() {
+                @Override
+                public boolean onPreDraw() {
                     if (!isMeDrawingNow) {
                         updateBlur();
                     }
@@ -59,7 +60,8 @@ class DefaultBlurController implements BlurController {
 
     //must be set from message queue
     private final Runnable onDrawEndTask = new Runnable() {
-        @Override public void run() {
+        @Override
+        public void run() {
             isMeDrawingNow = false;
         }
     };
@@ -67,13 +69,14 @@ class DefaultBlurController implements BlurController {
     /**
      * By default, window's background is not drawn on canvas. We need to draw it manually
      */
-    @Nullable private Drawable windowBackground;
+    @Nullable
+    private Drawable windowBackground;
 
     /**
      * @param blurView View which will draw it's blurred underlying content
      * @param rootView Root View where blurView's underlying content starts drawing.
-     * Can be Activity's root content layout (android.R.id.content)
-     * or some of your custom root layouts.
+     *                 Can be Activity's root content layout (android.R.id.content)
+     *                 or some of your custom root layouts.
      */
     public DefaultBlurController(@NonNull View blurView, @NonNull View rootView) {
         this.rootView = rootView;
@@ -122,11 +125,13 @@ class DefaultBlurController implements BlurController {
         return downScaleSize(measuredHeight) == 0 || downScaleSize(measuredWidth) == 0;
     }
 
-    @Override public void stopAutoBlurUpdate() {
+    @Override
+    public void stopAutoBlurUpdate() {
         rootView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
     }
 
-    @Override public void startBlurAutoUpdate() {
+    @Override
+    public void startBlurAutoUpdate() {
         stopAutoBlurUpdate(); //just in case if listener was already attached
         rootView.getViewTreeObserver().addOnPreDrawListener(drawListener);
     }
@@ -142,7 +147,8 @@ class DefaultBlurController implements BlurController {
     private void deferBitmapCreation() {
         blurView.getViewTreeObserver()
                 .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override public void onGlobalLayout() {
+                    @Override
+                    public void onGlobalLayout() {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                             blurView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                         } else {
@@ -188,7 +194,8 @@ class DefaultBlurController implements BlurController {
         internalCanvas.scale(1f / scaleFactorX, 1f / scaleFactorY);
     }
 
-    @Override public boolean isInternalCanvas(Canvas canvas) {
+    @Override
+    public boolean isInternalCanvas(Canvas canvas) {
         return internalCanvas == canvas;
     }
 
@@ -203,7 +210,8 @@ class DefaultBlurController implements BlurController {
         rootView.draw(internalCanvas);
     }
 
-    @Override public void drawBlurredContent(Canvas canvas) {
+    @Override
+    public void drawBlurredContent(Canvas canvas) {
         isMeDrawingNow = true;
 
         internalCanvas.save();
@@ -225,7 +233,8 @@ class DefaultBlurController implements BlurController {
         canvas.restore();
     }
 
-    @Override public void onDrawEnd(Canvas canvas) {
+    @Override
+    public void onDrawEnd(Canvas canvas) {
         blurView.post(onDrawEndTask);
     }
 
@@ -233,14 +242,16 @@ class DefaultBlurController implements BlurController {
         internalBitmap = blurAlgorithm.blur(internalBitmap, blurRadius);
     }
 
-    @Override public void updateBlurViewSize() {
+    @Override
+    public void updateBlurViewSize() {
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();
 
         init(measuredWidth, measuredHeight);
     }
 
-    @Override public void destroy() {
+    @Override
+    public void destroy() {
         stopAutoBlurUpdate();
         blurAlgorithm.destroy();
         if (internalBitmap != null) {
@@ -248,27 +259,33 @@ class DefaultBlurController implements BlurController {
         }
     }
 
-    @Override public void enabledOnStart(boolean enabled) {
+    @Override
+    public void enabledOnStart(boolean enabled) {
         this.enabled = enabled;
     }
 
-    @Override public void enableBlur() {
+    @Override
+    public void enableBlur() {
         enabled = true;
     }
 
-    @Override public void disableBlur() {
+    @Override
+    public void disableBlur() {
         enabled = false;
     }
 
-    @Override public void setBlurRadius(float radius) {
+    @Override
+    public void setBlurRadius(float radius) {
         this.blurRadius = radius;
     }
 
-    @Override public void setBlurAlgorithm(BlurAlgorithm algorithm) {
+    @Override
+    public void setBlurAlgorithm(BlurAlgorithm algorithm) {
         this.blurAlgorithm = algorithm;
     }
 
-    @Override public void setWindowBackground(@Nullable Drawable windowBackground) {
+    @Override
+    public void setWindowBackground(@Nullable Drawable windowBackground) {
         this.windowBackground = windowBackground;
     }
 }

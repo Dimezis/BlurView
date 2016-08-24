@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -16,11 +17,15 @@ import eightbitlab.com.blurview.BlurView;
 import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class MainActivity extends AppCompatActivity {
-    @BindView(R.id.viewPager) ViewPager viewPager;
-    @BindView(R.id.tabLayout) TabLayout tabLayout;
-    @BindView(R.id.blurView) BlurView blurView;
+    @BindView(R.id.viewPager)
+    ViewPager viewPager;
+    @BindView(R.id.tabLayout)
+    TabLayout tabLayout;
+    @BindView(R.id.blurView)
+    BlurView blurView;
 
-    @Override protected void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -56,7 +61,8 @@ public class MainActivity extends AppCompatActivity {
             super(fragmentManager);
         }
 
-        @Override public Fragment getItem(int position) {
+        @Override
+        public Fragment getItem(int position) {
             switch (Page.values()[position]) {
                 case FIRST:
                     return new ScrollFragment();
@@ -68,11 +74,13 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
-        @Override public CharSequence getPageTitle(int position) {
+        @Override
+        public CharSequence getPageTitle(int position) {
             return Page.values()[position].getTitle();
         }
 
-        @Override public int getCount() {
+        @Override
+        public int getCount() {
             return Page.values().length;
         }
     }
@@ -93,11 +101,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @OnClick(R.id.enable) void enable() {
+    @OnClick(R.id.enable)
+    void enable() {
         blurView.enableBlur();
     }
 
-    @OnClick(R.id.disable) void disable() {
+    @OnClick(R.id.disable)
+    void disable() {
         blurView.disableBlur();
     }
 }

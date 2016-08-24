@@ -17,11 +17,13 @@ import android.widget.FrameLayout;
  */
 public class BlurView extends FrameLayout {
     private static final String TAG = BlurView.class.getSimpleName();
-    @ColorInt private static final int TRANSPARENT = 0x00000000;
+    @ColorInt
+    private static final int TRANSPARENT = 0x00000000;
 
     private BlurController blurController;
 
-    @ColorInt private int overlayColor;
+    @ColorInt
+    private int overlayColor;
 
     public BlurView(Context context) {
         super(context);
@@ -49,7 +51,8 @@ public class BlurView extends FrameLayout {
         setWillNotDraw(false);
     }
 
-    @Override public void draw(Canvas canvas) {
+    @Override
+    public void draw(Canvas canvas) {
         if (!blurController.isInternalCanvas(canvas)) {
             blurController.drawBlurredContent(canvas);
             drawColorOverlay(canvas);
@@ -88,12 +91,14 @@ public class BlurView extends FrameLayout {
         invalidate();
     }
 
-    @Override protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         blurController.updateBlurViewSize();
     }
 
-    @Override protected void onDraw(Canvas canvas) {
+    @Override
+    protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         blurController.onDrawEnd(canvas);
     }
@@ -102,12 +107,14 @@ public class BlurView extends FrameLayout {
         canvas.drawColor(overlayColor);
     }
 
-    @Override protected void onDetachedFromWindow() {
+    @Override
+    protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         stopAutoBlurUpdate();
     }
 
-    @Override protected void onAttachedToWindow() {
+    @Override
+    protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         startAutoBlurUpdate();
     }
@@ -129,8 +136,8 @@ public class BlurView extends FrameLayout {
 
     /**
      * @param rootView Root View where BlurView's underlying content starts drawing.
-     * Can be Activity's root content layout (android.R.id.content)
-     * or some of your custom root layouts.
+     *                 Can be Activity's root content layout (android.R.id.content)
+     *                 or some of your custom root layouts.
      * @return ControllerSettings to setup needed params.
      */
     public ControllerSettings setupWith(View rootView) {
@@ -148,7 +155,7 @@ public class BlurView extends FrameLayout {
 
         /**
          * @param radius sets the blur radius
-         * Default implementation uses field {@link DefaultBlurController#DEFAULT_BLUR_RADIUS}
+         *               Default implementation uses field {@link DefaultBlurController#DEFAULT_BLUR_RADIUS}
          */
         public ControllerSettings blurRadius(float radius) {
             blurController.setBlurRadius(radius);
@@ -157,7 +164,7 @@ public class BlurView extends FrameLayout {
 
         /**
          * @param algorithm sets the blur algorithm
-         * Default implementation uses {@link StackBlur}
+         *                  Default implementation uses {@link StackBlur}
          */
         public ControllerSettings blurAlgorithm(BlurAlgorithm algorithm) {
             blurController.setBlurAlgorithm(algorithm);
@@ -166,8 +173,8 @@ public class BlurView extends FrameLayout {
 
         /**
          * @param windowBackground sets the background to draw before view hierarchy.
-         * Can be used to draw Activity's window background if your root layout doesn't provide any
-         * background
+         *                         Can be used to draw Activity's window background if your root layout doesn't provide any
+         *                         background
          */
         public ControllerSettings windowBackground(@Nullable Drawable windowBackground) {
             blurController.setWindowBackground(windowBackground);
@@ -185,46 +192,59 @@ public class BlurView extends FrameLayout {
      */
     private void createStubController() {
         blurController = new BlurController() {
-            @Override public boolean isInternalCanvas(Canvas canvas) {
+            @Override
+            public boolean isInternalCanvas(Canvas canvas) {
                 return false;
             }
 
-            @Override public void drawBlurredContent(Canvas canvas) {
+            @Override
+            public void drawBlurredContent(Canvas canvas) {
             }
 
-            @Override public void updateBlurViewSize() {
+            @Override
+            public void updateBlurViewSize() {
             }
 
-            @Override public void onDrawEnd(Canvas canvas) {
+            @Override
+            public void onDrawEnd(Canvas canvas) {
             }
 
-            @Override public void stopAutoBlurUpdate() {
+            @Override
+            public void stopAutoBlurUpdate() {
             }
 
-            @Override public void startBlurAutoUpdate() {
+            @Override
+            public void startBlurAutoUpdate() {
             }
 
-            @Override public void setBlurRadius(float radius) {
+            @Override
+            public void setBlurRadius(float radius) {
             }
 
-            @Override public void setBlurAlgorithm(BlurAlgorithm algorithm) {
+            @Override
+            public void setBlurAlgorithm(BlurAlgorithm algorithm) {
             }
 
-            @Override public void setWindowBackground(@Nullable Drawable windowBackground) {
+            @Override
+            public void setWindowBackground(@Nullable Drawable windowBackground) {
             }
 
-            @Override public void destroy() {
+            @Override
+            public void destroy() {
             }
 
-            @Override public void enabledOnStart(boolean enabled) {
+            @Override
+            public void enabledOnStart(boolean enabled) {
 
             }
 
-            @Override public void enableBlur() {
+            @Override
+            public void enableBlur() {
 
             }
 
-            @Override public void disableBlur() {
+            @Override
+            public void disableBlur() {
 
             }
         };
