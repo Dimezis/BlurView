@@ -181,10 +181,18 @@ public class BlurView extends FrameLayout {
             return this;
         }
 
-        public ControllerSettings isEnabledOnStart(boolean enabled) {
-            blurController.enabledOnStart(enabled);
+        /**
+         * @param enabled enable or disable blur effect on start
+         */
+
+        public ControllerSettings enabledOnStart(boolean enabled) {
+            if (enabled)
+                blurController.enableBlur();
+            else
+                blurController.disableBlur();
             return this;
         }
+
     }
 
     /**
@@ -231,11 +239,6 @@ public class BlurView extends FrameLayout {
 
             @Override
             public void destroy() {
-            }
-
-            @Override
-            public void enabledOnStart(boolean enabled) {
-
             }
 
             @Override

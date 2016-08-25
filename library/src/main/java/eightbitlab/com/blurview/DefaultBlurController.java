@@ -261,11 +261,6 @@ class DefaultBlurController implements BlurController {
     }
 
     @Override
-    public void enabledOnStart(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    @Override
     public void enableBlur() {
         enabled = true;
     }

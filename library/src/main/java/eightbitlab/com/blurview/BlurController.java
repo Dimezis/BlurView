@@ -62,11 +62,6 @@ interface BlurController {
     void destroy();
 
     /**
-     * @param enabled set the blur enabled or disabled on start
-     */
-    void enabledOnStart(boolean enabled);
-
-    /**
      * Can be used to enable blur on fly
      */
     void enableBlur();

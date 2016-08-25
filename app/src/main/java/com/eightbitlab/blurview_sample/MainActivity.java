@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 .windowBackground(windowBackground)
                 .blurAlgorithm(new RenderScriptBlur(this, true))
                 .blurRadius(radius)
-                .isEnabledOnStart(true);
+                .enabledOnStart(true);
     }
 
     static class ViewPagerAdapter extends FragmentPagerAdapter {
