@@ -135,6 +135,15 @@ public class BlurView extends FrameLayout {
     }
 
     /**
+     * Check if blur effect enabled or disabled
+     *
+     * @return true if blur effect enabled or false if blur disabled
+     */
+    public boolean isEnabled() {
+        return this.blurController.isBlurEnabled();
+    }
+
+    /**
      * @param rootView Root View where BlurView's underlying content starts drawing.
      *                 Can be Activity's root content layout (android.R.id.content)
      *                 or some of your custom root layouts.
@@ -249,6 +258,11 @@ public class BlurView extends FrameLayout {
             @Override
             public void disableBlur() {
 
+            }
+
+            @Override
+            public boolean isBlurEnabled() {
+                return true;
             }
         };
     }

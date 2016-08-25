@@ -70,4 +70,10 @@ interface BlurController {
      * Can be used to disable blur on fly
      */
     void disableBlur();
+
+    /**
+     * Check if the blur view is enabled
+     * @return true if blur enabled or false if blur disabled
+     */
+    boolean isBlurEnabled();
 }

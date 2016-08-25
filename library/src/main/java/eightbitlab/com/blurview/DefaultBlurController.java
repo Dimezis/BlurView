@@ -271,6 +271,11 @@ class DefaultBlurController implements BlurController {
     }
 
     @Override
+    public boolean isBlurEnabled() {
+        return enabled;
+    }
+
+    @Override
     public void setBlurRadius(float radius) {
         this.blurRadius = radius;
     }

@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 
 import butterknife.BindView;
@@ -17,6 +18,8 @@ import eightbitlab.com.blurview.BlurView;
 import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = MainActivity.class.getSimpleName();
+
     @BindView(R.id.viewPager)
     ViewPager viewPager;
     @BindView(R.id.tabLayout)
@@ -53,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
                 .blurAlgorithm(new RenderScriptBlur(this, true))
                 .blurRadius(radius)
                 .enabledOnStart(true);
+
     }
 
     static class ViewPagerAdapter extends FragmentPagerAdapter {
@@ -103,11 +107,19 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.enable)
     void enable() {
-        blurView.enableBlur();
+        if (!blurView.isEnabled())
+            blurView.enableBlur();
+        else {
+            Log.i(TAG, "Blur already enabled.");
+        }
     }
 
     @OnClick(R.id.disable)
     void disable() {
-        blurView.disableBlur();
+        if (blurView.isEnabled())
+            blurView.disableBlur();
+        else {
+            Log.i(TAG, "Blur already disabled.");
+        }
     }
 }
