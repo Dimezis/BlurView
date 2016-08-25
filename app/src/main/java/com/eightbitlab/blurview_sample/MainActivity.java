@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 
 import butterknife.BindView;
@@ -107,19 +106,11 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.enable)
     void enable() {
-        if (!blurView.isEnabled())
-            blurView.enableBlur();
-        else {
-            Log.i(TAG, "Blur already enabled.");
-        }
+        blurView.enableBlur();
     }
 
     @OnClick(R.id.disable)
     void disable() {
-        if (blurView.isEnabled())
-            blurView.disableBlur();
-        else {
-            Log.i(TAG, "Blur already disabled.");
-        }
+        blurView.disableBlur();
     }
 }
