@@ -57,15 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            switch (Page.values()[position]) {
-                case FIRST:
-                    return new ScrollFragment();
-                case SECOND:
-                    return new ListFragment();
-                case THIRD:
-                    return new ImageFragment();
-            }
-            return null;
+            return Page.values()[position].getFragment();
         }
 
         @Override
@@ -80,9 +72,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     enum Page {
-        FIRST("Tab1"),
-        SECOND("Tab2"),
-        THIRD("Tab3");
+        FIRST("Tab1") {
+            @Override
+            Fragment getFragment() {
+                return new ScrollFragment();
+            }
+        },
+        SECOND("Tab2") {
+            @Override
+            Fragment getFragment() {
+                return new ListFragment();
+            }
+        },
+        THIRD("Tab3") {
+            @Override
+            Fragment getFragment() {
+                return new ImageFragment();
+            }
+        };
 
         private String title;
 
@@ -90,8 +97,10 @@ public class MainActivity extends AppCompatActivity {
             this.title = title;
         }
 
-        public String getTitle() {
+        String getTitle() {
             return title;
         }
+
+        abstract Fragment getFragment();
     }
 }
