@@ -80,6 +80,13 @@ public class BlurView extends FrameLayout {
         invalidate();
     }
 
+    /**
+     * Enables/disables the blur. Enabled by default
+     */
+    public void setBlurEnabled(boolean enabled) {
+        blurController.setBlurEnabled(enabled);
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -214,6 +221,10 @@ public class BlurView extends FrameLayout {
 
             @Override
             public void destroy() {
+            }
+
+            @Override
+            public void setBlurEnabled(boolean enabled) {
             }
         };
     }

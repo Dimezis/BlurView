@@ -60,4 +60,9 @@ interface BlurController {
      * Frees allocated resources
      */
     void destroy();
+
+    /**
+     * Enables/disables the blur. Enabled by default
+     */
+    void setBlurEnabled(boolean enabled);
 }

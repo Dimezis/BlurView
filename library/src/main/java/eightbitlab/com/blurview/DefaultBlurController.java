@@ -38,13 +38,13 @@ class DefaultBlurController implements BlurController {
      */
     private Bitmap internalBitmap;
 
-    private View blurView;
-    private View rootView;
+    private final View blurView;
+    private final View rootView;
 
     private ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
         @Override
         public boolean onPreDraw() {
-            if (!isMeDrawingNow) {
+            if (!isMeDrawingNow && isBlurEnabled) {
                 updateBlur();
             }
             return true;
@@ -55,6 +55,7 @@ class DefaultBlurController implements BlurController {
      * Used to distinct parent draw() calls from Controller's draw() calls
      */
     private boolean isMeDrawingNow;
+    private boolean isBlurEnabled = true;
 
     //must be set from message queue
     private final Runnable onDrawEndTask = new Runnable() {
@@ -208,13 +209,15 @@ class DefaultBlurController implements BlurController {
     public void drawBlurredContent(Canvas canvas) {
         isMeDrawingNow = true;
 
-        internalCanvas.save();
-        setupInternalCanvasMatrix();
-        drawUnderlyingViews();
-        internalCanvas.restore();
+        if (isBlurEnabled) {
+            internalCanvas.save();
+            setupInternalCanvasMatrix();
+            drawUnderlyingViews();
+            internalCanvas.restore();
 
-        blurAndSave();
-        draw(canvas);
+            blurAndSave();
+            draw(canvas);
+        }
     }
 
     private void draw(Canvas canvas) {
@@ -263,5 +266,11 @@ class DefaultBlurController implements BlurController {
     @Override
     public void setWindowBackground(@Nullable Drawable windowBackground) {
         this.windowBackground = windowBackground;
+    }
+
+    @Override
+    public void setBlurEnabled(boolean enabled) {
+        this.isBlurEnabled = enabled;
+        blurView.invalidate();
     }
 }
