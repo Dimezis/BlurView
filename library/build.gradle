@@ -3,20 +3,20 @@ apply plugin: 'com.android.library'
 ext {
     PUBLISH_GROUP_ID = 'com.eightbitlab'
     PUBLISH_ARTIFACT_ID = 'blurview'
-    PUBLISH_VERSION = '1.1.2'
+    PUBLISH_VERSION = '1.2.0'
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 24
+    buildToolsVersion "24.0.0"
 
     defaultConfig {
-        renderscriptTargetApi 23
+        renderscriptTargetApi 24
         renderscriptSupportModeEnabled true
         minSdkVersion 14
-        targetSdkVersion 23
-        versionCode 13
-        versionName "1.1.2"
+        targetSdkVersion 24
+        versionCode 14
+        versionName "1.2.0"
     }
     buildTypes {
         release {
@@ -28,7 +28,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-annotations:23.4.0'
+    compile 'com.android.support:support-annotations:24.2.0'
 }
 
 apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'
