@@ -9,15 +9,22 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import eightbitlab.com.blurview.BlurView;
 import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class MainActivity extends AppCompatActivity {
-    @BindView(R.id.viewPager) ViewPager viewPager;
-    @BindView(R.id.tabLayout) TabLayout tabLayout;
-    @BindView(R.id.blurView) BlurView blurView;
+    private static final String TAG = MainActivity.class.getSimpleName();
+
+    @BindView(R.id.viewPager)
+    ViewPager viewPager;
+    @BindView(R.id.tabLayout)
+    TabLayout tabLayout;
+    @BindView(R.id.blurView)
+    BlurView blurView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +52,10 @@ public class MainActivity extends AppCompatActivity {
 
         blurView.setupWith(rootView)
                 .windowBackground(windowBackground)
-                .blurAlgorithm(new RenderScriptBlur(this, true)) //Preferable algorithm, needs RenderScript support mode enabled
-                .blurRadius(radius);
+                .blurAlgorithm(new RenderScriptBlur(this, true))
+                .blurRadius(radius)
+                .enabledOnStart(true);
+
     }
 
     static class ViewPagerAdapter extends FragmentPagerAdapter {
@@ -102,5 +111,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         abstract Fragment getFragment();
+    }
+
+    @OnClick(R.id.enable)
+    void enable() {
+        blurView.enableBlur();
+    }
+
+    @OnClick(R.id.disable)
+    void disable() {
+        blurView.disableBlur();
     }
 }

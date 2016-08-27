@@ -1,29 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.eightbitlab.blurview_sample.MainActivity">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.eightbitlab.blurview_sample.MainActivity">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/ll">
+
+        <Button android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:id="@+id/enable"
+                android:text="@string/enable"/>
+
+        <Button android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:id="@+id/disable"
+                android:text="@string/disable"/>
+
+    </LinearLayout>
+
 
     <android.support.v4.view.ViewPager
-        android:id="@+id/viewPager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:background="@android:color/holo_blue_light"
+            android:layout_below="@id/ll"/>
+
 
     <eightbitlab.com.blurview.BlurView
-        android:id="@+id/blurView"
-        android:layout_width="match_parent"
-        android:layout_gravity="bottom"
-        android:layout_height="wrap_content"
-        app:blurOverlayColor="@color/colorOverlay">
+            android:id="@+id/blurView"
+            android:layout_width="match_parent"
+            android:layout_gravity="bottom"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+    >
 
         <android.support.design.widget.TabLayout
-            android:id="@+id/tabLayout"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_tab_height"
-            android:background="@android:color/transparent"/>
+                android:id="@+id/tabLayout"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_tab_height"
+                android:background="@android:color/transparent"
+                android:layout_alignParentBottom="true"
+        />
 
     </eightbitlab.com.blurview.BlurView>
 
-</FrameLayout>
+
+</RelativeLayout>

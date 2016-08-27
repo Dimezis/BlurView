@@ -42,7 +42,8 @@ public class BlurView extends FrameLayout {
 
     private void init(AttributeSet attrs, int defStyleAttr) {
         createStubController();
-        TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.BlurView, defStyleAttr, 0);
+        TypedArray a =
+                getContext().obtainStyledAttributes(attrs, R.styleable.BlurView, defStyleAttr, 0);
         overlayColor = a.getColor(R.styleable.BlurView_blurOverlayColor, TRANSPARENT);
         a.recycle();
 
@@ -71,6 +72,16 @@ public class BlurView extends FrameLayout {
      */
     public void startAutoBlurUpdate() {
         blurController.startBlurAutoUpdate();
+    }
+
+    public void enableBlur() {
+        blurController.enableBlur();
+        blurController.updateBlurViewSize();
+    }
+
+    public void disableBlur() {
+        blurController.disableBlur();
+        blurController.updateBlurViewSize();
     }
 
     /**
@@ -124,6 +135,15 @@ public class BlurView extends FrameLayout {
     }
 
     /**
+     * Check if blur effect enabled or disabled
+     *
+     * @return true if blur effect enabled or false if blur disabled
+     */
+    public boolean isEnabled() {
+        return this.blurController.isBlurEnabled();
+    }
+
+    /**
      * @param rootView Root View where BlurView's underlying content starts drawing.
      *                 Can be Activity's root content layout (android.R.id.content)
      *                 or some of your custom root layouts.
@@ -162,12 +182,26 @@ public class BlurView extends FrameLayout {
 
         /**
          * @param windowBackground sets the background to draw before view hierarchy.
-         *                         Can be used to draw Activity's window background if your root layout doesn't provide any background
+         *                         Can be used to draw Activity's window background if your root layout doesn't provide any
+         *                         background
          */
         public ControllerSettings windowBackground(@Nullable Drawable windowBackground) {
             blurController.setWindowBackground(windowBackground);
             return this;
         }
+
+        /**
+         * @param enabled enable or disable blur effect on start
+         */
+
+        public ControllerSettings enabledOnStart(boolean enabled) {
+            if (enabled)
+                blurController.enableBlur();
+            else
+                blurController.disableBlur();
+            return this;
+        }
+
     }
 
     /**
@@ -214,6 +248,21 @@ public class BlurView extends FrameLayout {
 
             @Override
             public void destroy() {
+            }
+
+            @Override
+            public void enableBlur() {
+
+            }
+
+            @Override
+            public void disableBlur() {
+
+            }
+
+            @Override
+            public boolean isBlurEnabled() {
+                return true;
             }
         };
     }
