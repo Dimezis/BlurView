@@ -151,7 +151,7 @@ public class BlurView extends FrameLayout {
 
         /**
          * @param radius sets the blur radius
-         *               Default implementation uses field {@link DefaultBlurController#DEFAULT_BLUR_RADIUS}
+         *               Default implementation uses field {@link BlurController#DEFAULT_BLUR_RADIUS}
          */
         public ControllerSettings blurRadius(float radius) {
             blurController.setBlurRadius(radius);
