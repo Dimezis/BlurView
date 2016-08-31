@@ -41,7 +41,7 @@ class DefaultBlurController implements BlurController {
     private final View blurView;
     private final View rootView;
 
-    private ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
+    private final ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
         @Override
         public boolean onPreDraw() {
             if (!isMeDrawingNow && isBlurEnabled) {
@@ -80,7 +80,7 @@ class DefaultBlurController implements BlurController {
     public DefaultBlurController(@NonNull View blurView, @NonNull View rootView) {
         this.rootView = rootView;
         this.blurView = blurView;
-        this.blurAlgorithm = new StackBlur(true);
+        this.blurAlgorithm = new RenderScriptBlur(blurView.getContext(), true);
 
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();
