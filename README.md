@@ -33,7 +33,7 @@ It honors its position and size changes, including view animation and property a
 
     blurView.setupWith(rootView)
            .windowBackground(windowBackground)
-           .blurAlgorithm(new RenderScriptBlur(this, true)) //optional, enabled by default
+           .blurAlgorithm(new RenderScriptBlur(this, true)) //Optional, enabled by default. User can have custom implementation
            .blurRadius(radius);
 ```
 
