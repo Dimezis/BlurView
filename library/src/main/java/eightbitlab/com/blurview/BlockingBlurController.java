@@ -17,9 +17,11 @@ import android.view.ViewTreeObserver;
  * After that, BlurController blurs this bitmap and draws it on system Canvas.
  * Default implementation uses {@link ViewTreeObserver.OnPreDrawListener} to detect when
  * blur should be redrawn.
+ *
+ * Blur is done in the main thread.
  */
-class DefaultBlurController implements BlurController {
-    private static final String TAG = DefaultBlurController.class.getSimpleName();
+class BlockingBlurController implements BlurController {
+    private static final String TAG = BlockingBlurController.class.getSimpleName();
     //Bitmap size should be divisible by 16 to meet stride requirement
     private static final int ROUNDING_VALUE = 16;
 
@@ -77,7 +79,7 @@ class DefaultBlurController implements BlurController {
      *                    Can be Activity's root content layout (android.R.id.content)
      *                    or some of your custom root layouts.
      */
-    public DefaultBlurController(@NonNull View blurView, @NonNull View rootView) {
+    public BlockingBlurController(@NonNull View blurView, @NonNull View rootView) {
         this.rootView = rootView;
         this.blurView = blurView;
         this.blurAlgorithm = new RenderScriptBlur(blurView.getContext(), true);
@@ -187,11 +189,6 @@ class DefaultBlurController implements BlurController {
 
         internalCanvas.translate(scaledLeftPosition - scaledTranslationX, scaledTopPosition - scaledTranslationY);
         internalCanvas.scale(1f / scaleFactorX, 1f / scaleFactorY);
-    }
-
-    @Override
-    public boolean isInternalCanvas(Canvas canvas) {
-        return internalCanvas == canvas;
     }
 
     /**

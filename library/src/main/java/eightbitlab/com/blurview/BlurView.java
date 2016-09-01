@@ -8,6 +8,7 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -20,7 +21,7 @@ public class BlurView extends FrameLayout {
     @ColorInt
     private static final int TRANSPARENT = 0x00000000;
 
-    private BlurController blurController;
+    private BlurController blurController = createStubController();
 
     @ColorInt
     private int overlayColor;
@@ -41,7 +42,6 @@ public class BlurView extends FrameLayout {
     }
 
     private void init(AttributeSet attrs, int defStyleAttr) {
-        createStubController();
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.BlurView, defStyleAttr, 0);
         overlayColor = a.getColor(R.styleable.BlurView_blurOverlayColor, TRANSPARENT);
         a.recycle();
@@ -52,9 +52,13 @@ public class BlurView extends FrameLayout {
 
     @Override
     public void draw(Canvas canvas) {
-        if (!blurController.isInternalCanvas(canvas)) {
+        //draw only on system's hardware accelerated canvas
+        if (canvas.isHardwareAccelerated()) {
             blurController.drawBlurredContent(canvas);
             drawColorOverlay(canvas);
+            super.draw(canvas);
+        } else if (!isHardwareAccelerated()) {
+            //if view is in a not hardware accelerated window, don't draw blur
             super.draw(canvas);
         }
     }
@@ -112,7 +116,10 @@ public class BlurView extends FrameLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        startAutoBlurUpdate();
+
+        if (!isHardwareAccelerated()) {
+            Log.e(TAG, "BlurView can't be used in not hardware-accelerated window!");
+        }
     }
 
     private void setBlurController(@NonNull BlurController blurController) {
@@ -137,8 +144,13 @@ public class BlurView extends FrameLayout {
      * @return ControllerSettings to setup needed params.
      */
     public ControllerSettings setupWith(View rootView) {
-        BlurController blurController = new DefaultBlurController(this, rootView);
+        BlurController blurController = new BlockingBlurController(this, rootView);
         setBlurController(blurController);
+
+        if (!isHardwareAccelerated()) {
+            blurController.stopAutoBlurUpdate();
+        }
+
         return new ControllerSettings(blurController);
     }
 
@@ -180,13 +192,8 @@ public class BlurView extends FrameLayout {
     /**
      * Used in edit mode and in case if no BlurController was set
      */
-    private void createStubController() {
-        blurController = new BlurController() {
-            @Override
-            public boolean isInternalCanvas(Canvas canvas) {
-                return false;
-            }
-
+    private BlurController createStubController() {
+        return new BlurController() {
             @Override
             public void drawBlurredContent(Canvas canvas) {
             }
