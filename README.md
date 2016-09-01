@@ -9,7 +9,7 @@ BlurView can be used as a regular FrameLayout. It blurs its underlying content a
 BlurView redraws its blurred content when changes in view hierarchy are detected (draw() called). 
 It honors its position and size changes, including view animation and property animation.
 
-## How to use:
+## How to use
 ```XML
   <eightbitlab.com.blurview.BlurView
       android:id="@+id/blurView"
@@ -37,7 +37,7 @@ It honors its position and size changes, including view animation and property a
            .blurRadius(radius);
 ```
 
-## Enable RenderScript support mode:
+## Enable RenderScript support mode
 
 ```Groovy
  defaultConfig {
@@ -46,8 +46,8 @@ It honors its position and size changes, including view animation and property a
   }
 ```
 
-## Important:
-BlurView can be used only in hardware-accelerated window.
+## Important
+BlurView can be used only in a hardware-accelerated window.
 Otherwise, blur will not be drawn. It will fallback to a regular FrameLayout drawing process.
 
 ## Performance
