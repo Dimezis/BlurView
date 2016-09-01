@@ -33,7 +33,7 @@ It honors its position and size changes, including view animation and property a
 
     blurView.setupWith(rootView)
            .windowBackground(windowBackground)
-           .blurAlgorithm(new RenderScriptBlur(this, true)) //Preferable algorithm, needs RenderScript support mode enabled
+           .blurAlgorithm(new RenderScriptBlur(this, true)) //optional, enabled by default
            .blurRadius(radius);
 ```
 
@@ -41,17 +41,21 @@ It honors its position and size changes, including view animation and property a
 
 ```Groovy
  defaultConfig {
-        renderscriptTargetApi 23
+        renderscriptTargetApi 24
         renderscriptSupportModeEnabled true
   }
 ```
 
-## Perfomance
+## Important:
+BlurView can be used only in hardware-accelerated window.
+Otherwise, blur will not be drawn. It will fallback to a regular FrameLayout drawing process.
+
+## Performance
 It takes 1-4ms on Nexus 5 and Nexus 4 to draw BlurView with the setup given in example project
 
 ## Gradle
 ```Groovy
-compile 'com.eightbitlab:blurview:1.1.2'
+compile 'com.eightbitlab:blurview:1.2.0'
 ```
 
 License
