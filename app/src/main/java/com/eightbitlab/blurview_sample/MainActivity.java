@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         blurView.setupWith(rootView)
                 .windowBackground(windowBackground)
-                .blurAlgorithm(new RenderScriptBlur(this, true)) //Preferable algorithm, needs RenderScript support mode enabled
+                .blurAlgorithm(new RenderScriptBlur(this, true)) //Optional, enabled by default. User can have custom implementation
                 .blurRadius(radius);
     }
 
