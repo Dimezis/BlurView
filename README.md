@@ -41,7 +41,7 @@ It honors its position and size changes, including view animation and property a
 
 ```Groovy
  defaultConfig {
-        renderscriptTargetApi 24
+        renderscriptTargetApi 24 //must match target sdk and build tools, 23+
         renderscriptSupportModeEnabled true
   }
 ```
