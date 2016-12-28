@@ -2,11 +2,13 @@ package eightbitlab.com.blurview;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
 /**
@@ -41,7 +43,8 @@ class BlockingBlurController implements BlurController {
     private Bitmap internalBitmap;
 
     private final View blurView;
-    private final View rootView;
+    private final ViewGroup rootView;
+    private final Rect relativeViewBounds = new Rect();
 
     private final ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
         @Override
@@ -53,9 +56,7 @@ class BlockingBlurController implements BlurController {
         }
     };
 
-    /**
-     * Used to distinct parent draw() calls from Controller's draw() calls
-     */
+    //Used to distinct parent draw() calls from Controller's draw() calls
     private boolean isMeDrawingNow;
     private boolean isBlurEnabled = true;
 
@@ -67,9 +68,7 @@ class BlockingBlurController implements BlurController {
         }
     };
 
-    /**
-     * By default, window's background is not drawn on canvas. We need to draw it manually
-     */
+    //By default, window's background is not drawn on canvas. We need to draw it manually
     @Nullable
     private Drawable windowBackground;
 
@@ -79,7 +78,7 @@ class BlockingBlurController implements BlurController {
      *                    Can be Activity's root content layout (android.R.id.content)
      *                    or some of your custom root layouts.
      */
-    public BlockingBlurController(@NonNull View blurView, @NonNull View rootView) {
+    BlockingBlurController(@NonNull View blurView, @NonNull ViewGroup rootView) {
         this.rootView = rootView;
         this.blurView = blurView;
         this.blurAlgorithm = new RenderScriptBlur(blurView.getContext(), true);
@@ -178,11 +177,14 @@ class BlockingBlurController implements BlurController {
 
     //draw starting from blurView's position
     private void setupInternalCanvasMatrix() {
+        blurView.getDrawingRect(relativeViewBounds);
+        rootView.offsetDescendantRectToMyCoords(blurView, relativeViewBounds);
+
         float scaleFactorX = scaleFactor * roundingWidthScaleFactor;
         float scaleFactorY = scaleFactor * roundingHeightScaleFactor;
 
-        float scaledLeftPosition = -blurView.getLeft() / scaleFactorX;
-        float scaledTopPosition = -blurView.getTop() / scaleFactorY;
+        float scaledLeftPosition = -relativeViewBounds.left / scaleFactorX;
+        float scaledTopPosition = -relativeViewBounds.top / scaleFactorY;
 
         float scaledTranslationX = blurView.getTranslationX() / scaleFactorX;
         float scaledTranslationY = blurView.getTranslationY() / scaleFactorY;
