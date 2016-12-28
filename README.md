@@ -27,7 +27,7 @@ It honors its position and size changes, including view animation and property a
 
     final View decorView = getWindow().getDecorView();
     //Activity's root View. Can also be root View of your layout
-    final View rootView = decorView.findViewById(android.R.id.content);
+    final ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
     //set background, if your root layout doesn't have one
     final Drawable windowBackground = decorView.getBackground();
 
@@ -41,7 +41,7 @@ It honors its position and size changes, including view animation and property a
 
 ```Groovy
  defaultConfig {
-        renderscriptTargetApi 24 //must match target sdk and build tools, 23+
+        renderscriptTargetApi 25 //must match target sdk and build tools, 23+
         renderscriptSupportModeEnabled true
   }
 ```
@@ -55,7 +55,7 @@ It takes 1-4ms on Nexus 5 and Nexus 4 to draw BlurView with the setup given in e
 
 ## Gradle
 ```Groovy
-compile 'com.eightbitlab:blurview:1.2.0'
+compile 'com.eightbitlab:blurview:1.3.0'
 ```
 
 License
