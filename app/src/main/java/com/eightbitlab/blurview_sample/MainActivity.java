@@ -9,15 +9,20 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.ViewGroup;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import eightbitlab.com.blurview.BlurView;
 import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class MainActivity extends AppCompatActivity {
-    @BindView(R.id.viewPager) ViewPager viewPager;
-    @BindView(R.id.tabLayout) TabLayout tabLayout;
-    @BindView(R.id.blurView) BlurView blurView;
+    @BindView(R.id.viewPager)
+    ViewPager viewPager;
+    @BindView(R.id.tabLayout)
+    TabLayout tabLayout;
+    @BindView(R.id.blurView)
+    BlurView blurView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         final View decorView = getWindow().getDecorView();
         //Activity's root View. Can also be root View of your layout
-        final View rootView = decorView.findViewById(android.R.id.content);
+        final ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
         //set background, if your root layout doesn't have one
         final Drawable windowBackground = decorView.getBackground();
 
