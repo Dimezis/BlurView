@@ -135,7 +135,7 @@ class BlockingBlurController implements BlurController {
         rootView.getViewTreeObserver().addOnPreDrawListener(drawListener);
     }
 
-    private void updateBlur() {
+    void updateBlur() {
         isMeDrawingNow = true;
         blurView.invalidate();
     }
@@ -150,13 +150,18 @@ class BlockingBlurController implements BlurController {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     blurView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 } else {
-                    blurView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    legacyRemoveOnGlobalLayoutListener();
                 }
 
                 int measuredWidth = blurView.getMeasuredWidth();
                 int measuredHeight = blurView.getMeasuredHeight();
 
                 init(measuredWidth, measuredHeight);
+            }
+
+            @SuppressWarnings("deprecation")
+            private void legacyRemoveOnGlobalLayoutListener() {
+                blurView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
         });
     }
