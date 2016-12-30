@@ -86,6 +86,7 @@ public class BlurView extends FrameLayout {
 
     /**
      * Enables/disables the blur. Enabled by default
+     *
      * @param enabled true to enable, false otherwise
      */
     public void setBlurEnabled(boolean enabled) {
@@ -99,8 +100,8 @@ public class BlurView extends FrameLayout {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
+    protected void dispatchDraw(Canvas canvas) {
+        super.dispatchDraw(canvas);
         blurController.onDrawEnd(canvas);
     }
 
@@ -168,7 +169,7 @@ public class BlurView extends FrameLayout {
         /**
          * @param radius sets the blur radius
          *               Default implementation uses field {@link BlurController#DEFAULT_BLUR_RADIUS}
-         *               @return ControllerSettings
+         * @return ControllerSettings
          */
         public ControllerSettings blurRadius(float radius) {
             blurController.setBlurRadius(radius);
@@ -178,7 +179,7 @@ public class BlurView extends FrameLayout {
         /**
          * @param algorithm sets the blur algorithm
          *                  Default implementation uses {@link RenderScriptBlur}
-         *                  @return ControllerSettings
+         * @return ControllerSettings
          */
         public ControllerSettings blurAlgorithm(BlurAlgorithm algorithm) {
             blurController.setBlurAlgorithm(algorithm);
@@ -188,7 +189,7 @@ public class BlurView extends FrameLayout {
         /**
          * @param windowBackground sets the background to draw before view hierarchy.
          *                         Can be used to draw Activity's window background if your root layout doesn't provide any background
-         *                         @return ControllerSettings
+         * @return ControllerSettings
          */
         public ControllerSettings windowBackground(@Nullable Drawable windowBackground) {
             blurController.setWindowBackground(windowBackground);
