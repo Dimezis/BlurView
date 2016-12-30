@@ -12,10 +12,41 @@
         android:layout_height="match_parent"/>
 
     <eightbitlab.com.blurview.BlurView
-        android:id="@+id/blurView"
+        android:id="@+id/topBlurView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="4dp"
+        android:outlineProvider="bounds"
+        app:blurOverlayColor="@color/colorOverlay">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:text="@string/radius"/>
+
+            <SeekBar
+                android:id="@+id/radiusSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"/>
+
+        </LinearLayout>
+    </eightbitlab.com.blurview.BlurView>
+
+    <eightbitlab.com.blurview.BlurView
+        android:id="@+id/bottomBlurView"
         android:layout_width="match_parent"
         android:layout_gravity="bottom"
         android:layout_height="wrap_content"
+        android:elevation="8dp"
+        android:outlineProvider="bounds"
         app:blurOverlayColor="@color/colorOverlay">
 
         <android.support.design.widget.TabLayout

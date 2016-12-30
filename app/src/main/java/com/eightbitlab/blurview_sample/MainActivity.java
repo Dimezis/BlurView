@@ -10,6 +10,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -21,8 +22,12 @@ public class MainActivity extends AppCompatActivity {
     ViewPager viewPager;
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
-    @BindView(R.id.blurView)
-    BlurView blurView;
+    @BindView(R.id.bottomBlurView)
+    BlurView bottomBlurView;
+    @BindView(R.id.topBlurView)
+    BlurView topBlurView;
+    @BindView(R.id.radiusSeekBar)
+    SeekBar radiusSeekBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,12 +40,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupViewPager() {
+        viewPager.setOffscreenPageLimit(2);
         viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
     }
 
     private void setupBlurView() {
-        final float radius = 16f;
+        final float radius = 25f;
 
         final View decorView = getWindow().getDecorView();
         //Activity's root View. Can also be root View of your layout
@@ -48,15 +54,35 @@ public class MainActivity extends AppCompatActivity {
         //set background, if your root layout doesn't have one
         final Drawable windowBackground = decorView.getBackground();
 
-        blurView.setupWith(rootView)
+        final BlurView.ControllerSettings topViewSettings = topBlurView.setupWith(rootView)
                 .windowBackground(windowBackground)
                 .blurAlgorithm(new RenderScriptBlur(this, true)) //Preferable algorithm, needs RenderScript support mode enabled
                 .blurRadius(radius);
+
+        final BlurView.ControllerSettings bottomViewSettings = bottomBlurView.setupWith(rootView)
+                .windowBackground(windowBackground)
+                .blurRadius(radius);
+
+        radiusSeekBar.setProgress(100);
+
+        radiusSeekBar.setOnSeekBarChangeListener(new SeekBarListenerAdapter() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                float blurRadius = progress / 4f;
+                if (blurRadius > 25) {
+                    blurRadius = 25;
+                } else if (blurRadius < 5) {
+                    blurRadius = 5;
+                }
+                topViewSettings.blurRadius(blurRadius);
+                bottomViewSettings.blurRadius(blurRadius);
+            }
+        });
     }
 
     static class ViewPagerAdapter extends FragmentPagerAdapter {
 
-        public ViewPagerAdapter(FragmentManager fragmentManager) {
+        ViewPagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
         }
 
@@ -77,19 +103,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     enum Page {
-        FIRST("Tab1") {
+        FIRST("ScrollView") {
             @Override
             Fragment getFragment() {
                 return new ScrollFragment();
             }
         },
-        SECOND("Tab2") {
+        SECOND("RecyclerView") {
             @Override
             Fragment getFragment() {
                 return new ListFragment();
             }
         },
-        THIRD("Tab3") {
+        THIRD("Static") {
             @Override
             Fragment getFragment() {
                 return new ImageFragment();
