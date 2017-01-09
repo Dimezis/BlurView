@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private void setupBlurView() {
         final float radius = 25f;
         final float minBlurRadius = 10f;
+        final float step = 4f;
 
         //set background, if your root layout doesn't have one
         final Drawable windowBackground = getWindow().getDecorView().getBackground();
@@ -60,12 +61,13 @@ public class MainActivity extends AppCompatActivity {
                 .windowBackground(windowBackground)
                 .blurRadius(radius);
 
-        radiusSeekBar.setProgress(100);
+        int initialProgress = (int) (radius * step);
+        radiusSeekBar.setProgress(initialProgress);
 
         radiusSeekBar.setOnSeekBarChangeListener(new SeekBarListenerAdapter() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                float blurRadius = progress / 4f;
+                float blurRadius = progress / step;
                 blurRadius = Math.max(blurRadius, minBlurRadius);
                 topViewSettings.blurRadius(blurRadius);
                 bottomViewSettings.blurRadius(blurRadius);
