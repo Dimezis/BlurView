@@ -8,14 +8,12 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import eightbitlab.com.blurview.BlurView;
-import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class MainActivity extends AppCompatActivity {
     @BindView(R.id.viewPager)
@@ -28,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     BlurView topBlurView;
     @BindView(R.id.radiusSeekBar)
     SeekBar radiusSeekBar;
+    @BindView(R.id.root)
+    ViewGroup root;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,19 +47,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupBlurView() {
         final float radius = 25f;
+        final float minBlurRadius = 10f;
 
-        final View decorView = getWindow().getDecorView();
-        //Activity's root View. Can also be root View of your layout
-        final ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
         //set background, if your root layout doesn't have one
-        final Drawable windowBackground = decorView.getBackground();
+        final Drawable windowBackground = getWindow().getDecorView().getBackground();
 
-        final BlurView.ControllerSettings topViewSettings = topBlurView.setupWith(rootView)
+        final BlurView.ControllerSettings topViewSettings = topBlurView.setupWith(root)
                 .windowBackground(windowBackground)
-                .blurAlgorithm(new RenderScriptBlur(this, true)) //Preferable algorithm, needs RenderScript support mode enabled
                 .blurRadius(radius);
 
-        final BlurView.ControllerSettings bottomViewSettings = bottomBlurView.setupWith(rootView)
+        final BlurView.ControllerSettings bottomViewSettings = bottomBlurView.setupWith(root)
                 .windowBackground(windowBackground)
                 .blurRadius(radius);
 
@@ -69,11 +66,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 float blurRadius = progress / 4f;
-                if (blurRadius > 25) {
-                    blurRadius = 25;
-                } else if (blurRadius < 5) {
-                    blurRadius = 5;
-                }
+                blurRadius = Math.max(blurRadius, minBlurRadius);
                 topViewSettings.blurRadius(blurRadius);
                 bottomViewSettings.blurRadius(blurRadius);
             }
