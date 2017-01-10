@@ -12,11 +12,11 @@ import android.support.v8.renderscript.ScriptIntrinsicBlur;
  * Blur using RenderScript, processed on GPU. Currently the fastest blur algorithm.
  */
 public final class RenderScriptBlur implements BlurAlgorithm {
-    private RenderScript renderScript;
-    private ScriptIntrinsicBlur blurScript;
+    private final RenderScript renderScript;
+    private final ScriptIntrinsicBlur blurScript;
     private Allocation outAllocation;
 
-    private boolean canModifyBitmap;
+    private final boolean canModifyBitmap;
 
     private int lastBitmapWidth = -1;
     private int lastBitmapHeight = -1;
@@ -68,7 +68,7 @@ public final class RenderScriptBlur implements BlurAlgorithm {
     }
 
     @Override
-    public void destroy() {
+    public final void destroy() {
         blurScript.destroy();
         renderScript.destroy();
         if (outAllocation != null) {

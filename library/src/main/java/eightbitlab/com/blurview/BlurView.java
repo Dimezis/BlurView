@@ -8,7 +8,8 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.view.View;
+import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 /**
@@ -20,7 +21,7 @@ public class BlurView extends FrameLayout {
     @ColorInt
     private static final int TRANSPARENT = 0x00000000;
 
-    private BlurController blurController;
+    private BlurController blurController = createStubController();
 
     @ColorInt
     private int overlayColor;
@@ -41,7 +42,6 @@ public class BlurView extends FrameLayout {
     }
 
     private void init(AttributeSet attrs, int defStyleAttr) {
-        createStubController();
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.BlurView, defStyleAttr, 0);
         overlayColor = a.getColor(R.styleable.BlurView_blurOverlayColor, TRANSPARENT);
         a.recycle();
@@ -52,9 +52,13 @@ public class BlurView extends FrameLayout {
 
     @Override
     public void draw(Canvas canvas) {
-        if (!blurController.isInternalCanvas(canvas)) {
+        //draw only on system's hardware accelerated canvas
+        if (canvas.isHardwareAccelerated()) {
             blurController.drawBlurredContent(canvas);
             drawColorOverlay(canvas);
+            super.draw(canvas);
+        } else if (!isHardwareAccelerated()) {
+            //if view is in a not hardware accelerated window, don't draw blur
             super.draw(canvas);
         }
     }
@@ -80,6 +84,15 @@ public class BlurView extends FrameLayout {
         invalidate();
     }
 
+    /**
+     * Enables/disables the blur. Enabled by default
+     *
+     * @param enabled true to enable, false otherwise
+     */
+    public void setBlurEnabled(boolean enabled) {
+        blurController.setBlurEnabled(enabled);
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -87,8 +100,8 @@ public class BlurView extends FrameLayout {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
+    protected void dispatchDraw(Canvas canvas) {
+        super.dispatchDraw(canvas);
         blurController.onDrawEnd(canvas);
     }
 
@@ -105,7 +118,11 @@ public class BlurView extends FrameLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        startAutoBlurUpdate();
+        if (!isHardwareAccelerated()) {
+            Log.e(TAG, "BlurView can't be used in not hardware-accelerated window!");
+        } else {
+            startAutoBlurUpdate();
+        }
     }
 
     private void setBlurController(@NonNull BlurController blurController) {
@@ -127,11 +144,18 @@ public class BlurView extends FrameLayout {
      * @param rootView Root View where BlurView's underlying content starts drawing.
      *                 Can be Activity's root content layout (android.R.id.content)
      *                 or some of your custom root layouts.
+     *                 BlurView's position will be calculated as a relative position to the rootView (not to the direct parent)
+     *                 This means that BlurView will choose a content to blur based on this relative position.
      * @return ControllerSettings to setup needed params.
      */
-    public ControllerSettings setupWith(View rootView) {
-        BlurController blurController = new DefaultBlurController(this, rootView);
+    public ControllerSettings setupWith(@NonNull ViewGroup rootView) {
+        BlurController blurController = new BlockingBlurController(this, rootView);
         setBlurController(blurController);
+
+        if (!isHardwareAccelerated()) {
+            blurController.stopAutoBlurUpdate();
+        }
+
         return new ControllerSettings(blurController);
     }
 
@@ -144,7 +168,8 @@ public class BlurView extends FrameLayout {
 
         /**
          * @param radius sets the blur radius
-         *               Default implementation uses field {@link DefaultBlurController#DEFAULT_BLUR_RADIUS}
+         *               Default implementation uses field {@link BlurController#DEFAULT_BLUR_RADIUS}
+         * @return ControllerSettings
          */
         public ControllerSettings blurRadius(float radius) {
             blurController.setBlurRadius(radius);
@@ -153,7 +178,8 @@ public class BlurView extends FrameLayout {
 
         /**
          * @param algorithm sets the blur algorithm
-         *                  Default implementation uses {@link StackBlur}
+         *                  Default implementation uses {@link RenderScriptBlur}
+         * @return ControllerSettings
          */
         public ControllerSettings blurAlgorithm(BlurAlgorithm algorithm) {
             blurController.setBlurAlgorithm(algorithm);
@@ -163,6 +189,7 @@ public class BlurView extends FrameLayout {
         /**
          * @param windowBackground sets the background to draw before view hierarchy.
          *                         Can be used to draw Activity's window background if your root layout doesn't provide any background
+         * @return ControllerSettings
          */
         public ControllerSettings windowBackground(@Nullable Drawable windowBackground) {
             blurController.setWindowBackground(windowBackground);
@@ -170,16 +197,9 @@ public class BlurView extends FrameLayout {
         }
     }
 
-    /**
-     * Used in edit mode and in case if no BlurController was set
-     */
-    private void createStubController() {
-        blurController = new BlurController() {
-            @Override
-            public boolean isInternalCanvas(Canvas canvas) {
-                return false;
-            }
-
+    //Used in edit mode and in case if no BlurController was set
+    private BlurController createStubController() {
+        return new BlurController() {
             @Override
             public void drawBlurredContent(Canvas canvas) {
             }
@@ -214,6 +234,10 @@ public class BlurView extends FrameLayout {
 
             @Override
             public void destroy() {
+            }
+
+            @Override
+            public void setBlurEnabled(boolean enabled) {
             }
         };
     }

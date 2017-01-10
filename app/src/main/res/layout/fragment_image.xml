@@ -1,10 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/mainImageView"
-    android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:scaleType="centerCrop"
-    android:src="@drawable/material_background">
+    android:orientation="vertical">
 
-</ImageView>
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fontFamily="sans-serif-condensed"
+            android:textSize="42sp"
+            android:gravity="center"
+            android:textColor="@color/colorPrimaryDark"
+            android:text="BlurView"/>
+
+    </android.support.v7.widget.CardView>
+
+    <ImageView
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:src="@drawable/material_background"
+        android:id="@+id/imageView4" />
+</LinearLayout>

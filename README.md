@@ -9,7 +9,7 @@ BlurView can be used as a regular FrameLayout. It blurs its underlying content a
 BlurView redraws its blurred content when changes in view hierarchy are detected (draw() called). 
 It honors its position and size changes, including view animation and property animation.
 
-## How to use:
+## How to use
 ```XML
   <eightbitlab.com.blurview.BlurView
       android:id="@+id/blurView"
@@ -23,35 +23,39 @@ It honors its position and size changes, including view animation and property a
 ```
 
 ```Java
-    final float radius = 16;
+    final float radius = 20;
 
     final View decorView = getWindow().getDecorView();
-    //Activity's root View. Can also be root View of your layout
-    final View rootView = decorView.findViewById(android.R.id.content);
+    //Activity's root View. Can also be root View of your layout (preferably)
+    final ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
     //set background, if your root layout doesn't have one
     final Drawable windowBackground = decorView.getBackground();
 
     blurView.setupWith(rootView)
            .windowBackground(windowBackground)
-           .blurAlgorithm(new RenderScriptBlur(this, true)) //Preferable algorithm, needs RenderScript support mode enabled
+           .blurAlgorithm(new RenderScriptBlur(this, true)) //Optional, enabled by default. User can have custom implementation
            .blurRadius(radius);
 ```
 
-## Enable RenderScript support mode:
+## Enable RenderScript support mode
 
 ```Groovy
  defaultConfig {
-        renderscriptTargetApi 19
+        renderscriptTargetApi 25 //must match target sdk and build tools, 23+
         renderscriptSupportModeEnabled true
   }
 ```
 
-## Perfomance
+## Important
+BlurView can be used only in a hardware-accelerated window.
+Otherwise, blur will not be drawn. It will fallback to a regular FrameLayout drawing process.
+
+## Performance
 It takes 1-4ms on Nexus 5 and Nexus 4 to draw BlurView with the setup given in example project
 
 ## Gradle
 ```Groovy
-compile 'com.eightbitlab:blurview:1.1.0'
+compile 'com.eightbitlab:blurview:1.3.1'
 ```
 
 License
