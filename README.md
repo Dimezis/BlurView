@@ -9,7 +9,7 @@ BlurView can be used as a regular FrameLayout. It blurs its underlying content a
 BlurView redraws its blurred content when changes in view hierarchy are detected (draw() called). 
 It honors its position and size changes, including view animation and property animation.
 
-## [Demo App at Google Play](https://play.google.com/store/apps/details?id=com.eightbitlab.blurview_sample&rdid=com.eightbitlab.blurview_sample)
+## [Demo App at Google Play](https://play.google.com/store/apps/details?id=com.eightbitlab.blurview_sample)
 
 ## How to use
 ```XML
