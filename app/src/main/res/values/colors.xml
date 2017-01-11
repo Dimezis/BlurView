@@ -6,4 +6,5 @@
     <color name="colorOverlay">#50ffffff</color>
     <color name="colorAccentOverlay">#1400bcd4</color>
     <color name="colorTransparentBlack">#14000000</color>
+    <color name="colorPrimaryTransparent">#6400bcd4</color>
 </resources>
