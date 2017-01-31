@@ -111,7 +111,7 @@ class BlockingBlurController implements BlurController {
     private void init(int measuredWidth, int measuredHeight) {
         if (isZeroSized(measuredWidth, measuredHeight)) {
             blurView.setWillNotDraw(true);
-            stopAutoBlurUpdate();
+            stopBlurAutoUpdate();
             return;
         }
         blurView.setWillNotDraw(false);
@@ -125,13 +125,13 @@ class BlockingBlurController implements BlurController {
     }
 
     @Override
-    public void stopAutoBlurUpdate() {
+    public void stopBlurAutoUpdate() {
         rootView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
     }
 
     @Override
     public void startBlurAutoUpdate() {
-        stopAutoBlurUpdate(); //just in case if listener was already attached
+        stopBlurAutoUpdate(); //just in case if listener was already attached
         rootView.getViewTreeObserver().addOnPreDrawListener(drawListener);
     }
 
@@ -250,7 +250,7 @@ class BlockingBlurController implements BlurController {
 
     @Override
     public void destroy() {
-        stopAutoBlurUpdate();
+        stopBlurAutoUpdate();
         blurAlgorithm.destroy();
         if (internalBitmap != null) {
             internalBitmap.recycle();

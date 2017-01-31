@@ -42,7 +42,7 @@ interface BlurController {
     /**
      * Can be used to stop blur auto update
      */
-    void stopAutoBlurUpdate();
+    void stopBlurAutoUpdate();
 
     /**
      * Can be used to resume blur auto update if it was stopped before

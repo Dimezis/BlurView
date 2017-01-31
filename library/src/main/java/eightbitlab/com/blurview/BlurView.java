@@ -66,14 +66,14 @@ public class BlurView extends FrameLayout {
     /**
      * Can be used to stop blur auto update
      */
-    public void stopAutoBlurUpdate() {
-        blurController.stopAutoBlurUpdate();
+    public void stopBlurAutoUpdate() {
+        blurController.stopBlurAutoUpdate();
     }
 
     /**
      * Can be used to resume blur auto update if it was stopped before
      */
-    public void startAutoBlurUpdate() {
+    public void startBlurAutoUpdate() {
         blurController.startBlurAutoUpdate();
     }
 
@@ -112,7 +112,7 @@ public class BlurView extends FrameLayout {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        stopAutoBlurUpdate();
+        stopBlurAutoUpdate();
     }
 
     @Override
@@ -121,7 +121,7 @@ public class BlurView extends FrameLayout {
         if (!isHardwareAccelerated()) {
             Log.e(TAG, "BlurView can't be used in not hardware-accelerated window!");
         } else {
-            startAutoBlurUpdate();
+            startBlurAutoUpdate();
         }
     }
 
@@ -153,7 +153,7 @@ public class BlurView extends FrameLayout {
         setBlurController(blurController);
 
         if (!isHardwareAccelerated()) {
-            blurController.stopAutoBlurUpdate();
+            blurController.stopBlurAutoUpdate();
         }
 
         return new ControllerSettings(blurController);
@@ -213,7 +213,7 @@ public class BlurView extends FrameLayout {
             }
 
             @Override
-            public void stopAutoBlurUpdate() {
+            public void stopBlurAutoUpdate() {
             }
 
             @Override
