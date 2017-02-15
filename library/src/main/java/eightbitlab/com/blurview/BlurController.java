@@ -9,13 +9,6 @@ interface BlurController {
     float DEFAULT_BLUR_RADIUS = 16f;
 
     /**
-     * Used to distinct BlurController's Canvas from System Canvas.
-     * A View that uses BlurController should draw only on System Canvas.
-     * Otherwise their content will be blurred too.
-     */
-    boolean isInternalCanvas(Canvas canvas);
-
-    /**
      * Draws blurred content on given canvas
      */
     void drawBlurredContent(Canvas canvas);
@@ -52,7 +45,17 @@ interface BlurController {
     void stopAutoBlurUpdate();
 
     /**
+     * Can be used to resume blur auto update if it was stopped before
+     */
+    void startBlurAutoUpdate();
+
+    /**
      * Frees allocated resources
      */
     void destroy();
+
+    /**
+     * Enables/disables the blur. Enabled by default
+     */
+    void setBlurEnabled(boolean enabled);
 }

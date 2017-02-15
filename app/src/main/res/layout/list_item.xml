@@ -18,15 +18,16 @@
 
         <ImageView
             android:id="@+id/thumb"
-            android:layout_width="@dimen/thumb_size"
-            android:layout_height="@dimen/thumb_size"
-            android:background="@color/colorTransparentBlack"
-            android:src="@mipmap/ic_launcher"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:layout_gravity="center"
+            android:src="@mipmap/list_item_thumb"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/half_margin"
+            android:layout_margin="@dimen/small_margin"
             android:layout_gravity="center_vertical"
             android:orientation="vertical">
 
@@ -34,7 +35,6 @@
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
                 android:textColor="@android:color/black"
                 android:layout_marginBottom="@dimen/small_margin"
                 android:maxLines="1"
@@ -45,6 +45,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLines="2"
+                android:textSize="13sp"
                 android:text="@string/description_text"/>
 
         </LinearLayout>
