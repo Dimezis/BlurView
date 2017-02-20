@@ -40,16 +40,6 @@ interface BlurController {
     void setWindowBackground(@Nullable Drawable windowBackground);
 
     /**
-     * Can be used to stop blur auto update
-     */
-    void stopBlurAutoUpdate();
-
-    /**
-     * Can be used to resume blur auto update if it was stopped before
-     */
-    void startBlurAutoUpdate();
-
-    /**
      * Frees allocated resources
      */
     void destroy();
@@ -58,4 +48,10 @@ interface BlurController {
      * Enables/disables the blur. Enabled by default
      */
     void setBlurEnabled(boolean enabled);
+
+    /**
+     * Can be used to stop blur auto update or resume if it was stopped before.
+     * Enabled by default.
+     */
+    void setBlurAutoUpdate(boolean enabled);
 }

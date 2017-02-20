@@ -64,17 +64,16 @@ public class BlurView extends FrameLayout {
     }
 
     /**
-     * Can be used to stop blur auto update
+     * Can be used to stop blur auto update or resume if it was stopped before.
+     * Enabled by default.
      */
-    public void stopBlurAutoUpdate() {
-        blurController.stopBlurAutoUpdate();
-    }
-
-    /**
-     * Can be used to resume blur auto update if it was stopped before
-     */
-    public void startBlurAutoUpdate() {
-        blurController.startBlurAutoUpdate();
+    public void setBlurAutoUpdate(final boolean enabled) {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                blurController.setBlurAutoUpdate(enabled);
+            }
+        });
     }
 
     /**
@@ -89,8 +88,13 @@ public class BlurView extends FrameLayout {
      *
      * @param enabled true to enable, false otherwise
      */
-    public void setBlurEnabled(boolean enabled) {
-        blurController.setBlurEnabled(enabled);
+    public void setBlurEnabled(final boolean enabled) {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                blurController.setBlurEnabled(enabled);
+            }
+        });
     }
 
     @Override
@@ -112,7 +116,7 @@ public class BlurView extends FrameLayout {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        stopBlurAutoUpdate();
+        blurController.setBlurAutoUpdate(false);
     }
 
     @Override
@@ -121,7 +125,7 @@ public class BlurView extends FrameLayout {
         if (!isHardwareAccelerated()) {
             Log.e(TAG, "BlurView can't be used in not hardware-accelerated window!");
         } else {
-            startBlurAutoUpdate();
+            blurController.setBlurAutoUpdate(true);
         }
     }
 
@@ -136,8 +140,10 @@ public class BlurView extends FrameLayout {
      * @param overlayColor int color
      */
     public void setOverlayColor(@ColorInt int overlayColor) {
-        this.overlayColor = overlayColor;
-        invalidate();
+        if (overlayColor != this.overlayColor) {
+            this.overlayColor = overlayColor;
+            invalidate();
+        }
     }
 
     /**
@@ -153,7 +159,7 @@ public class BlurView extends FrameLayout {
         setBlurController(blurController);
 
         if (!isHardwareAccelerated()) {
-            blurController.stopBlurAutoUpdate();
+            blurController.setBlurAutoUpdate(false);
         }
 
         return new ControllerSettings(blurController);
@@ -213,14 +219,6 @@ public class BlurView extends FrameLayout {
             }
 
             @Override
-            public void stopBlurAutoUpdate() {
-            }
-
-            @Override
-            public void startBlurAutoUpdate() {
-            }
-
-            @Override
             public void setBlurRadius(float radius) {
             }
 
@@ -238,6 +236,10 @@ public class BlurView extends FrameLayout {
 
             @Override
             public void setBlurEnabled(boolean enabled) {
+            }
+
+            @Override
+            public void setBlurAutoUpdate(boolean enabled) {
             }
         };
     }

@@ -14,12 +14,12 @@ import android.view.ViewTreeObserver;
 /**
  * Blur Controller that handles all blur logic for attached View.
  * It honors View size changes, View animation and Visibility changes.
- *
+ * <p>
  * The basic idea is to draw view hierarchy on internal bitmap, excluding the attached View.
  * After that, BlurController blurs this bitmap and draws it on system Canvas.
  * Default implementation uses {@link ViewTreeObserver.OnPreDrawListener} to detect when
  * blur should be redrawn.
- *
+ * <p>
  * Blur is done in the main thread.
  */
 class BlockingBlurController implements BlurController {
@@ -49,7 +49,7 @@ class BlockingBlurController implements BlurController {
     private final ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
         @Override
         public boolean onPreDraw() {
-            if (!isMeDrawingNow && isBlurEnabled) {
+            if (!isMeDrawingNow) {
                 updateBlur();
             }
             return true;
@@ -73,10 +73,10 @@ class BlockingBlurController implements BlurController {
     private Drawable windowBackground;
 
     /**
-     * @param blurView    View which will draw it's blurred underlying content
-     * @param rootView    Root View where blurView's underlying content starts drawing.
-     *                    Can be Activity's root content layout (android.R.id.content)
-     *                    or some of your custom root layouts.
+     * @param blurView View which will draw it's blurred underlying content
+     * @param rootView Root View where blurView's underlying content starts drawing.
+     *                 Can be Activity's root content layout (android.R.id.content)
+     *                 or some of your custom root layouts.
      */
     BlockingBlurController(@NonNull View blurView, @NonNull ViewGroup rootView) {
         this.rootView = rootView;
@@ -111,28 +111,17 @@ class BlockingBlurController implements BlurController {
     private void init(int measuredWidth, int measuredHeight) {
         if (isZeroSized(measuredWidth, measuredHeight)) {
             blurView.setWillNotDraw(true);
-            stopBlurAutoUpdate();
+            setBlurAutoUpdate(false);
             return;
         }
         blurView.setWillNotDraw(false);
         allocateBitmap(measuredWidth, measuredHeight);
         internalCanvas = new Canvas(internalBitmap);
-        startBlurAutoUpdate();
+        setBlurAutoUpdate(true);
     }
 
     private boolean isZeroSized(int measuredWidth, int measuredHeight) {
         return downScaleSize(measuredHeight) == 0 || downScaleSize(measuredWidth) == 0;
-    }
-
-    @Override
-    public void stopBlurAutoUpdate() {
-        rootView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
-    }
-
-    @Override
-    public void startBlurAutoUpdate() {
-        stopBlurAutoUpdate(); //just in case if listener was already attached
-        rootView.getViewTreeObserver().addOnPreDrawListener(drawListener);
     }
 
     void updateBlur() {
@@ -175,7 +164,7 @@ class BlockingBlurController implements BlurController {
         int scaledHeight = roundSize(nonRoundedScaledHeight);
 
         roundingHeightScaleFactor = (float) nonRoundedScaledHeight / scaledHeight;
-        roundingWidthScaleFactor = (float) nonRoundedScaledWidth  / scaledWidth;
+        roundingWidthScaleFactor = (float) nonRoundedScaledWidth / scaledWidth;
 
         internalBitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, blurAlgorithm.getSupportedBitmapConfig());
     }
@@ -250,7 +239,7 @@ class BlockingBlurController implements BlurController {
 
     @Override
     public void destroy() {
-        stopBlurAutoUpdate();
+        setBlurAutoUpdate(false);
         blurAlgorithm.destroy();
         if (internalBitmap != null) {
             internalBitmap.recycle();
@@ -275,6 +264,15 @@ class BlockingBlurController implements BlurController {
     @Override
     public void setBlurEnabled(boolean enabled) {
         this.isBlurEnabled = enabled;
+        setBlurAutoUpdate(enabled);
         blurView.invalidate();
+    }
+
+    @Override
+    public void setBlurAutoUpdate(boolean enabled) {
+        blurView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
+        if (enabled) {
+            blurView.getViewTreeObserver().addOnPreDrawListener(drawListener);
+        }
     }
 }
