@@ -149,7 +149,7 @@ public class BlurView extends FrameLayout {
     /**
      * @param rootView Root View where BlurView's underlying content starts drawing.
      *                 Can be Activity's root content layout (android.R.id.content)
-     *                 or some of your custom root layouts.
+     *                 or (preferably) some of your root layouts.
      *                 BlurView's position will be calculated as a relative position to the rootView (not to the direct parent)
      *                 This means that BlurView will choose a content to blur based on this relative position.
      * @return ControllerSettings to setup needed params.
