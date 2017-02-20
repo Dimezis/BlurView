@@ -3,7 +3,7 @@ apply plugin: 'com.android.library'
 ext {
     PUBLISH_GROUP_ID = 'com.eightbitlab'
     PUBLISH_ARTIFACT_ID = 'blurview'
-    PUBLISH_VERSION = '1.3.1'
+    PUBLISH_VERSION = '1.3.2'
 }
 
 android {
@@ -15,8 +15,8 @@ android {
         renderscriptSupportModeEnabled true
         minSdkVersion 14
         targetSdkVersion 25
-        versionCode 14
-        versionName "1.3.1"
+        versionCode 15
+        versionName "1.3.2"
     }
     buildTypes {
         release {
