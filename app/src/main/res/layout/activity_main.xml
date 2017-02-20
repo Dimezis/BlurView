@@ -18,7 +18,8 @@
         android:layout_height="wrap_content"
         android:elevation="4dp"
         android:outlineProvider="bounds"
-        app:blurOverlayColor="@color/colorOverlay">
+        app:blurOverlayColor="@color/colorOverlay"
+        tools:targetApi="lollipop">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -48,7 +49,8 @@
         android:layout_height="wrap_content"
         android:elevation="8dp"
         android:outlineProvider="bounds"
-        app:blurOverlayColor="@color/colorOverlay">
+        app:blurOverlayColor="@color/colorOverlay"
+        tools:targetApi="lollipop">
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tabLayout"
