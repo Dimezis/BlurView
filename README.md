@@ -39,6 +39,8 @@ It honors its position and size changes, including view animation and property a
            .blurRadius(radius);
 ```
 
+Always try to choose the closest possible root layout to BlurView. This will greatly reduce the amount of work needed for creating View hierarchy snapshot.
+
 ## Enable RenderScript support mode
 
 ```Groovy
