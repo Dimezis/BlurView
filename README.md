@@ -35,13 +35,26 @@ It honors its position and size changes, including view animation and property a
 
     blurView.setupWith(rootView)
            .windowBackground(windowBackground)
-           .blurAlgorithm(new RenderScriptBlur(this)) //OR SupportRenderScriptBlur for API < 17
+           .blurAlgorithm(new RenderScriptBlur(this))
            .blurRadius(radius);
 ```
 
 Always try to choose the closest possible root layout to BlurView. This will greatly reduce the amount of work needed for creating View hierarchy snapshot.
 
-## Enable RenderScript support mode
+## Supporting API < 17
+You can include
+
+```Groovy
+compile 'com.eightbitlab:supportrenderscriptblur:1.0.0'
+```
+
+and setup BlurView with
+
+```Java
+blurAlgorithm(new SupportRenderScriptBlur(this))
+```
+
+and enable RenderScript support mode
 
 ```Groovy
  defaultConfig {
