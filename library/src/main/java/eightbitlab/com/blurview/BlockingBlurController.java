@@ -81,7 +81,7 @@ class BlockingBlurController implements BlurController {
     BlockingBlurController(@NonNull View blurView, @NonNull ViewGroup rootView) {
         this.rootView = rootView;
         this.blurView = blurView;
-        this.blurAlgorithm = new RenderScriptBlur(blurView.getContext(), true);
+        this.blurAlgorithm = new NoOpBlurAlgorithm();
 
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();

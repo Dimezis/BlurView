@@ -11,8 +11,6 @@ android {
     buildToolsVersion "25.0.2"
 
     defaultConfig {
-        renderscriptTargetApi 25
-        renderscriptSupportModeEnabled true
         minSdkVersion 14
         targetSdkVersion 25
         versionCode 15
@@ -32,8 +30,8 @@ configurations {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-annotations:25.1.0'
-    javadocDeps 'com.android.support:support-annotations:25.1.0'
+    compile 'com.android.support:support-annotations:25.2.0'
+    javadocDeps 'com.android.support:support-annotations:25.2.0'
 }
 
 apply plugin: 'maven'

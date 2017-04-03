@@ -2,27 +2,31 @@ package eightbitlab.com.blurview;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Build;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.support.annotation.NonNull;
-import android.support.v8.renderscript.Allocation;
-import android.support.v8.renderscript.Element;
-import android.support.v8.renderscript.RenderScript;
-import android.support.v8.renderscript.ScriptIntrinsicBlur;
+import android.support.annotation.RequiresApi;
 
 /**
- * Blur using RenderScript, processed on GPU. Currently the fastest blur algorithm.
+ * Blur using RenderScript, processed on GPU.
+ * Requires API 17+
  */
 public final class RenderScriptBlur implements BlurAlgorithm {
     private final RenderScript renderScript;
     private final ScriptIntrinsicBlur blurScript;
     private Allocation outAllocation;
 
-    private final boolean canModifyBitmap;
-
     private int lastBitmapWidth = -1;
     private int lastBitmapHeight = -1;
 
-    public RenderScriptBlur(Context context, boolean canModifyBitmap) {
-        this.canModifyBitmap = canModifyBitmap;
+    /**
+     * @param context Context to create the {@link RenderScript}
+     */
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    public RenderScriptBlur(Context context) {
         renderScript = RenderScript.create(context);
         blurScript = ScriptIntrinsicBlur.create(renderScript, Element.U8_4(renderScript));
     }
@@ -36,17 +40,11 @@ public final class RenderScriptBlur implements BlurAlgorithm {
      * @param blurRadius blur radius (1..25)
      * @return blurred bitmap
      */
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public final Bitmap blur(Bitmap bitmap, float blurRadius) {
         //Allocation will use the same backing array of pixels as bitmap if created with USAGE_SHARED flag
         Allocation inAllocation = Allocation.createFromBitmap(renderScript, bitmap);
-        Bitmap outputBitmap;
-
-        if (canModifyBitmap) {
-            outputBitmap = bitmap;
-        } else {
-            outputBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
-        }
 
         if (!canReuseAllocation(bitmap)) {
             if (outAllocation != null) {
@@ -61,10 +59,10 @@ public final class RenderScriptBlur implements BlurAlgorithm {
         blurScript.setInput(inAllocation);
         //do not use inAllocation in forEach. it will cause visual artifacts on blurred Bitmap
         blurScript.forEach(outAllocation);
-        outAllocation.copyTo(outputBitmap);
+        outAllocation.copyTo(bitmap);
 
         inAllocation.destroy();
-        return outputBitmap;
+        return bitmap;
     }
 
     @Override
@@ -78,7 +76,7 @@ public final class RenderScriptBlur implements BlurAlgorithm {
 
     @Override
     public boolean canModifyBitmap() {
-        return canModifyBitmap;
+        return true;
     }
 
     @NonNull
