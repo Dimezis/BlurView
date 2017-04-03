@@ -71,6 +71,7 @@ class BlockingBlurController implements BlurController {
     //By default, window's background is not drawn on canvas. We need to draw it manually
     @Nullable
     private Drawable windowBackground;
+    private boolean shouldTryToOffsetCoords = true;
 
     /**
      * @param blurView View which will draw it's blurred underlying content
@@ -169,10 +170,21 @@ class BlockingBlurController implements BlurController {
         internalBitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, blurAlgorithm.getSupportedBitmapConfig());
     }
 
-    //draw starting from blurView's position
+    /**
+     * setup matrix to draw starting from blurView's position
+     */
     private void setupInternalCanvasMatrix() {
         blurView.getDrawingRect(relativeViewBounds);
-        rootView.offsetDescendantRectToMyCoords(blurView, relativeViewBounds);
+
+        if (shouldTryToOffsetCoords) {
+            try {
+                rootView.offsetDescendantRectToMyCoords(blurView, relativeViewBounds);
+            } catch (IllegalArgumentException e) {
+                // BlurView is not a child of the rootView (i.e. it's in Dialog)
+                // Fallback to regular coordinates system
+                shouldTryToOffsetCoords = false;
+            }
+        }
 
         float scaleFactorX = scaleFactor * roundingWidthScaleFactor;
         float scaleFactorY = scaleFactor * roundingHeightScaleFactor;
