@@ -11,6 +11,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 
+import com.eightbitlab.supportrenderscriptblur.SupportRenderScriptBlur;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import eightbitlab.com.blurview.BlurView;
@@ -55,10 +57,12 @@ public class MainActivity extends AppCompatActivity {
 
         final BlurView.ControllerSettings topViewSettings = topBlurView.setupWith(root)
                 .windowBackground(windowBackground)
+                .blurAlgorithm(new SupportRenderScriptBlur(this))
                 .blurRadius(radius);
 
         final BlurView.ControllerSettings bottomViewSettings = bottomBlurView.setupWith(root)
                 .windowBackground(windowBackground)
+                .blurAlgorithm(new SupportRenderScriptBlur(this))
                 .blurRadius(radius);
 
         int initialProgress = (int) (radius * step);
