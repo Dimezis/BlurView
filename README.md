@@ -48,7 +48,7 @@ You can include
 compile 'com.eightbitlab:supportrenderscriptblur:1.0.0'
 ```
 
-and setup BlurView with
+setup BlurView with
 
 ```Java
 blurAlgorithm(new SupportRenderScriptBlur(this))
