@@ -184,7 +184,7 @@ public class BlurView extends FrameLayout {
 
         /**
          * @param algorithm sets the blur algorithm
-         *                  Default implementation uses {@link RenderScriptBlur}
+         *                  Default implementation uses {@link NoOpBlurAlgorithm}
          * @return ControllerSettings
          */
         public ControllerSettings blurAlgorithm(BlurAlgorithm algorithm) {
