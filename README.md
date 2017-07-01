@@ -60,7 +60,7 @@ and enable RenderScript support mode
  defaultConfig {
         renderscriptTargetApi 25 //must match target sdk and build tools, 23+
         renderscriptSupportModeEnabled true
-  }
+ }
 ```
 
 ## Important
