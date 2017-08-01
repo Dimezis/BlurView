@@ -204,9 +204,11 @@ class BlockingBlurController implements BlurController {
      */
     private void drawUnderlyingViews() {
         //draw activity window background
-        if (windowBackground != null) {
-            windowBackground.draw(internalCanvas);
-        }
+         Bitmap bmp = ((BitmapDrawable) windowBackground).getBitmap();
+         if (bmp != null && !bmp.isRecycled()) {
+             windowBackground.draw(internalCanvas);
+         } else {
+         }
         rootView.draw(internalCanvas);
     }
 
