@@ -25,13 +25,13 @@ It honors its position and size changes, including view animation and property a
 ```
 
 ```Java
-    final float radius = 20;
+    float radius = 20;
 
-    final View decorView = getWindow().getDecorView();
+    View decorView = getWindow().getDecorView();
     //Activity's root View. Can also be root View of your layout (preferably)
-    final ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
+    ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
     //set background, if your root layout doesn't have one
-    final Drawable windowBackground = decorView.getBackground();
+    Drawable windowBackground = decorView.getBackground();
 
     blurView.setupWith(rootView)
            .windowBackground(windowBackground)
