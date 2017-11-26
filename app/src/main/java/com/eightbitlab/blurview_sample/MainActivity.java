@@ -9,25 +9,19 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
-import android.widget.SeekBar;
-
-import com.eightbitlab.supportrenderscriptblur.SupportRenderScriptBlur;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import eightbitlab.com.blurview.BlurView;
+import eightbitlab.com.blurview.gl.GLBlurView;
 
 public class MainActivity extends AppCompatActivity {
+
     @BindView(R.id.viewPager)
     ViewPager viewPager;
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
-    @BindView(R.id.bottomBlurView)
-    BlurView bottomBlurView;
-    @BindView(R.id.topBlurView)
-    BlurView topBlurView;
-    @BindView(R.id.radiusSeekBar)
-    SeekBar radiusSeekBar;
+    @BindView(R.id.blurView)
+    GLBlurView blurView;
     @BindView(R.id.root)
     ViewGroup root;
 
@@ -41,6 +35,18 @@ public class MainActivity extends AppCompatActivity {
         setupViewPager();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        blurView.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        blurView.onStop();
+    }
+
     private void setupViewPager() {
         viewPager.setOffscreenPageLimit(2);
         viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
@@ -48,35 +54,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupBlurView() {
-        final float radius = 25f;
-        final float minBlurRadius = 10f;
-        final float step = 4f;
-
         //set background, if your root layout doesn't have one
         final Drawable windowBackground = getWindow().getDecorView().getBackground();
 
-        final BlurView.ControllerSettings topViewSettings = topBlurView.setupWith(root)
-                .windowBackground(windowBackground)
-                .blurAlgorithm(new SupportRenderScriptBlur(this))
-                .blurRadius(radius);
-
-        final BlurView.ControllerSettings bottomViewSettings = bottomBlurView.setupWith(root)
-                .windowBackground(windowBackground)
-                .blurAlgorithm(new SupportRenderScriptBlur(this))
-                .blurRadius(radius);
-
-        int initialProgress = (int) (radius * step);
-        radiusSeekBar.setProgress(initialProgress);
-
-        radiusSeekBar.setOnSeekBarChangeListener(new SeekBarListenerAdapter() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                float blurRadius = progress / step;
-                blurRadius = Math.max(blurRadius, minBlurRadius);
-                topViewSettings.blurRadius(blurRadius);
-                bottomViewSettings.blurRadius(blurRadius);
-            }
-        });
+        blurView.setRootView(root);
+        blurView.setWindowBackground(windowBackground);
     }
 
     static class ViewPagerAdapter extends FragmentPagerAdapter {
