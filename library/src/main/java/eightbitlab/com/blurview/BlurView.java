@@ -146,6 +146,23 @@ public class BlurView extends FrameLayout {
     }
 
     /**
+     * Can be set to true to optimize position calculation before blur.
+     * By default, BlurView calculates its translation, rotation and scale before each draw call.
+     * If you are not changing these properties (for example, during animation), this behavior can be changed
+     * to calculate them only once during initialization.
+     * <p>
+     * This also resolves the issue with distortion of vector drawables.
+     *
+     * @param hasFixedTransformationMatrix indicates if this BlurView has fixed transformation Matrix.
+     * @return {@link BlurView}
+     * @see <a href="https://github.com/Dimezis/BlurView/issues/41">Distortion of vector drawables</a>
+     */
+    public BlurView setHasFixedTransformationMatrix(boolean hasFixedTransformationMatrix) {
+        blurController.setHasFixedTransformationMatrix(hasFixedTransformationMatrix);
+        return this;
+    }
+
+    /**
      * @param rootView Root View where BlurView's underlying content starts drawing.
      *                 Can be Activity's root content layout (android.R.id.content)
      *                 or (preferably) some of your root layouts.
@@ -232,6 +249,10 @@ public class BlurView extends FrameLayout {
 
             @Override
             public void setBlurAutoUpdate(boolean enabled) {
+            }
+
+            @Override
+            public void setHasFixedTransformationMatrix(boolean hasFixedTransformationMatrix) {
             }
         };
     }

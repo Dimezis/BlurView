@@ -54,4 +54,6 @@ interface BlurController {
      * Enabled by default.
      */
     void setBlurAutoUpdate(boolean enabled);
+
+    void setHasFixedTransformationMatrix(boolean hasFixedTransformationMatrix);
 }

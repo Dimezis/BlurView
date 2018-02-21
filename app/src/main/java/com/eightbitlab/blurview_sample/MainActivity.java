@@ -58,12 +58,14 @@ public class MainActivity extends AppCompatActivity {
         topBlurView.setupWith(root)
                 .windowBackground(windowBackground)
                 .blurAlgorithm(new SupportRenderScriptBlur(this))
-                .blurRadius(radius);
+                .blurRadius(radius)
+                .setHasFixedTransformationMatrix(true);
 
         bottomBlurView.setupWith(root)
                 .windowBackground(windowBackground)
                 .blurAlgorithm(new SupportRenderScriptBlur(this))
-                .blurRadius(radius);
+                .blurRadius(radius)
+                .setHasFixedTransformationMatrix(true);
 
         int initialProgress = (int) (radius * step);
         radiusSeekBar.setProgress(initialProgress);

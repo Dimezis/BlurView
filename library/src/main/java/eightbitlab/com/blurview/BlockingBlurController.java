@@ -45,6 +45,7 @@ class BlockingBlurController implements BlurController {
     final View blurView;
     private final ViewGroup rootView;
     private final Rect relativeViewBounds = new Rect();
+    private final int[] locationInWindow = new int[2];
 
     private final ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
         @Override
@@ -72,6 +73,7 @@ class BlockingBlurController implements BlurController {
     @Nullable
     private Drawable windowBackground;
     private boolean shouldTryToOffsetCoords = true;
+    private boolean hasFixedTransformationMatrix = false;
 
     /**
      * @param blurView View which will draw it's blurred underlying content
@@ -119,6 +121,9 @@ class BlockingBlurController implements BlurController {
         allocateBitmap(measuredWidth, measuredHeight);
         internalCanvas = new Canvas(internalBitmap);
         setBlurAutoUpdate(true);
+        if (hasFixedTransformationMatrix) {
+            setupInternalCanvasMatrix();
+        }
     }
 
     private boolean isZeroSized(int measuredWidth, int measuredHeight) {
@@ -184,6 +189,9 @@ class BlockingBlurController implements BlurController {
                 // Fallback to regular coordinates system
                 shouldTryToOffsetCoords = false;
             }
+        } else {
+            blurView.getLocationInWindow(locationInWindow);
+            relativeViewBounds.offset(locationInWindow[0], locationInWindow[1]);
         }
 
         float scaleFactorX = scaleFactor * roundingWidthScaleFactor;
@@ -215,10 +223,14 @@ class BlockingBlurController implements BlurController {
         isMeDrawingNow = true;
 
         if (isBlurEnabled) {
-            internalCanvas.save();
-            setupInternalCanvasMatrix();
-            drawUnderlyingViews();
-            internalCanvas.restore();
+            if (hasFixedTransformationMatrix) {
+                drawUnderlyingViews();
+            } else {
+                internalCanvas.save();
+                setupInternalCanvasMatrix();
+                drawUnderlyingViews();
+                internalCanvas.restore();
+            }
 
             blurAndSave();
             draw(canvas);
@@ -286,5 +298,10 @@ class BlockingBlurController implements BlurController {
         if (enabled) {
             blurView.getViewTreeObserver().addOnPreDrawListener(drawListener);
         }
+    }
+
+    @Override
+    public void setHasFixedTransformationMatrix(boolean hasFixedTransformationMatrix) {
+        this.hasFixedTransformationMatrix = hasFixedTransformationMatrix;
     }
 }
