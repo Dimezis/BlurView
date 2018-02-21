@@ -55,12 +55,12 @@ public class MainActivity extends AppCompatActivity {
         //set background, if your root layout doesn't have one
         final Drawable windowBackground = getWindow().getDecorView().getBackground();
 
-        final BlurView.ControllerSettings topViewSettings = topBlurView.setupWith(root)
+        topBlurView.setupWith(root)
                 .windowBackground(windowBackground)
                 .blurAlgorithm(new SupportRenderScriptBlur(this))
                 .blurRadius(radius);
 
-        final BlurView.ControllerSettings bottomViewSettings = bottomBlurView.setupWith(root)
+        bottomBlurView.setupWith(root)
                 .windowBackground(windowBackground)
                 .blurAlgorithm(new SupportRenderScriptBlur(this))
                 .blurRadius(radius);
@@ -73,8 +73,8 @@ public class MainActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 float blurRadius = progress / step;
                 blurRadius = Math.max(blurRadius, minBlurRadius);
-                topViewSettings.blurRadius(blurRadius);
-                bottomViewSettings.blurRadius(blurRadius);
+                topBlurView.blurRadius(blurRadius);
+                bottomBlurView.blurRadius(blurRadius);
             }
         });
     }

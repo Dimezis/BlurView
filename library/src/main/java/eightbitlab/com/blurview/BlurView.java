@@ -55,25 +55,12 @@ public class BlurView extends FrameLayout {
         //draw only on system's hardware accelerated canvas
         if (canvas.isHardwareAccelerated()) {
             blurController.drawBlurredContent(canvas);
-            drawColorOverlay(canvas);
+            canvas.drawColor(overlayColor);
             super.draw(canvas);
         } else if (!isHardwareAccelerated()) {
             //if view is in a not hardware accelerated window, don't draw blur
             super.draw(canvas);
         }
-    }
-
-    /**
-     * Can be used to stop blur auto update or resume if it was stopped before.
-     * Enabled by default.
-     */
-    public void setBlurAutoUpdate(final boolean enabled) {
-        post(new Runnable() {
-            @Override
-            public void run() {
-                blurController.setBlurAutoUpdate(enabled);
-            }
-        });
     }
 
     /**
@@ -84,17 +71,32 @@ public class BlurView extends FrameLayout {
     }
 
     /**
+     * Can be used to stop blur auto update or resume if it was stopped before.
+     * Enabled by default.
+     */
+    public BlurView setBlurAutoUpdate(final boolean enabled) {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                blurController.setBlurAutoUpdate(enabled);
+            }
+        });
+        return this;
+    }
+
+    /**
      * Enables/disables the blur. Enabled by default
      *
      * @param enabled true to enable, false otherwise
      */
-    public void setBlurEnabled(final boolean enabled) {
+    public BlurView setBlurEnabled(final boolean enabled) {
         post(new Runnable() {
             @Override
             public void run() {
                 blurController.setBlurEnabled(enabled);
             }
         });
+        return this;
     }
 
     @Override
@@ -107,10 +109,6 @@ public class BlurView extends FrameLayout {
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
         blurController.onDrawEnd(canvas);
-    }
-
-    private void drawColorOverlay(Canvas canvas) {
-        canvas.drawColor(overlayColor);
     }
 
     @Override
@@ -139,11 +137,12 @@ public class BlurView extends FrameLayout {
      *
      * @param overlayColor int color
      */
-    public void setOverlayColor(@ColorInt int overlayColor) {
+    public BlurView setOverlayColor(@ColorInt int overlayColor) {
         if (overlayColor != this.overlayColor) {
             this.overlayColor = overlayColor;
             invalidate();
         }
+        return this;
     }
 
     /**
@@ -152,9 +151,9 @@ public class BlurView extends FrameLayout {
      *                 or (preferably) some of your root layouts.
      *                 BlurView's position will be calculated as a relative position to the rootView (not to the direct parent)
      *                 This means that BlurView will choose a content to blur based on this relative position.
-     * @return ControllerSettings to setup needed params.
+     * @return {@link BlurView} to setup needed params.
      */
-    public ControllerSettings setupWith(@NonNull ViewGroup rootView) {
+    public BlurView setupWith(@NonNull ViewGroup rootView) {
         BlurController blurController = new BlockingBlurController(this, rootView);
         setBlurController(blurController);
 
@@ -162,45 +161,38 @@ public class BlurView extends FrameLayout {
             blurController.setBlurAutoUpdate(false);
         }
 
-        return new ControllerSettings(blurController);
+        return this;
     }
 
-    public static class ControllerSettings {
-        BlurController blurController;
+    //TODO `set` prefix should be added to methods below, but for now leaving it like this for compatibility
+    /**
+     * @param radius sets the blur radius
+     *               Default implementation uses field {@link BlurController#DEFAULT_BLUR_RADIUS}
+     * @return {@link BlurView}
+     */
+    public BlurView blurRadius(float radius) {
+        blurController.setBlurRadius(radius);
+        return this;
+    }
 
-        ControllerSettings(BlurController blurController) {
-            this.blurController = blurController;
-        }
+    /**
+     * @param algorithm sets the blur algorithm
+     *                  Default implementation uses {@link NoOpBlurAlgorithm}
+     * @return {@link BlurView}
+     */
+    public BlurView blurAlgorithm(BlurAlgorithm algorithm) {
+        blurController.setBlurAlgorithm(algorithm);
+        return this;
+    }
 
-        /**
-         * @param radius sets the blur radius
-         *               Default implementation uses field {@link BlurController#DEFAULT_BLUR_RADIUS}
-         * @return ControllerSettings
-         */
-        public ControllerSettings blurRadius(float radius) {
-            blurController.setBlurRadius(radius);
-            return this;
-        }
-
-        /**
-         * @param algorithm sets the blur algorithm
-         *                  Default implementation uses {@link NoOpBlurAlgorithm}
-         * @return ControllerSettings
-         */
-        public ControllerSettings blurAlgorithm(BlurAlgorithm algorithm) {
-            blurController.setBlurAlgorithm(algorithm);
-            return this;
-        }
-
-        /**
-         * @param windowBackground sets the background to draw before view hierarchy.
-         *                         Can be used to draw Activity's window background if your root layout doesn't provide any background
-         * @return ControllerSettings
-         */
-        public ControllerSettings windowBackground(@Nullable Drawable windowBackground) {
-            blurController.setWindowBackground(windowBackground);
-            return this;
-        }
+    /**
+     * @param windowBackground sets the background to draw before view hierarchy.
+     *                         Can be used to draw Activity's window background if your root layout doesn't provide any background
+     * @return {@link BlurView}
+     */
+    public BlurView windowBackground(@Nullable Drawable windowBackground) {
+        blurController.setWindowBackground(windowBackground);
+        return this;
     }
 
     //Used in edit mode and in case if no BlurController was set
