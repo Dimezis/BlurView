@@ -113,10 +113,13 @@ class BlockingBlurController implements BlurController {
 
     void init(int measuredWidth, int measuredHeight) {
         if (isZeroSized(measuredWidth, measuredHeight)) {
+            isBlurEnabled = false;
             blurView.setWillNotDraw(true);
             setBlurAutoUpdate(false);
             return;
         }
+
+        isBlurEnabled = true;
         blurView.setWillNotDraw(false);
         allocateBitmap(measuredWidth, measuredHeight);
         internalCanvas = new Canvas(internalBitmap);
