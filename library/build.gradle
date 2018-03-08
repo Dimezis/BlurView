@@ -8,7 +8,7 @@ ext {
 
 android {
     compileSdkVersion 27
-    buildToolsVersion "27.0.1"
+    buildToolsVersion "27.0.3"
 
     defaultConfig {
         minSdkVersion 14
@@ -30,9 +30,9 @@ configurations {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-annotations:27.0.2'
-    javadocDeps 'com.android.support:support-annotations:27.0.2'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:support-annotations:27.1.0'
+    javadocDeps 'com.android.support:support-annotations:27.1.0'
 }
 
 apply plugin: 'maven'
