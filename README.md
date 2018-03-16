@@ -36,10 +36,14 @@ It honors its position and size changes, including view animation and property a
     blurView.setupWith(rootView)
            .windowBackground(windowBackground)
            .blurAlgorithm(new RenderScriptBlur(this))
-           .blurRadius(radius);
+           .blurRadius(radius)
+           .setHasFixedTransformationMatrix(true);
 ```
 
 Always try to choose the closest possible root layout to BlurView. This will greatly reduce the amount of work needed for creating View hierarchy snapshot.
+
+You can use `setHasFixedTransformationMatrix` in case if you are not animating your BlurView, 
+this might slightly improve the performance as BlurView won't have to recalculate its transformation matrix on each frame. 
 
 ## Supporting API < 17
 If you need to support API < 17, you can include
@@ -72,7 +76,7 @@ It takes 1-4ms on Nexus 5 and Nexus 4 to draw BlurView with the setup given in e
 
 ## Gradle
 ```Groovy
-implementation 'com.eightbitlab:blurview:1.3.4'
+implementation 'com.eightbitlab:blurview:1.4.0'
 ```
 
 License
