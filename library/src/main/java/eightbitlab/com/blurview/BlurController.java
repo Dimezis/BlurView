@@ -4,7 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 
-interface BlurController {
+public interface BlurController {
     float DEFAULT_SCALE_FACTOR = 8f;
     float DEFAULT_BLUR_RADIUS = 16f;
 
