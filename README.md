@@ -28,7 +28,7 @@ It honors its position and size changes, including view animation and property a
     float radius = 20;
 
     View decorView = getWindow().getDecorView();
-    //Activity's root View. Can also be root View of your layout (preferably)
+    //ViewGroup you want to start blur from. Choose root as close to BlurView in hierarchy as possible.
     ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
     //set background, if your root layout doesn't have one
     Drawable windowBackground = decorView.getBackground();
