@@ -2,6 +2,8 @@ package eightbitlab.com.blurview;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -23,7 +25,7 @@ import android.view.ViewTreeObserver;
  * Blur is done in the main thread.
  */
 class BlockingBlurController implements BlurController {
-    private static final String TAG = BlockingBlurController.class.getSimpleName();
+
     //Bitmap size should be divisible by 16 to meet stride requirement
     private static final int ROUNDING_VALUE = 16;
 
@@ -42,6 +44,7 @@ class BlockingBlurController implements BlurController {
      */
     private Bitmap internalBitmap;
 
+    @SuppressWarnings("WeakerAccess")
     final View blurView;
     private final ViewGroup rootView;
     private final Rect relativeViewBounds = new Rect();
@@ -58,6 +61,7 @@ class BlockingBlurController implements BlurController {
     };
 
     //Used to distinct parent draw() calls from Controller's draw() calls
+    @SuppressWarnings("WeakerAccess")
     boolean isMeDrawingNow;
     private boolean isBlurEnabled = true;
 
@@ -71,9 +75,10 @@ class BlockingBlurController implements BlurController {
 
     //By default, window's background is not drawn on canvas. We need to draw it manually
     @Nullable
-    private Drawable windowBackground;
+    private Drawable frameClearDrawable;
     private boolean shouldTryToOffsetCoords = true;
-    private boolean hasFixedTransformationMatrix = false;
+    private boolean hasFixedTransformationMatrix;
+    private final Paint paint = new Paint();
 
     /**
      * @param blurView View which will draw it's blurred underlying content
@@ -85,6 +90,7 @@ class BlockingBlurController implements BlurController {
         this.rootView = rootView;
         this.blurView = blurView;
         this.blurAlgorithm = new NoOpBlurAlgorithm();
+        paint.setFilterBitmap(true);
 
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();
@@ -111,6 +117,7 @@ class BlockingBlurController implements BlurController {
         return value - (value % ROUNDING_VALUE) + ROUNDING_VALUE;
     }
 
+    @SuppressWarnings("WeakerAccess")
     void init(int measuredWidth, int measuredHeight) {
         if (isZeroSized(measuredWidth, measuredHeight)) {
             isBlurEnabled = false;
@@ -133,6 +140,7 @@ class BlockingBlurController implements BlurController {
         return downScaleSize(measuredHeight) == 0 || downScaleSize(measuredWidth) == 0;
     }
 
+    @SuppressWarnings("WeakerAccess")
     void updateBlur() {
         isMeDrawingNow = true;
         blurView.invalidate();
@@ -158,14 +166,13 @@ class BlockingBlurController implements BlurController {
             }
 
             @SuppressWarnings("deprecation")
-            private void legacyRemoveOnGlobalLayoutListener() {
+            void legacyRemoveOnGlobalLayoutListener() {
                 blurView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
         });
     }
 
     private void allocateBitmap(int measuredWidth, int measuredHeight) {
-        //downscale overlay (blurred) bitmap
         int nonRoundedScaledWidth = downScaleSize(measuredWidth);
         int nonRoundedScaledHeight = downScaleSize(measuredHeight);
 
@@ -210,28 +217,22 @@ class BlockingBlurController implements BlurController {
         internalCanvas.scale(1f / scaleFactorX, 1f / scaleFactorY);
     }
 
-    /**
-     * Draws whole view hierarchy on internal canvas
-     */
-    private void drawUnderlyingViews() {
-        //draw activity window background
-        if (windowBackground != null) {
-            windowBackground.draw(internalCanvas);
-        }
-        rootView.draw(internalCanvas);
-    }
-
     @Override
     public void drawBlurredContent(Canvas canvas) {
         isMeDrawingNow = true;
 
         if (isBlurEnabled) {
+            if (frameClearDrawable == null) {
+                internalBitmap.eraseColor(Color.TRANSPARENT);
+            } else {
+                frameClearDrawable.draw(internalCanvas);
+            }
             if (hasFixedTransformationMatrix) {
-                drawUnderlyingViews();
+                rootView.draw(internalCanvas);
             } else {
                 internalCanvas.save();
                 setupInternalCanvasMatrix();
-                drawUnderlyingViews();
+                rootView.draw(internalCanvas);
                 internalCanvas.restore();
             }
 
@@ -243,7 +244,7 @@ class BlockingBlurController implements BlurController {
     private void draw(Canvas canvas) {
         canvas.save();
         canvas.scale(scaleFactor * roundingWidthScaleFactor, scaleFactor * roundingHeightScaleFactor);
-        canvas.drawBitmap(internalBitmap, 0, 0, null);
+        canvas.drawBitmap(internalBitmap, 0, 0, paint);
         canvas.restore();
     }
 
@@ -284,8 +285,8 @@ class BlockingBlurController implements BlurController {
     }
 
     @Override
-    public void setWindowBackground(@Nullable Drawable windowBackground) {
-        this.windowBackground = windowBackground;
+    public void setFrameClearDrawable(@Nullable Drawable frameClearDrawable) {
+        this.frameClearDrawable = frameClearDrawable;
     }
 
     @Override

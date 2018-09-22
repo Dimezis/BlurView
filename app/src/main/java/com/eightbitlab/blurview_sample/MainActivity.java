@@ -18,6 +18,7 @@ import butterknife.ButterKnife;
 import eightbitlab.com.blurview.BlurView;
 
 public class MainActivity extends AppCompatActivity {
+
     @BindView(R.id.viewPager)
     ViewPager viewPager;
     @BindView(R.id.tabLayout)
@@ -56,15 +57,15 @@ public class MainActivity extends AppCompatActivity {
         final Drawable windowBackground = getWindow().getDecorView().getBackground();
 
         topBlurView.setupWith(root)
-                .windowBackground(windowBackground)
-                .blurAlgorithm(new SupportRenderScriptBlur(this))
-                .blurRadius(radius)
+                .setFrameClearDrawable(windowBackground)
+                .setBlurAlgorithm(new SupportRenderScriptBlur(this))
+                .setBlurRadius(radius)
                 .setHasFixedTransformationMatrix(true);
 
         bottomBlurView.setupWith(root)
-                .windowBackground(windowBackground)
-                .blurAlgorithm(new SupportRenderScriptBlur(this))
-                .blurRadius(radius)
+                .setFrameClearDrawable(windowBackground)
+                .setBlurAlgorithm(new SupportRenderScriptBlur(this))
+                .setBlurRadius(radius)
                 .setHasFixedTransformationMatrix(true);
 
         int initialProgress = (int) (radius * step);
@@ -75,8 +76,8 @@ public class MainActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 float blurRadius = progress / step;
                 blurRadius = Math.max(blurRadius, minBlurRadius);
-                topBlurView.blurRadius(blurRadius);
-                bottomBlurView.blurRadius(blurRadius);
+                topBlurView.setBlurRadius(blurRadius);
+                bottomBlurView.setBlurRadius(blurRadius);
             }
         });
     }

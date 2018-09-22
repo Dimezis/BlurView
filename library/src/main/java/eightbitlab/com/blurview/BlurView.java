@@ -17,6 +17,7 @@ import android.widget.FrameLayout;
  * Can have children and draw them over blurred background.
  */
 public class BlurView extends FrameLayout {
+
     private static final String TAG = BlurView.class.getSimpleName();
     @ColorInt
     private static final int TRANSPARENT = 0x00000000;
@@ -55,19 +56,14 @@ public class BlurView extends FrameLayout {
         //draw only on system's hardware accelerated canvas
         if (canvas.isHardwareAccelerated()) {
             blurController.drawBlurredContent(canvas);
-            canvas.drawColor(overlayColor);
+            if (overlayColor != TRANSPARENT) {
+                canvas.drawColor(overlayColor);
+            }
             super.draw(canvas);
         } else if (!isHardwareAccelerated()) {
             //if view is in a not hardware accelerated window, don't draw blur
             super.draw(canvas);
         }
-    }
-
-    /**
-     * Can be called to redraw blurred content manually
-     */
-    public void updateBlur() {
-        invalidate();
     }
 
     /**
@@ -160,9 +156,9 @@ public class BlurView extends FrameLayout {
     }
 
     /**
-     * @param rootView Root View where BlurView's underlying content starts drawing.
+     * @param rootView root to start blur from.
      *                 Can be Activity's root content layout (android.R.id.content)
-     *                 or (preferably) some of your root layouts.
+     *                 or (preferably) some of your layouts. The lower amount of View are in a root, the better for performance.
      *                 BlurView's position will be calculated as a relative position to the rootView (not to the direct parent)
      *                 This means that BlurView will choose a content to blur based on this relative position.
      * @return {@link BlurView} to setup needed params.
@@ -178,13 +174,12 @@ public class BlurView extends FrameLayout {
         return this;
     }
 
-    //TODO `set` prefix should be added to methods below, but for now leaving it like this for compatibility
     /**
      * @param radius sets the blur radius
      *               Default implementation uses field {@link BlurController#DEFAULT_BLUR_RADIUS}
      * @return {@link BlurView}
      */
-    public BlurView blurRadius(float radius) {
+    public BlurView setBlurRadius(float radius) {
         blurController.setBlurRadius(radius);
         return this;
     }
@@ -194,18 +189,19 @@ public class BlurView extends FrameLayout {
      *                  Default implementation uses {@link NoOpBlurAlgorithm}
      * @return {@link BlurView}
      */
-    public BlurView blurAlgorithm(BlurAlgorithm algorithm) {
+    public BlurView setBlurAlgorithm(BlurAlgorithm algorithm) {
         blurController.setBlurAlgorithm(algorithm);
         return this;
     }
 
     /**
-     * @param windowBackground sets the background to draw before view hierarchy.
-     *                         Can be used to draw Activity's window background if your root layout doesn't provide any background
+     * @param frameClearDrawable sets the drawable to draw before view hierarchy.
+     *                           Can be used to draw Activity's window background if your root layout doesn't provide any background
+     *                           Optional, by default frame is cleared with a transparent color.
      * @return {@link BlurView}
      */
-    public BlurView windowBackground(@Nullable Drawable windowBackground) {
-        blurController.setWindowBackground(windowBackground);
+    public BlurView setFrameClearDrawable(@Nullable Drawable frameClearDrawable) {
+        blurController.setFrameClearDrawable(frameClearDrawable);
         return this;
     }
 
@@ -233,7 +229,7 @@ public class BlurView extends FrameLayout {
             }
 
             @Override
-            public void setWindowBackground(@Nullable Drawable windowBackground) {
+            public void setFrameClearDrawable(@Nullable Drawable windowBackground) {
             }
 
             @Override

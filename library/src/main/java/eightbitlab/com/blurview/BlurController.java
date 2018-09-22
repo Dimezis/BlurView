@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 
 interface BlurController {
+
     float DEFAULT_SCALE_FACTOR = 8f;
     float DEFAULT_BLUR_RADIUS = 16f;
 
@@ -34,10 +35,11 @@ interface BlurController {
     void setBlurAlgorithm(BlurAlgorithm algorithm);
 
     /**
-     * @param windowBackground sets the background to draw before view hierarchy.
-     *                         Can be used to draw Activity's window background if your root layout doesn't provide any background
+     * @param frameClearDrawable sets the drawable to draw before view hierarchy.
+     *                           Can be used to draw Activity's window background if your root layout doesn't provide any background
+     *                           Optional, by default frame is cleared with a transparent color.
      */
-    void setWindowBackground(@Nullable Drawable windowBackground);
+    void setFrameClearDrawable(@Nullable Drawable frameClearDrawable);
 
     /**
      * Frees allocated resources
