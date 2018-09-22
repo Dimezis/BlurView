@@ -30,7 +30,9 @@ It honors its position and size changes, including view animation and property a
     View decorView = getWindow().getDecorView();
     //ViewGroup you want to start blur from. Choose root as close to BlurView in hierarchy as possible.
     ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
-    //set background, if your root layout doesn't have one
+    //Set drawable to draw in the beginning of each blurred frame (Optional). 
+    //Can be used in case your layout has a lot of transparent space and your content
+    //gets kinda lost after after blur is applied.
     Drawable windowBackground = decorView.getBackground();
 
     blurView.setupWith(rootView)
