@@ -25,7 +25,7 @@ It honors its position and size changes, including view animation and property a
 ```
 
 ```Java
-    float radius = 20;
+    float radius = 20f;
 
     View decorView = getWindow().getDecorView();
     //ViewGroup you want to start blur from. Choose root as close to BlurView in hierarchy as possible.
@@ -34,9 +34,9 @@ It honors its position and size changes, including view animation and property a
     Drawable windowBackground = decorView.getBackground();
 
     blurView.setupWith(rootView)
-           .windowBackground(windowBackground)
-           .blurAlgorithm(new RenderScriptBlur(this))
-           .blurRadius(radius)
+           .setFrameClearDrawable(windowBackground)
+           .setBlurAlgorithm(new RenderScriptBlur(this))
+           .setBlurRadius(radius)
            .setHasFixedTransformationMatrix(true);
 ```
 
@@ -62,7 +62,7 @@ and enable RenderScript support mode
 
 ```Groovy
  defaultConfig {
-        renderscriptTargetApi 27 //must match target sdk and build tools
+        renderscriptTargetApi 28 //must match target sdk and build tools
         renderscriptSupportModeEnabled true
  }
 ```
@@ -76,7 +76,7 @@ It takes 1-4ms on Nexus 5 and Nexus 4 to draw BlurView with the setup given in e
 
 ## Gradle
 ```Groovy
-implementation 'com.eightbitlab:blurview:1.4.0'
+implementation 'com.eightbitlab:blurview:1.5.0'
 ```
 
 License

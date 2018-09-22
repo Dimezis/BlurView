@@ -3,20 +3,19 @@ apply plugin: 'com.android.library'
 ext {
     PUBLISH_GROUP_ID = 'com.eightbitlab'
     PUBLISH_ARTIFACT_ID = 'supportrenderscriptblur'
-    PUBLISH_VERSION = '1.0.1'
+    PUBLISH_VERSION = '1.0.2'
 }
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion "27.0.2"
+    compileSdkVersion 28
 
     defaultConfig {
-        renderscriptTargetApi 27
+        renderscriptTargetApi 28
         renderscriptSupportModeEnabled true
         minSdkVersion 14
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 2
-        versionName "1.0.1"
+        versionName "1.0.2"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -30,7 +29,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:appcompat-v7:27.0.2'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
     compileOnly 'com.eightbitlab:blurview:+'
 }
 
