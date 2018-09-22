@@ -51,7 +51,7 @@ this might slightly improve the performance as BlurView won't have to recalculat
 If you need to support API < 17, you can include
 
 ```Groovy
-implementation 'com.eightbitlab:supportrenderscriptblur:1.0.1'
+implementation 'com.eightbitlab:supportrenderscriptblur:1.0.2'
 ```
 
 setup BlurView with
