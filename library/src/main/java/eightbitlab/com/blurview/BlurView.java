@@ -60,7 +60,7 @@ public class BlurView extends FrameLayout {
                 canvas.drawColor(overlayColor);
             }
             super.draw(canvas);
-        } else if (!isHardwareAccelerated()) {
+        } else {
             //if view is in a not hardware accelerated window, don't draw blur
             super.draw(canvas);
         }
