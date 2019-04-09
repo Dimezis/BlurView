@@ -46,9 +46,6 @@ public class BlurView extends FrameLayout {
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.BlurView, defStyleAttr, 0);
         overlayColor = a.getColor(R.styleable.BlurView_blurOverlayColor, TRANSPARENT);
         a.recycle();
-
-        //we need to draw even without background set
-        setWillNotDraw(false);
     }
 
     @Override
