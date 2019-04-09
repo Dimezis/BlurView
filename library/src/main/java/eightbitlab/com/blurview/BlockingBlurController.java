@@ -63,7 +63,7 @@ final class BlockingBlurController implements BlurController {
     @Nullable
     private Drawable frameClearDrawable;
     private boolean hasFixedTransformationMatrix;
-    private final Paint paint = new Paint();
+    private final Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
     /**
      * @param blurView View which will draw it's blurred underlying content
@@ -75,7 +75,6 @@ final class BlockingBlurController implements BlurController {
         this.rootView = rootView;
         this.blurView = blurView;
         this.blurAlgorithm = new NoOpBlurAlgorithm();
-        paint.setFilterBitmap(true);
 
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();
