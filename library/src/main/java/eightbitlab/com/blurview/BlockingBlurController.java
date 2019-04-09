@@ -13,13 +13,14 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
 /**
- * Blur Controller that handles all blur logic for attached View.
+ * Blur Controller that handles all blur logic for the attached View.
  * It honors View size changes, View animation and Visibility changes.
  * <p>
- * The basic idea is to draw view hierarchy on internal bitmap, excluding the attached View.
- * After that, BlurController blurs this bitmap and draws it on system Canvas.
- * Default implementation uses {@link ViewTreeObserver.OnPreDrawListener} to detect when
- * blur should be redrawn.
+ * The basic idea is to draw the view hierarchy on a bitmap, excluding the attached View,
+ * then blur and draw it on the system Canvas.
+ * <p>
+ * It uses {@link ViewTreeObserver.OnPreDrawListener} to detect when
+ * blur should be updated.
  * <p>
  * Blur is done on the main thread.
  */
