@@ -22,9 +22,9 @@ import android.view.ViewTreeObserver;
  * Default implementation uses {@link ViewTreeObserver.OnPreDrawListener} to detect when
  * blur should be redrawn.
  * <p>
- * Blur is done in the main thread.
+ * Blur is done on the main thread.
  */
-class BlockingBlurController implements BlurController {
+final class BlockingBlurController implements BlurController {
 
     //Bitmap size should be divisible by 16 to meet stride requirement
     private static final int ROUNDING_VALUE = 16;
@@ -36,12 +36,6 @@ class BlockingBlurController implements BlurController {
 
     private BlurAlgorithm blurAlgorithm;
     private Canvas internalCanvas;
-
-    /**
-     * Draw view hierarchy here.
-     * Blur it.
-     * Draw it on BlurView's canvas.
-     */
     private Bitmap internalBitmap;
 
     @SuppressWarnings("WeakerAccess")
@@ -53,25 +47,17 @@ class BlockingBlurController implements BlurController {
     private final ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
         @Override
         public boolean onPreDraw() {
-            if (!isMeDrawingNow) {
-                updateBlur();
-            }
+            // Not invalidating a View here, just updating the Bitmap.
+            // This relies on the HW accelerated bitmap drawing behavior in Android
+            // If the bitmap was drawn on HW accelerated canvas, it holds a reference to it and on next
+            // drawing pass the updated content of the bitmap will be rendered on the screen
+
+            updateBlur();
             return true;
         }
     };
 
-    //Used to distinct parent draw() calls from Controller's draw() calls
-    @SuppressWarnings("WeakerAccess")
-    boolean isMeDrawingNow;
     private boolean isBlurEnabled = true;
-
-    //must be set from message queue
-    private final Runnable onDrawEndTask = new Runnable() {
-        @Override
-        public void run() {
-            isMeDrawingNow = false;
-        }
-    };
 
     //By default, window's background is not drawn on canvas. We need to draw it manually
     @Nullable
@@ -142,8 +128,26 @@ class BlockingBlurController implements BlurController {
 
     @SuppressWarnings("WeakerAccess")
     void updateBlur() {
-        isMeDrawingNow = true;
-        blurView.invalidate();
+        if (!isBlurEnabled) {
+            return;
+        }
+
+        if (frameClearDrawable == null) {
+            internalBitmap.eraseColor(Color.TRANSPARENT);
+        } else {
+            frameClearDrawable.draw(internalCanvas);
+        }
+
+        if (hasFixedTransformationMatrix) {
+            rootView.draw(internalCanvas);
+        } else {
+            internalCanvas.save();
+            setupInternalCanvasMatrix();
+            rootView.draw(internalCanvas);
+            internalCanvas.restore();
+        }
+
+        blurAndSave();
     }
 
     /**
@@ -218,39 +222,17 @@ class BlockingBlurController implements BlurController {
     }
 
     @Override
-    public void drawBlurredContent(Canvas canvas) {
-        isMeDrawingNow = true;
-
-        if (isBlurEnabled) {
-            if (frameClearDrawable == null) {
-                internalBitmap.eraseColor(Color.TRANSPARENT);
-            } else {
-                frameClearDrawable.draw(internalCanvas);
-            }
-            if (hasFixedTransformationMatrix) {
-                rootView.draw(internalCanvas);
-            } else {
-                internalCanvas.save();
-                setupInternalCanvasMatrix();
-                rootView.draw(internalCanvas);
-                internalCanvas.restore();
-            }
-
-            blurAndSave();
-            draw(canvas);
+    public void draw(Canvas canvas) {
+        if (!isBlurEnabled) {
+            return;
         }
-    }
 
-    private void draw(Canvas canvas) {
+        updateBlur();
+
         canvas.save();
         canvas.scale(scaleFactor * roundingWidthScaleFactor, scaleFactor * roundingHeightScaleFactor);
         canvas.drawBitmap(internalBitmap, 0, 0, paint);
         canvas.restore();
-    }
-
-    @Override
-    public void onDrawEnd(Canvas canvas) {
-        blurView.post(onDrawEndTask);
     }
 
     private void blurAndSave() {

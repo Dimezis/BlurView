@@ -55,15 +55,12 @@ public class BlurView extends FrameLayout {
     public void draw(Canvas canvas) {
         //draw only on system's hardware accelerated canvas
         if (canvas.isHardwareAccelerated()) {
-            blurController.drawBlurredContent(canvas);
+            blurController.draw(canvas);
             if (overlayColor != TRANSPARENT) {
                 canvas.drawColor(overlayColor);
             }
-            super.draw(canvas);
-        } else {
-            //if view is in a not hardware accelerated window, don't draw blur
-            super.draw(canvas);
         }
+        super.draw(canvas);
     }
 
     /**
@@ -99,12 +96,6 @@ public class BlurView extends FrameLayout {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         blurController.updateBlurViewSize();
-    }
-
-    @Override
-    protected void dispatchDraw(Canvas canvas) {
-        super.dispatchDraw(canvas);
-        blurController.onDrawEnd(canvas);
     }
 
     @Override
@@ -209,15 +200,11 @@ public class BlurView extends FrameLayout {
     private BlurController createStubController() {
         return new BlurController() {
             @Override
-            public void drawBlurredContent(Canvas canvas) {
+            public void draw(Canvas canvas) {
             }
 
             @Override
             public void updateBlurViewSize() {
-            }
-
-            @Override
-            public void onDrawEnd(Canvas canvas) {
             }
 
             @Override

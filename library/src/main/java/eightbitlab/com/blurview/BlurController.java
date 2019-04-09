@@ -12,17 +12,12 @@ interface BlurController {
     /**
      * Draws blurred content on given canvas
      */
-    void drawBlurredContent(Canvas canvas);
+    void draw(Canvas canvas);
 
     /**
      * Must be used to notify Controller when BlurView's size has changed
      */
     void updateBlurViewSize();
-
-    /**
-     * Must be called by View when it ends its drawing
-     */
-    void onDrawEnd(Canvas canvas);
 
     /**
      * @param radius sets the blur radius
