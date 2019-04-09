@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -41,8 +40,8 @@ final class BlockingBlurController implements BlurController {
     @SuppressWarnings("WeakerAccess")
     final View blurView;
     private final ViewGroup rootView;
-    private final Rect relativeViewBounds = new Rect();
-    private final int[] locationInWindow = new int[2];
+    private final int[] rootLocation = new int[2];
+    private final int[] blurViewLocation = new int[2];
 
     private final ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
         @Override
@@ -62,7 +61,6 @@ final class BlockingBlurController implements BlurController {
     //By default, window's background is not drawn on canvas. We need to draw it manually
     @Nullable
     private Drawable frameClearDrawable;
-    private boolean shouldTryToOffsetCoords = true;
     private boolean hasFixedTransformationMatrix;
     private final Paint paint = new Paint();
 
@@ -190,35 +188,23 @@ final class BlockingBlurController implements BlurController {
     }
 
     /**
-     * setup matrix to draw starting from blurView's position
+     * Set up matrix to draw starting from blurView's position
      */
     private void setupInternalCanvasMatrix() {
-        blurView.getDrawingRect(relativeViewBounds);
+        rootView.getLocationOnScreen(rootLocation);
+        blurView.getLocationOnScreen(blurViewLocation);
 
-        if (shouldTryToOffsetCoords) {
-            try {
-                rootView.offsetDescendantRectToMyCoords(blurView, relativeViewBounds);
-            } catch (IllegalArgumentException e) {
-                // BlurView is not a child of the rootView (i.e. it's in Dialog)
-                // Fallback to regular coordinates system
-                shouldTryToOffsetCoords = false;
-            }
-        } else {
-            blurView.getLocationInWindow(locationInWindow);
-            relativeViewBounds.offset(locationInWindow[0], locationInWindow[1]);
-        }
+        int left = blurViewLocation[0] - rootLocation[0];
+        int top = blurViewLocation[1] - rootLocation[1];
 
         float scaleFactorX = scaleFactor * roundingWidthScaleFactor;
         float scaleFactorY = scaleFactor * roundingHeightScaleFactor;
 
-        float scaledLeftPosition = -relativeViewBounds.left / scaleFactorX;
-        float scaledTopPosition = -relativeViewBounds.top / scaleFactorY;
+        float scaledLeftPosition = -left / scaleFactorX;
+        float scaledTopPosition = -top / scaleFactorY;
 
-        float scaledTranslationX = blurView.getTranslationX() / scaleFactorX;
-        float scaledTranslationY = blurView.getTranslationY() / scaleFactorY;
-
-        internalCanvas.translate(scaledLeftPosition - scaledTranslationX, scaledTopPosition - scaledTranslationY);
-        internalCanvas.scale(1f / scaleFactorX, 1f / scaleFactorY);
+        internalCanvas.translate(scaledLeftPosition, scaledTopPosition);
+        internalCanvas.scale(1 / scaleFactorX, 1 / scaleFactorY);
     }
 
     @Override
