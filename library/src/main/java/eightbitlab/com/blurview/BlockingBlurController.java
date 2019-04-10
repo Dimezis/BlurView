@@ -232,6 +232,9 @@ final class BlockingBlurController implements BlurController {
 
     private void blurAndSave() {
         internalBitmap = blurAlgorithm.blur(internalBitmap, blurRadius);
+        if (!blurAlgorithm.canModifyBitmap()) {
+            internalCanvas.setBitmap(internalBitmap);
+        }
     }
 
     @Override
