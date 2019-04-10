@@ -3,14 +3,14 @@ package eightbitlab.com.blurview;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
+import static eightbitlab.com.blurview.BlockingBlurController.TRANSPARENT;
 
 /**
  * FrameLayout that blurs its underlying content.
@@ -19,10 +19,8 @@ import android.widget.FrameLayout;
 public class BlurView extends FrameLayout {
 
     private static final String TAG = BlurView.class.getSimpleName();
-    @ColorInt
-    private static final int TRANSPARENT = 0x00000000;
 
-    BlurController blurController = createStubController();
+    BlurController blurController = new NoOpController();
 
     @ColorInt
     private int overlayColor;
@@ -50,43 +48,8 @@ public class BlurView extends FrameLayout {
 
     @Override
     public void draw(Canvas canvas) {
-        //draw only on system's hardware accelerated canvas
-        if (canvas.isHardwareAccelerated()) {
-            blurController.draw(canvas);
-            if (overlayColor != TRANSPARENT) {
-                canvas.drawColor(overlayColor);
-            }
-        }
+        blurController.draw(canvas);
         super.draw(canvas);
-    }
-
-    /**
-     * Can be used to stop blur auto update or resume if it was stopped before.
-     * Enabled by default.
-     */
-    public BlurView setBlurAutoUpdate(final boolean enabled) {
-        post(new Runnable() {
-            @Override
-            public void run() {
-                blurController.setBlurAutoUpdate(enabled);
-            }
-        });
-        return this;
-    }
-
-    /**
-     * Enables/disables the blur. Enabled by default
-     *
-     * @param enabled true to enable, false otherwise
-     */
-    public BlurView setBlurEnabled(final boolean enabled) {
-        post(new Runnable() {
-            @Override
-            public void run() {
-                blurController.setBlurEnabled(enabled);
-            }
-        });
-        return this;
     }
 
     @Override
@@ -111,126 +74,52 @@ public class BlurView extends FrameLayout {
         }
     }
 
-    private void setBlurController(@NonNull BlurController blurController) {
-        this.blurController.destroy();
-        this.blurController = blurController;
-    }
-
-    /**
-     * Sets the color overlay to be drawn on top of blurred content
-     *
-     * @param overlayColor int color
-     */
-    public BlurView setOverlayColor(@ColorInt int overlayColor) {
-        if (overlayColor != this.overlayColor) {
-            this.overlayColor = overlayColor;
-            invalidate();
-        }
-        return this;
-    }
-
-    /**
-     * Can be set to true to optimize position calculation before blur.
-     * By default, BlurView calculates its translation, rotation and scale before each draw call.
-     * If you are not changing these properties (for example, during animation), this behavior can be changed
-     * to calculate them only once during initialization.
-     *
-     * @param hasFixedTransformationMatrix indicates if this BlurView has fixed transformation Matrix.
-     * @return {@link BlurView}
-     */
-    public BlurView setHasFixedTransformationMatrix(boolean hasFixedTransformationMatrix) {
-        blurController.setHasFixedTransformationMatrix(hasFixedTransformationMatrix);
-        return this;
-    }
-
     /**
      * @param rootView root to start blur from.
      *                 Can be Activity's root content layout (android.R.id.content)
-     *                 or (preferably) some of your layouts. The lower amount of View are in a root, the better for performance.
-     *                 BlurView's position will be calculated as a relative position to the rootView (not to the direct parent)
-     *                 This means that BlurView will choose a content to blur based on this relative position.
+     *                 or (preferably) some of your layouts. The lower amount of Views are in the root, the better for performance.
      * @return {@link BlurView} to setup needed params.
      */
-    public BlurView setupWith(@NonNull ViewGroup rootView) {
-        BlurController blurController = new BlockingBlurController(this, rootView);
-        setBlurController(blurController);
+    public BlurViewFacade setupWith(@NonNull ViewGroup rootView) {
+        BlurController blurController = new BlockingBlurController(this, rootView, overlayColor);
+        this.blurController.destroy();
+        this.blurController = blurController;
 
         if (!isHardwareAccelerated()) {
             blurController.setBlurAutoUpdate(false);
         }
 
-        return this;
+        return blurController;
+    }
+
+    // Setters duplicated to be able to conveniently change these settings outside of setupWith chain
+
+    /**
+     * @see BlurViewFacade#setBlurRadius(float)
+     */
+    public BlurViewFacade setBlurRadius(float radius) {
+        return blurController.setBlurRadius(radius);
     }
 
     /**
-     * @param radius sets the blur radius
-     *               Default implementation uses field {@link BlurController#DEFAULT_BLUR_RADIUS}
-     * @return {@link BlurView}
+     * @see BlurViewFacade#setOverlayColor(int)
      */
-    public BlurView setBlurRadius(float radius) {
-        blurController.setBlurRadius(radius);
-        return this;
+    public BlurViewFacade setOverlayColor(@ColorInt int overlayColor) {
+        this.overlayColor = overlayColor;
+        return blurController.setOverlayColor(overlayColor);
     }
 
     /**
-     * @param algorithm sets the blur algorithm
-     *                  Default implementation uses {@link NoOpBlurAlgorithm}
-     * @return {@link BlurView}
+     * @see BlurViewFacade#setBlurAutoUpdate(boolean)
      */
-    public BlurView setBlurAlgorithm(BlurAlgorithm algorithm) {
-        blurController.setBlurAlgorithm(algorithm);
-        return this;
+    public BlurViewFacade setBlurAutoUpdate(boolean enabled) {
+        return blurController.setBlurAutoUpdate(enabled);
     }
 
     /**
-     * @param frameClearDrawable sets the drawable to draw before view hierarchy.
-     *                           Can be used to draw Activity's window background if your root layout doesn't provide any background
-     *                           Optional, by default frame is cleared with a transparent color.
-     * @return {@link BlurView}
+     * @see BlurViewFacade#setBlurEnabled(boolean)
      */
-    public BlurView setFrameClearDrawable(@Nullable Drawable frameClearDrawable) {
-        blurController.setFrameClearDrawable(frameClearDrawable);
-        return this;
-    }
-
-    //Used in edit mode and in case if no BlurController was set
-    private BlurController createStubController() {
-        return new BlurController() {
-            @Override
-            public void draw(Canvas canvas) {
-            }
-
-            @Override
-            public void updateBlurViewSize() {
-            }
-
-            @Override
-            public void setBlurRadius(float radius) {
-            }
-
-            @Override
-            public void setBlurAlgorithm(BlurAlgorithm algorithm) {
-            }
-
-            @Override
-            public void setFrameClearDrawable(@Nullable Drawable windowBackground) {
-            }
-
-            @Override
-            public void destroy() {
-            }
-
-            @Override
-            public void setBlurEnabled(boolean enabled) {
-            }
-
-            @Override
-            public void setBlurAutoUpdate(boolean enabled) {
-            }
-
-            @Override
-            public void setHasFixedTransformationMatrix(boolean hasFixedTransformationMatrix) {
-            }
-        };
+    public BlurViewFacade setBlurEnabled(boolean enabled) {
+        return blurController.setBlurEnabled(enabled);
     }
 }

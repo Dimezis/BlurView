@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
@@ -28,6 +29,8 @@ final class BlockingBlurController implements BlurController {
 
     //Bitmap size should be divisible by 16 to meet stride requirement
     private static final int ROUNDING_VALUE = 16;
+    @ColorInt
+    static final int TRANSPARENT = 0;
 
     private final float scaleFactor = DEFAULT_SCALE_FACTOR;
     private float blurRadius = DEFAULT_BLUR_RADIUS;
@@ -40,6 +43,7 @@ final class BlockingBlurController implements BlurController {
 
     @SuppressWarnings("WeakerAccess")
     final View blurView;
+    private int overlayColor;
     private final ViewGroup rootView;
     private final int[] rootLocation = new int[2];
     private final int[] blurViewLocation = new int[2];
@@ -70,9 +74,10 @@ final class BlockingBlurController implements BlurController {
      *                 Can be Activity's root content layout (android.R.id.content)
      *                 or some of your custom root layouts.
      */
-    BlockingBlurController(@NonNull View blurView, @NonNull ViewGroup rootView) {
+    BlockingBlurController(@NonNull View blurView, @NonNull ViewGroup rootView, @ColorInt int overlayColor) {
         this.rootView = rootView;
         this.blurView = blurView;
+        this.overlayColor = overlayColor;
         this.blurAlgorithm = new NoOpBlurAlgorithm();
 
         int measuredWidth = blurView.getMeasuredWidth();
@@ -105,7 +110,7 @@ final class BlockingBlurController implements BlurController {
         if (isZeroSized(measuredWidth, measuredHeight)) {
             blurEnabled = false;
             blurView.setWillNotDraw(true);
-            setBlurAutoUpdate(false);
+            setBlurAutoUpdateInternal(false);
             return;
         }
 
@@ -113,7 +118,7 @@ final class BlockingBlurController implements BlurController {
         blurView.setWillNotDraw(false);
         allocateBitmap(measuredWidth, measuredHeight);
         internalCanvas = new Canvas(internalBitmap);
-        setBlurAutoUpdate(true);
+        setBlurAutoUpdateInternal(true);
         if (hasFixedTransformationMatrix) {
             setupInternalCanvasMatrix();
         }
@@ -208,7 +213,8 @@ final class BlockingBlurController implements BlurController {
 
     @Override
     public void draw(Canvas canvas) {
-        if (!blurEnabled) {
+        //draw only on system's hardware accelerated canvas
+        if (!blurEnabled || !canvas.isHardwareAccelerated()) {
             return;
         }
 
@@ -218,6 +224,10 @@ final class BlockingBlurController implements BlurController {
         canvas.scale(scaleFactor * roundingWidthScaleFactor, scaleFactor * roundingHeightScaleFactor);
         canvas.drawBitmap(internalBitmap, 0, 0, paint);
         canvas.restore();
+
+        if (overlayColor != TRANSPARENT) {
+            canvas.drawColor(overlayColor);
+        }
     }
 
     private void blurAndSave() {
@@ -234,7 +244,7 @@ final class BlockingBlurController implements BlurController {
 
     @Override
     public void destroy() {
-        setBlurAutoUpdate(false);
+        setBlurAutoUpdateInternal(false);
         blurAlgorithm.destroy();
         if (internalBitmap != null) {
             internalBitmap.recycle();
@@ -242,37 +252,69 @@ final class BlockingBlurController implements BlurController {
     }
 
     @Override
-    public void setBlurRadius(float radius) {
+    public BlurViewFacade setBlurRadius(float radius) {
         this.blurRadius = radius;
+        return this;
     }
 
     @Override
-    public void setBlurAlgorithm(BlurAlgorithm algorithm) {
+    public BlurViewFacade setBlurAlgorithm(BlurAlgorithm algorithm) {
         this.blurAlgorithm = algorithm;
+        return this;
     }
 
     @Override
-    public void setFrameClearDrawable(@Nullable Drawable frameClearDrawable) {
+    public BlurViewFacade setFrameClearDrawable(@Nullable Drawable frameClearDrawable) {
         this.frameClearDrawable = frameClearDrawable;
+        return this;
     }
 
-    @Override
-    public void setBlurEnabled(boolean enabled) {
+    private void setBlurEnabledInternal(boolean enabled) {
         this.blurEnabled = enabled;
-        setBlurAutoUpdate(enabled);
+        setBlurAutoUpdateInternal(enabled);
         blurView.invalidate();
     }
 
     @Override
-    public void setBlurAutoUpdate(boolean enabled) {
+    public BlurViewFacade setBlurEnabled(final boolean enabled) {
+        blurView.post(new Runnable() {
+            @Override
+            public void run() {
+                setBlurEnabledInternal(enabled);
+            }
+        });
+        return this;
+    }
+
+    private void setBlurAutoUpdateInternal(boolean enabled) {
         blurView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
         if (enabled) {
             blurView.getViewTreeObserver().addOnPreDrawListener(drawListener);
         }
     }
 
+    public BlurViewFacade setBlurAutoUpdate(final boolean enabled) {
+        blurView.post(new Runnable() {
+            @Override
+            public void run() {
+                setBlurEnabledInternal(enabled);
+            }
+        });
+        return this;
+    }
+
     @Override
-    public void setHasFixedTransformationMatrix(boolean hasFixedTransformationMatrix) {
+    public BlurViewFacade setHasFixedTransformationMatrix(boolean hasFixedTransformationMatrix) {
         this.hasFixedTransformationMatrix = hasFixedTransformationMatrix;
+        return this;
+    }
+
+    @Override
+    public BlurViewFacade setOverlayColor(int overlayColor) {
+        if (this.overlayColor != overlayColor) {
+            this.overlayColor = overlayColor;
+            blurView.invalidate();
+        }
+        return this;
     }
 }
