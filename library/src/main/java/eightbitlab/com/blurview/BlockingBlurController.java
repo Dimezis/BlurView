@@ -57,9 +57,8 @@ final class BlockingBlurController implements BlurController {
         }
     };
 
-    private boolean isBlurEnabled = true;
+    private boolean blurEnabled = true;
 
-    //By default, window's background is not drawn on canvas. We need to draw it manually
     @Nullable
     private Drawable frameClearDrawable;
     private boolean hasFixedTransformationMatrix;
@@ -104,13 +103,13 @@ final class BlockingBlurController implements BlurController {
     @SuppressWarnings("WeakerAccess")
     void init(int measuredWidth, int measuredHeight) {
         if (isZeroSized(measuredWidth, measuredHeight)) {
-            isBlurEnabled = false;
+            blurEnabled = false;
             blurView.setWillNotDraw(true);
             setBlurAutoUpdate(false);
             return;
         }
 
-        isBlurEnabled = true;
+        blurEnabled = true;
         blurView.setWillNotDraw(false);
         allocateBitmap(measuredWidth, measuredHeight);
         internalCanvas = new Canvas(internalBitmap);
@@ -126,7 +125,7 @@ final class BlockingBlurController implements BlurController {
 
     @SuppressWarnings("WeakerAccess")
     void updateBlur() {
-        if (!isBlurEnabled) {
+        if (!blurEnabled) {
             return;
         }
 
@@ -209,7 +208,7 @@ final class BlockingBlurController implements BlurController {
 
     @Override
     public void draw(Canvas canvas) {
-        if (!isBlurEnabled) {
+        if (!blurEnabled) {
             return;
         }
 
@@ -259,7 +258,7 @@ final class BlockingBlurController implements BlurController {
 
     @Override
     public void setBlurEnabled(boolean enabled) {
-        this.isBlurEnabled = enabled;
+        this.blurEnabled = enabled;
         setBlurAutoUpdate(enabled);
         blurView.invalidate();
     }
