@@ -43,7 +43,7 @@ dependencies {
 publishing {
     publications {
         Production(MavenPublication) {
-            artifact("$buildDir/outputs/aar/library-release.aar")
+            artifact("$buildDir/outputs/aar/library.aar")
             groupId PUBLISH_GROUP_ID
             artifactId PUBLISH_ARTIFACT_ID
             version getVersionName()
