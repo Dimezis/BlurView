@@ -3,20 +3,23 @@ apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
 ext {
-    def getVersionName = { ->
-        def stdout = new ByteArrayOutputStream()
-        exec {
-            commandLine 'git', 'describe', '--tags'
-            standardOutput = stdout
-        }
-        //remove "version-" prefix and hash
-        def tagAndHash = stdout.toString().trim().replace("version-", "")
-        return tagAndHash.substring(0, tagAndHash.indexOf("-"))
-    }
-
     PUBLISH_GROUP_ID = 'com.eightbitlab'
     PUBLISH_ARTIFACT_ID = 'blurview'
-    PUBLISH_VERSION = getVersionName()
+}
+
+def getVersionName() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--tags'
+        standardOutput = stdout
+    }
+    //remove "version-" prefix and hash
+    def tagAndHash = stdout.toString().trim().replace("version-", "")
+    def indexOfDash = tagAndHash.indexOf("-")
+    if (indexOfDash == -1) {
+        return tagAndHash
+    }
+    return tagAndHash.substring(0, indexOfEnd)
 }
 
 android {
@@ -43,7 +46,7 @@ publishing {
             artifact("$buildDir/outputs/aar/library-release.aar")
             groupId PUBLISH_GROUP_ID
             artifactId PUBLISH_ARTIFACT_ID
-            version PUBLISH_VERSION
+            version getVersionName()
 
             //The publication doesn't know about our dependencies, so we have to manually add them to the pom
             pom.withXml {
@@ -75,8 +78,8 @@ bintray {
         licenses = ['Apache-2.0']
 
         version {
-            name = PUBLISH_VERSION
-            vcsTag = PUBLISH_VERSION
+            name = getVersionName()
+            vcsTag = getVersionName()
         }
     }
     publications = ['Production']
