@@ -18,6 +18,9 @@ jobs:
             - ~/.gradle
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
       - run:
+          name: Build
+          command: ./gradlew :library:assembleRelease
+      - run:
           name: Bintray Upload
           command: ./gradlew :library:bintrayUpload
       - store_artifacts: # for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
