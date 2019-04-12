@@ -1,9 +1,25 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
 
 ext {
     PUBLISH_GROUP_ID = 'com.eightbitlab'
     PUBLISH_ARTIFACT_ID = 'blurview'
-    PUBLISH_VERSION = '1.5.0'
+}
+
+def getVersionName() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--tags'
+        standardOutput = stdout
+    }
+    //remove "version-" prefix and hash
+    def tagAndHash = stdout.toString().trim().replace("version-", "")
+    def indexOfDash = tagAndHash.indexOf("-")
+    if (indexOfDash == -1) {
+        return tagAndHash
+    }
+    return tagAndHash.substring(0, indexOfEnd)
 }
 
 android {
@@ -12,15 +28,6 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 18
-        versionName "1.5.0"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
     }
 }
 
@@ -33,58 +40,47 @@ dependencies {
     javadocDeps 'com.android.support:support-annotations:28.0.0'
 }
 
-apply plugin: 'maven'
+publishing {
+    publications {
+        Production(MavenPublication) {
+            artifact("$buildDir/outputs/aar/library.aar")
+            groupId PUBLISH_GROUP_ID
+            artifactId PUBLISH_ARTIFACT_ID
+            version getVersionName()
 
-def groupId = project.PUBLISH_GROUP_ID
-def artifactId = project.PUBLISH_ARTIFACT_ID
-def version = project.PUBLISH_VERSION
-
-def localReleaseDest = "${buildDir}/release/${version}"
-
-task androidJavadocs(type: Javadoc) {
-    failOnError = false
-    source = android.sourceSets.main.java.srcDirs
-    ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
-    classpath += files(ext.androidJar)
-    classpath += configurations.javadocDeps
-}
-
-task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-    classifier = 'javadoc'
-    from androidJavadocs.destinationDir
-}
-
-task androidSourcesJar(type: Jar) {
-    classifier = 'sources'
-    from android.sourceSets.main.java.srcDirs
-}
-
-uploadArchives {
-    repositories.mavenDeployer {
-        pom.groupId = groupId
-        pom.artifactId = artifactId
-        pom.version = version
-        // Add other pom properties here if you want (developer details / licenses)
-        repository(url: "file://${localReleaseDest}")
+            //The publication doesn't know about our dependencies, so we have to manually add them to the pom
+            pom.withXml {
+                //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
+                configurations.compile.allDependencies.each {
+                    if (it.name != 'unspecified') {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
+                }
+            }
+        }
     }
 }
 
-task zipRelease(type: Zip) {
-    from localReleaseDest
-    destinationDir buildDir
-    archiveName "release-${version}.zip"
-}
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_API_KEY')
+    dryRun = false
+    override = false
+    publish = true
+    pkg {
+        repo = 'maven'
+        name = 'BlurView'
+        userOrg = 'dimezis'
+        vcsUrl = 'https://github.com/Dimezis/BlurView'
+        licenses = ['Apache-2.0']
 
-task generateRelease << {
-    println "Release ${version} can be found at ${localReleaseDest}/"
-    println "Release ${version} zipped can be found ${buildDir}/release-${version}.zip"
-}
-
-generateRelease.dependsOn(uploadArchives)
-generateRelease.dependsOn(zipRelease)
-
-
-artifacts {
-    archives androidSourcesJar
-    archives androidJavadocsJar
+        version {
+            name = getVersionName()
+            vcsTag = getVersionName()
+        }
+    }
+    publications = ['Production']
 }

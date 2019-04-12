@@ -47,6 +47,9 @@ Always try to choose the closest possible root layout to BlurView. This will gre
 You can use `setHasFixedTransformationMatrix` in case if you are not animating your BlurView, 
 this might slightly improve the performance as BlurView won't have to recalculate its transformation matrix on each frame. 
 
+DO NOT set View.LAYER_TYPE_HARDWARE or View.LAYER_TYPE_SOFTWARE on the BlurView.
+It's not supported (even though it could be), because it wouldn't bring any performance benefits.
+
 ## Supporting API < 17
 If you need to support API < 17, you can include
 

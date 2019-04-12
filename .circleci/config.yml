@@ -10,9 +10,6 @@ jobs:
       - checkout
       - restore_cache:
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
-#      - run:
-#         name: Chmod permissions #if permission for Gradlew Dependencies fail, use this.
-#         command: sudo chmod +x ./gradlew
       - run:
           name: Download Dependencies
           command: ./gradlew :library:androidDependencies
@@ -20,6 +17,9 @@ jobs:
           paths:
             - ~/.gradle
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+      - run:
+          name: Build
+          command: ./gradlew :library:assembleRelease
       - run:
           name: Bintray Upload
           command: ./gradlew :library:bintrayUpload
@@ -29,3 +29,14 @@ jobs:
       - store_test_results: # for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
           path: app/build/test-results
       # See https://circleci.com/docs/2.0/deployment-integrations/ for deploy examples
+      
+workflows:
+  version: 2
+  tagged-build:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /^version-.*/
+            branches:
+              ignore: /.*/

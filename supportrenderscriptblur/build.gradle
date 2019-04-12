@@ -14,17 +14,6 @@ android {
         renderscriptSupportModeEnabled true
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 2
-        versionName "1.0.2"
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
     }
 }
 
@@ -74,9 +63,11 @@ task zipRelease(type: Zip) {
     archiveName "release-${version}.zip"
 }
 
-task generateRelease << {
-    println "Release ${version} can be found at ${localReleaseDest}/"
-    println "Release ${version} zipped can be found ${buildDir}/release-${version}.zip"
+task generateRelease() {
+    doLast {
+        println "Release ${version} can be found at ${localReleaseDest}/"
+        println "Release ${version} zipped can be found ${buildDir}/release-${version}.zip"
+    }
 }
 
 generateRelease.dependsOn(uploadArchives)
