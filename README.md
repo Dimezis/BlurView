@@ -83,7 +83,7 @@ It takes 1-4ms on Nexus 5 and Nexus 4 to draw BlurView with the setup given in e
 implementation 'com.eightbitlab:blurview:1.6.0'
 ```
 
-# Why blurring in the main thread?
+## Why blurring on the main thread?
 Because blurring in other thread would introduce 2-3 frames latency
 
 License
