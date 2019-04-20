@@ -61,7 +61,7 @@ final class BlockingBlurController implements BlurController {
         }
     };
 
-    private boolean blurEnabled = true;
+    private boolean blurEnabled = false;
 
     @Nullable
     private Drawable frameClearDrawable;
@@ -272,7 +272,8 @@ final class BlockingBlurController implements BlurController {
         return this;
     }
 
-    private void setBlurEnabledInternal(boolean enabled) {
+    @SuppressWarnings("WeakerAccess")
+    void setBlurEnabledInternal(boolean enabled) {
         this.blurEnabled = enabled;
         setBlurAutoUpdateInternal(enabled);
         blurView.invalidate();
@@ -289,7 +290,8 @@ final class BlockingBlurController implements BlurController {
         return this;
     }
 
-    private void setBlurAutoUpdateInternal(boolean enabled) {
+    @SuppressWarnings("WeakerAccess")
+    void setBlurAutoUpdateInternal(boolean enabled) {
         blurView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
         if (enabled) {
             blurView.getViewTreeObserver().addOnPreDrawListener(drawListener);
@@ -300,7 +302,7 @@ final class BlockingBlurController implements BlurController {
         blurView.post(new Runnable() {
             @Override
             public void run() {
-                setBlurEnabledInternal(enabled);
+                setBlurAutoUpdateInternal(enabled);
             }
         });
         return this;

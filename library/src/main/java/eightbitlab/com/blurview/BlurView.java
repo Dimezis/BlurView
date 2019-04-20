@@ -85,10 +85,6 @@ public class BlurView extends FrameLayout {
         this.blurController.destroy();
         this.blurController = blurController;
 
-        if (!isHardwareAccelerated()) {
-            blurController.setBlurAutoUpdate(false);
-        }
-
         return blurController;
     }
 
