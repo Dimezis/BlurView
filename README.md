@@ -46,7 +46,7 @@ Always try to choose the closest possible root layout to BlurView. This will gre
 
 You can use `setHasFixedTransformationMatrix` in case if you are not animating your BlurView, or not putting it in the scrolling container, this might slightly improve the performance as BlurView won't have to recalculate its coordinates on each frame. 
 
-DO NOT set View.LAYER_TYPE_HARDWARE or View.LAYER_TYPE_SOFTWARE on the BlurView.
+DO NOT set `View.LAYER_TYPE_HARDWARE` or `View.LAYER_TYPE_SOFTWARE` on the BlurView.
 It's not supported (even though it could be), because it wouldn't bring any performance benefits.
 
 ## Supporting API < 17
@@ -80,7 +80,7 @@ It takes 1-4ms on Nexus 5 and Nexus 4 to draw BlurView with the setup given in e
 
 ## Gradle
 ```Groovy
-implementation 'com.eightbitlab:blurview:1.6.0'
+implementation 'com.eightbitlab:blurview:1.6.1'
 ```
 
 ## Why blurring on the main thread?
