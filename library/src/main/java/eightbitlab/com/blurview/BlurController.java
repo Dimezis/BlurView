@@ -9,8 +9,10 @@ interface BlurController extends BlurViewFacade {
 
     /**
      * Draws blurred content on given canvas
+     *
+     * @return true if BlurView should proceed with drawing itself and its children
      */
-    void draw(Canvas canvas);
+    boolean draw(Canvas canvas);
 
     /**
      * Must be used to notify Controller when BlurView's size has changed

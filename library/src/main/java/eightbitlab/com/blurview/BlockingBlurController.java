@@ -212,10 +212,13 @@ final class BlockingBlurController implements BlurController {
     }
 
     @Override
-    public void draw(Canvas canvas) {
-        //draw only on system's hardware accelerated canvas
-        if (!blurEnabled || !canvas.isHardwareAccelerated()) {
-            return;
+    public boolean draw(Canvas canvas) {
+        if (!blurEnabled) {
+            return true;
+        }
+        // Not blurring own children
+        if (canvas == internalCanvas) {
+            return false;
         }
 
         updateBlur();
@@ -228,6 +231,7 @@ final class BlockingBlurController implements BlurController {
         if (overlayColor != TRANSPARENT) {
             canvas.drawColor(overlayColor);
         }
+        return true;
     }
 
     private void blurAndSave() {

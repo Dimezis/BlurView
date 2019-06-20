@@ -48,8 +48,10 @@ public class BlurView extends FrameLayout {
 
     @Override
     public void draw(Canvas canvas) {
-        blurController.draw(canvas);
-        super.draw(canvas);
+        boolean shouldDraw = blurController.draw(canvas);
+        if (shouldDraw) {
+            super.draw(canvas);
+        }
     }
 
     @Override
