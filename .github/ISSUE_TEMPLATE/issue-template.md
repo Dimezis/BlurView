@@ -1,6 +1,6 @@
 ---
 name: Issue template
-about: Details
+about: Bug report
 title: ''
 labels: ''
 assignees: ''
