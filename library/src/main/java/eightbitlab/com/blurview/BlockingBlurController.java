@@ -27,8 +27,10 @@ import android.view.ViewTreeObserver;
  */
 final class BlockingBlurController implements BlurController {
 
-    //Bitmap size should be divisible by 16 to meet stride requirement
-    private static final int ROUNDING_VALUE = 16;
+    // Bitmap size should be divisible by ROUNDING_VALUE to meet stride requirement.
+    // This will help avoiding an extra bitmap allocation when passing the bitmap to RenderScript for blur.
+    // Usually it's 16, but on Samsung devices it's 64 for some reason.
+    private static final int ROUNDING_VALUE = 64;
     @ColorInt
     static final int TRANSPARENT = 0;
 
