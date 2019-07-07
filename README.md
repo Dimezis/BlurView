@@ -80,7 +80,7 @@ It takes 1-4ms on Nexus 5 and Nexus 4 to draw BlurView with the setup given in e
 
 ## Gradle
 ```Groovy
-implementation 'com.eightbitlab:blurview:1.6.1'
+implementation 'com.eightbitlab:blurview:1.6.2'
 ```
 
 ## Why blurring on the main thread?
