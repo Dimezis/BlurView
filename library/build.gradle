@@ -60,7 +60,7 @@ task androidSourcesJar(type: Jar) {
 publishing {
     publications {
         Production(MavenPublication) {
-            artifact("$buildDir/outputs/aar/library.aar")
+            artifact("$buildDir/outputs/aar/library-release.aar")
             artifact(androidSourcesJar)
             artifact(androidJavadocsJar)
             groupId PUBLISH_GROUP_ID
