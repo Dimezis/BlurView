@@ -112,7 +112,7 @@ final class BlockingBlurController implements BlurController {
         if (isZeroSized(measuredWidth, measuredHeight)) {
             blurEnabled = false;
             blurView.setWillNotDraw(true);
-            setBlurAutoUpdateInternal(false);
+            setBlurAutoUpdate(false);
             return;
         }
 
@@ -120,7 +120,7 @@ final class BlockingBlurController implements BlurController {
         blurView.setWillNotDraw(false);
         allocateBitmap(measuredWidth, measuredHeight);
         internalCanvas = new Canvas(internalBitmap);
-        setBlurAutoUpdateInternal(true);
+        setBlurAutoUpdate(true);
         if (hasFixedTransformationMatrix) {
             setupInternalCanvasMatrix();
         }
@@ -253,7 +253,7 @@ final class BlockingBlurController implements BlurController {
 
     @Override
     public void destroy() {
-        setBlurAutoUpdateInternal(false);
+        setBlurAutoUpdate(false);
         blurAlgorithm.destroy();
         if (internalBitmap != null) {
             internalBitmap.recycle();
@@ -278,29 +278,19 @@ final class BlockingBlurController implements BlurController {
         return this;
     }
 
-    @SuppressWarnings("WeakerAccess")
-    void setBlurEnabledInternal(boolean enabled) {
-        this.blurEnabled = enabled;
-        setBlurAutoUpdateInternal(enabled);
-        blurView.invalidate();
-    }
-
     @Override
-    public BlurViewFacade setBlurEnabled(final boolean enabled) {
-        setBlurEnabledInternal(enabled);
+    public BlurViewFacade setBlurEnabled(boolean enabled) {
+        this.blurEnabled = enabled;
+        setBlurAutoUpdate(enabled);
+        blurView.invalidate();
         return this;
     }
 
-    @SuppressWarnings("WeakerAccess")
-    void setBlurAutoUpdateInternal(boolean enabled) {
+    public BlurViewFacade setBlurAutoUpdate(final boolean enabled) {
         blurView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
         if (enabled) {
             blurView.getViewTreeObserver().addOnPreDrawListener(drawListener);
         }
-    }
-
-    public BlurViewFacade setBlurAutoUpdate(final boolean enabled) {
-        setBlurAutoUpdateInternal(enabled);
         return this;
     }
 
