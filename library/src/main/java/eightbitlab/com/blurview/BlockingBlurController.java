@@ -63,7 +63,8 @@ final class BlockingBlurController implements BlurController {
         }
     };
 
-    private boolean blurEnabled = false;
+    private boolean blurEnabled = true;
+    private boolean initialized;
 
     @Nullable
     private Drawable frameClearDrawable;
@@ -110,17 +111,15 @@ final class BlockingBlurController implements BlurController {
     @SuppressWarnings("WeakerAccess")
     void init(int measuredWidth, int measuredHeight) {
         if (isZeroSized(measuredWidth, measuredHeight)) {
-            blurEnabled = false;
             blurView.setWillNotDraw(true);
-            setBlurAutoUpdate(false);
             return;
         }
 
-        blurEnabled = true;
         blurView.setWillNotDraw(false);
         allocateBitmap(measuredWidth, measuredHeight);
         internalCanvas = new Canvas(internalBitmap);
-        setBlurAutoUpdate(true);
+        initialized = true;
+
         if (hasFixedTransformationMatrix) {
             setupInternalCanvasMatrix();
         }
@@ -132,7 +131,7 @@ final class BlockingBlurController implements BlurController {
 
     @SuppressWarnings("WeakerAccess")
     void updateBlur() {
-        if (!blurEnabled) {
+        if (!blurEnabled || !initialized) {
             return;
         }
 
@@ -215,7 +214,7 @@ final class BlockingBlurController implements BlurController {
 
     @Override
     public boolean draw(Canvas canvas) {
-        if (!blurEnabled) {
+        if (!blurEnabled || !initialized) {
             return true;
         }
         // Not blurring own children
@@ -255,9 +254,7 @@ final class BlockingBlurController implements BlurController {
     public void destroy() {
         setBlurAutoUpdate(false);
         blurAlgorithm.destroy();
-        if (internalBitmap != null) {
-            internalBitmap.recycle();
-        }
+        initialized = false;
     }
 
     @Override
