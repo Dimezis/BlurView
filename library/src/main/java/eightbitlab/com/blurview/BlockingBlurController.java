@@ -27,17 +27,10 @@ import android.view.ViewTreeObserver;
  */
 final class BlockingBlurController implements BlurController {
 
-    // Bitmap size should be divisible by ROUNDING_VALUE to meet stride requirement.
-    // This will help avoiding an extra bitmap allocation when passing the bitmap to RenderScript for blur.
-    // Usually it's 16, but on Samsung devices it's 64 for some reason.
-    private static final int ROUNDING_VALUE = 64;
     @ColorInt
     static final int TRANSPARENT = 0;
 
-    private final float scaleFactor = DEFAULT_SCALE_FACTOR;
     private float blurRadius = DEFAULT_BLUR_RADIUS;
-    private float roundingWidthScaleFactor = 1f;
-    private float roundingHeightScaleFactor = 1f;
 
     private BlurAlgorithm blurAlgorithm;
     private Canvas internalCanvas;
@@ -49,6 +42,7 @@ final class BlockingBlurController implements BlurController {
     private final ViewGroup rootView;
     private final int[] rootLocation = new int[2];
     private final int[] blurViewLocation = new int[2];
+    private final SizeScaler sizeScaler = new SizeScaler();
 
     private final ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
         @Override
@@ -86,7 +80,7 @@ final class BlockingBlurController implements BlurController {
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();
 
-        if (isZeroSized(measuredWidth, measuredHeight)) {
+        if (sizeScaler.isZeroSized(measuredWidth, measuredHeight)) {
             deferBitmapCreation();
             return;
         }
@@ -94,23 +88,9 @@ final class BlockingBlurController implements BlurController {
         init(measuredWidth, measuredHeight);
     }
 
-    private int downScaleSize(float value) {
-        return (int) Math.ceil(value / scaleFactor);
-    }
-
-    /**
-     * Rounds a value to the nearest divisible by {@link #ROUNDING_VALUE} to meet stride requirement
-     */
-    private int roundSize(int value) {
-        if (value % ROUNDING_VALUE == 0) {
-            return value;
-        }
-        return value - (value % ROUNDING_VALUE) + ROUNDING_VALUE;
-    }
-
     @SuppressWarnings("WeakerAccess")
     void init(int measuredWidth, int measuredHeight) {
-        if (isZeroSized(measuredWidth, measuredHeight)) {
+        if (sizeScaler.isZeroSized(measuredWidth, measuredHeight)) {
             blurView.setWillNotDraw(true);
             return;
         }
@@ -123,10 +103,6 @@ final class BlockingBlurController implements BlurController {
         if (hasFixedTransformationMatrix) {
             setupInternalCanvasMatrix();
         }
-    }
-
-    private boolean isZeroSized(int measuredWidth, int measuredHeight) {
-        return downScaleSize(measuredHeight) == 0 || downScaleSize(measuredWidth) == 0;
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -180,16 +156,8 @@ final class BlockingBlurController implements BlurController {
     }
 
     private void allocateBitmap(int measuredWidth, int measuredHeight) {
-        int nonRoundedScaledWidth = downScaleSize(measuredWidth);
-        int nonRoundedScaledHeight = downScaleSize(measuredHeight);
-
-        int scaledWidth = roundSize(nonRoundedScaledWidth);
-        int scaledHeight = roundSize(nonRoundedScaledHeight);
-
-        roundingHeightScaleFactor = (float) nonRoundedScaledHeight / scaledHeight;
-        roundingWidthScaleFactor = (float) nonRoundedScaledWidth / scaledWidth;
-
-        internalBitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, blurAlgorithm.getSupportedBitmapConfig());
+        SizeScaler.Size bitmapSize = sizeScaler.roundSize(measuredWidth, measuredHeight);
+        internalBitmap = Bitmap.createBitmap(bitmapSize.width, bitmapSize.height, blurAlgorithm.getSupportedBitmapConfig());
     }
 
     /**
@@ -202,8 +170,8 @@ final class BlockingBlurController implements BlurController {
         int left = blurViewLocation[0] - rootLocation[0];
         int top = blurViewLocation[1] - rootLocation[1];
 
-        float scaleFactorX = scaleFactor * roundingWidthScaleFactor;
-        float scaleFactorY = scaleFactor * roundingHeightScaleFactor;
+        float scaleFactorX = sizeScaler.widthScaleFactor();
+        float scaleFactorY = sizeScaler.heightScaleFactor();
 
         float scaledLeftPosition = -left / scaleFactorX;
         float scaledTopPosition = -top / scaleFactorY;
@@ -225,7 +193,7 @@ final class BlockingBlurController implements BlurController {
         updateBlur();
 
         canvas.save();
-        canvas.scale(scaleFactor * roundingWidthScaleFactor, scaleFactor * roundingHeightScaleFactor);
+        canvas.scale(sizeScaler.widthScaleFactor(), sizeScaler.heightScaleFactor());
         canvas.drawBitmap(internalBitmap, 0, 0, paint);
         canvas.restore();
 
