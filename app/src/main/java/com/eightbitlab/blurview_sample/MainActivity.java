@@ -13,33 +13,33 @@ import android.widget.SeekBar;
 
 import com.eightbitlab.supportrenderscriptblur.SupportRenderScriptBlur;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import eightbitlab.com.blurview.BlurView;
 
 public class MainActivity extends AppCompatActivity {
 
-    @BindView(R.id.viewPager)
-    ViewPager viewPager;
-    @BindView(R.id.tabLayout)
-    TabLayout tabLayout;
-    @BindView(R.id.bottomBlurView)
-    BlurView bottomBlurView;
-    @BindView(R.id.topBlurView)
-    BlurView topBlurView;
-    @BindView(R.id.radiusSeekBar)
-    SeekBar radiusSeekBar;
-    @BindView(R.id.root)
-    ViewGroup root;
+    private ViewPager viewPager;
+    private TabLayout tabLayout;
+    private BlurView bottomBlurView;
+    private BlurView topBlurView;
+    private SeekBar radiusSeekBar;
+    private ViewGroup root;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
-
+        initView();
         setupBlurView();
         setupViewPager();
+    }
+
+    private void initView() {
+        viewPager = findViewById(R.id.viewPager);
+        tabLayout = findViewById(R.id.tabLayout);
+        bottomBlurView = findViewById(R.id.bottomBlurView);
+        topBlurView = findViewById(R.id.topBlurView);
+        radiusSeekBar = findViewById(R.id.radiusSeekBar);
+        root = findViewById(R.id.root);
     }
 
     private void setupViewPager() {
