@@ -25,27 +25,35 @@ It honors its position and size changes, including view animation and property a
 ```
 
 ```Java
-    final float radius = 20;
+    float radius = 20f;
 
-    final View decorView = getWindow().getDecorView();
-    //Activity's root View. Can also be root View of your layout (preferably)
-    final ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
-    //set background, if your root layout doesn't have one
-    final Drawable windowBackground = decorView.getBackground();
+    View decorView = getWindow().getDecorView();
+    //ViewGroup you want to start blur from. Choose root as close to BlurView in hierarchy as possible.
+    ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
+    //Set drawable to draw in the beginning of each blurred frame (Optional). 
+    //Can be used in case your layout has a lot of transparent space and your content
+    //gets kinda lost after after blur is applied.
+    Drawable windowBackground = decorView.getBackground();
 
     blurView.setupWith(rootView)
-           .windowBackground(windowBackground)
-           .blurAlgorithm(new RenderScriptBlur(this))
-           .blurRadius(radius);
+           .setFrameClearDrawable(windowBackground)
+           .setBlurAlgorithm(new RenderScriptBlur(this))
+           .setBlurRadius(radius)
+           .setHasFixedTransformationMatrix(true);
 ```
 
 Always try to choose the closest possible root layout to BlurView. This will greatly reduce the amount of work needed for creating View hierarchy snapshot.
 
+You can use `setHasFixedTransformationMatrix` in case if you are not animating your BlurView, or not putting it in the scrolling container, this might slightly improve the performance as BlurView won't have to recalculate its coordinates on each frame. 
+
+DO NOT set `View.LAYER_TYPE_HARDWARE` or `View.LAYER_TYPE_SOFTWARE` on the BlurView.
+It's not supported (even though it could be), because it wouldn't bring any performance benefits.
+
 ## Supporting API < 17
-You can include
+If you need to support API < 17, you can include
 
 ```Groovy
-compile 'com.eightbitlab:supportrenderscriptblur:1.0.0'
+implementation 'com.eightbitlab:supportrenderscriptblur:1.0.2'
 ```
 
 setup BlurView with
@@ -58,7 +66,7 @@ and enable RenderScript support mode
 
 ```Groovy
  defaultConfig {
-        renderscriptTargetApi 25 //must match target sdk and build tools, 23+
+        renderscriptTargetApi 28 //must match target sdk and build tools
         renderscriptSupportModeEnabled true
  }
 ```
@@ -72,8 +80,11 @@ It takes 1-4ms on Nexus 5 and Nexus 4 to draw BlurView with the setup given in e
 
 ## Gradle
 ```Groovy
-compile 'com.eightbitlab:blurview:1.3.3'
+implementation 'com.eightbitlab:blurview:1.6.3'
 ```
+
+## Why blurring on the main thread?
+Because blurring in other thread would introduce 2-3 frames latency
 
 License
 -------

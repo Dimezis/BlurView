@@ -10,27 +10,20 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import eightbitlab.com.blurview.gl.GLBlurView;
 
 public class MainActivity extends AppCompatActivity {
 
-    @BindView(R.id.viewPager)
-    ViewPager viewPager;
-    @BindView(R.id.tabLayout)
-    TabLayout tabLayout;
-    @BindView(R.id.blurView)
-    GLBlurView blurView;
-    @BindView(R.id.root)
-    ViewGroup root;
+    private ViewPager viewPager;
+    private TabLayout tabLayout;
+    private GLBlurView blurView;
+    private ViewGroup root;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
-
+        initView();
         setupBlurView();
         setupViewPager();
     }
@@ -45,6 +38,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         blurView.onStop();
+    }
+
+    private void initView() {
+        viewPager = findViewById(R.id.viewPager);
+        tabLayout = findViewById(R.id.tabLayout);
+        blurView = findViewById(R.id.blurView);
+        root = findViewById(R.id.root);
     }
 
     private void setupViewPager() {
