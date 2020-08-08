@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -81,17 +80,13 @@ final class BlockingBlurController implements BlurController {
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();
 
-        if (sizeScaler.isZeroSized(measuredWidth, measuredHeight)) {
-            deferBitmapCreation();
-            return;
-        }
-
         init(measuredWidth, measuredHeight);
     }
 
     @SuppressWarnings("WeakerAccess")
     void init(int measuredWidth, int measuredHeight) {
         if (sizeScaler.isZeroSized(measuredWidth, measuredHeight)) {
+            // Will be initialized later when the View reports a size change
             blurView.setWillNotDraw(true);
             return;
         }
@@ -128,32 +123,6 @@ final class BlockingBlurController implements BlurController {
         }
 
         blurAndSave();
-    }
-
-    /**
-     * Deferring initialization until view is laid out
-     */
-    private void deferBitmapCreation() {
-        blurView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    blurView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                } else {
-                    legacyRemoveOnGlobalLayoutListener();
-                }
-
-                int measuredWidth = blurView.getMeasuredWidth();
-                int measuredHeight = blurView.getMeasuredHeight();
-
-                init(measuredWidth, measuredHeight);
-            }
-
-            @SuppressWarnings("deprecation")
-            void legacyRemoveOnGlobalLayoutListener() {
-                blurView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-            }
-        });
     }
 
     private void allocateBitmap(int measuredWidth, int measuredHeight) {
