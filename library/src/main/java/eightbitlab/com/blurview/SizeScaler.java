@@ -10,19 +10,18 @@ public class SizeScaler {
     private static final int ROUNDING_VALUE = 64;
 
     private final float scaleFactor = DEFAULT_SCALE_FACTOR;
-    private float roundingWidthScaleFactor = 1f;
-    private float roundingHeightScaleFactor = 1f;
+    private float roundingScaleFactor = 1f;
 
     Size roundSize(int width, int height) {
         int nonRoundedScaledWidth = downscaleSize(width);
         int nonRoundedScaledHeight = downscaleSize(height);
 
+        //Only width has to be aligned to ROUNDING_VALUE
         int scaledWidth = roundSize(nonRoundedScaledWidth);
-        int scaledHeight = roundSize(nonRoundedScaledHeight);
 
         //TODO get rid of this ugly state?
-        roundingWidthScaleFactor = (float) nonRoundedScaledWidth / scaledWidth;
-        roundingHeightScaleFactor = (float) nonRoundedScaledHeight / scaledHeight;
+        roundingScaleFactor = (float) nonRoundedScaledWidth / scaledWidth;
+        int scaledHeight = (int) (nonRoundedScaledHeight / roundingScaleFactor);
 
         return new Size(scaledWidth, scaledHeight);
     }
@@ -31,12 +30,8 @@ public class SizeScaler {
         return downscaleSize(measuredHeight) == 0 || downscaleSize(measuredWidth) == 0;
     }
 
-    float widthScaleFactor() {
-        return scaleFactor * roundingWidthScaleFactor;
-    }
-
-    float heightScaleFactor() {
-        return scaleFactor * roundingHeightScaleFactor;
+    float scaleFactor() {
+        return scaleFactor * roundingScaleFactor;
     }
 
     /**

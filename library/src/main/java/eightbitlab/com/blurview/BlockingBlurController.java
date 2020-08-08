@@ -170,14 +170,13 @@ final class BlockingBlurController implements BlurController {
         int left = blurViewLocation[0] - rootLocation[0];
         int top = blurViewLocation[1] - rootLocation[1];
 
-        float scaleFactorX = sizeScaler.widthScaleFactor();
-        float scaleFactorY = sizeScaler.heightScaleFactor();
+        float scaleFactor = sizeScaler.scaleFactor();
 
-        float scaledLeftPosition = -left / scaleFactorX;
-        float scaledTopPosition = -top / scaleFactorY;
+        float scaledLeftPosition = -left / scaleFactor;
+        float scaledTopPosition = -top / scaleFactor;
 
         internalCanvas.translate(scaledLeftPosition, scaledTopPosition);
-        internalCanvas.scale(1 / scaleFactorX, 1 / scaleFactorY);
+        internalCanvas.scale(1 / scaleFactor, 1 / scaleFactor);
     }
 
     @Override
@@ -193,7 +192,7 @@ final class BlockingBlurController implements BlurController {
         updateBlur();
 
         canvas.save();
-        canvas.scale(sizeScaler.widthScaleFactor(), sizeScaler.heightScaleFactor());
+        canvas.scale(sizeScaler.scaleFactor(), sizeScaler.scaleFactor());
         canvas.drawBitmap(internalBitmap, 0, 0, paint);
         canvas.restore();
 
