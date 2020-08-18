@@ -10,6 +10,8 @@ jobs:
       - checkout
       - restore_cache:
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+      - restore_cache:
+          key: android-sdk-{{ checksum "/opt/android-sdk-linux/licenses/android-sdk-license" }}
       - run:
           name: Download Dependencies
           command: ./gradlew :library:androidDependencies
@@ -17,6 +19,10 @@ jobs:
           paths:
             - ~/.gradle
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+      - save_cache:
+          paths:
+            - /opt/android-sdk-linux/
+          key: android-sdk-{{ checksum "/opt/android-sdk-linux/licenses/android-sdk-license" }}
       - run:
           name: Build
           command: ./gradlew :library:assembleRelease
