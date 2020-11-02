@@ -21,7 +21,8 @@ public class SizeScaler {
         int scaledWidth = roundSize(nonRoundedScaledWidth);
         //Only width has to be aligned to ROUNDING_VALUE
         float roundingScaleFactor = (float) width / scaledWidth;
-        int scaledHeight = (int) Math.round(height / roundingScaleFactor);
+        //Ceiling because rounding or flooring might leave empty space on the View's bottom
+        int scaledHeight = (int) Math.ceil(height / roundingScaleFactor);
 
         return new Size(scaledWidth, scaledHeight, roundingScaleFactor);
     }
