@@ -1,7 +1,7 @@
 package eightbitlab.com.blurview;
 
 import android.graphics.Bitmap;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public interface BlurAlgorithm {
     /**

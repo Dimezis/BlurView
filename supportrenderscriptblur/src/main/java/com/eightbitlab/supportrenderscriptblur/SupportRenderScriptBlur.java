@@ -2,11 +2,11 @@ package com.eightbitlab.supportrenderscriptblur;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.annotation.NonNull;
-import android.support.v8.renderscript.Allocation;
-import android.support.v8.renderscript.Element;
-import android.support.v8.renderscript.RenderScript;
-import android.support.v8.renderscript.ScriptIntrinsicBlur;
+import androidx.annotation.NonNull;
+import androidx.renderscript.Allocation;
+import androidx.renderscript.Element;
+import androidx.renderscript.RenderScript;
+import androidx.renderscript.ScriptIntrinsicBlur;
 
 import eightbitlab.com.blurview.BlurAlgorithm;
 
