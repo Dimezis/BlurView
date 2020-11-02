@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context="com.eightbitlab.blurview_sample.MainActivity">
 
-    <android.support.v4.view.ViewPager
+    <androidx.viewpager.widget.ViewPager
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
@@ -52,7 +52,7 @@
         app:blurOverlayColor="@color/colorOverlay"
         tools:targetApi="lollipop">
 
-        <android.support.design.widget.TabLayout
+        <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="@dimen/bottom_tab_height"
