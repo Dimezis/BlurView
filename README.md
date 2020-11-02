@@ -39,6 +39,7 @@ It honors its position and size changes, including view animation and property a
            .setFrameClearDrawable(windowBackground)
            .setBlurAlgorithm(new RenderScriptBlur(this))
            .setBlurRadius(radius)
+           .setBlurAutoUpdate(true)
            .setHasFixedTransformationMatrix(true);
 ```
 
@@ -80,7 +81,7 @@ It takes 1-4ms on Nexus 5 and Nexus 4 to draw BlurView with the setup given in e
 
 ## Gradle
 ```Groovy
-implementation 'com.eightbitlab:blurview:1.6.3'
+implementation 'com.eightbitlab:blurview:1.6.5'
 ```
 
 ## Why blurring on the main thread?
