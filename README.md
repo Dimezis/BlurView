@@ -9,8 +9,6 @@ BlurView can be used as a regular FrameLayout. It blurs its underlying content a
 BlurView redraws its blurred content when changes in view hierarchy are detected (draw() called). 
 It honors its position and size changes, including view animation and property animation.
 
-## [Demo App at Google Play](https://play.google.com/store/apps/details?id=com.eightbitlab.blurview_sample)
-
 ## How to use
 ```XML
   <eightbitlab.com.blurview.BlurView
@@ -19,7 +17,7 @@ It honors its position and size changes, including view animation and property a
       android:layout_height="wrap_content"
       app:blurOverlayColor="@color/colorOverlay">
 
-       <!--Any child View here, TabLayout for example-->
+       <!--Any child View here, TabLayout for example. This View will NOT be blurred -->
 
   </eightbitlab.com.blurview.BlurView>
 ```
@@ -75,9 +73,6 @@ and enable RenderScript support mode
 ## Important
 BlurView can be used only in a hardware-accelerated window.
 Otherwise, blur will not be drawn. It will fallback to a regular FrameLayout drawing process.
-
-## Performance
-It takes 1-4ms on Nexus 5 and Nexus 4 to draw BlurView with the setup given in example project
 
 ## Gradle
 ```Groovy
