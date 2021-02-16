@@ -80,12 +80,13 @@ implementation 'com.eightbitlab:blurview:1.6.5'
 ```
 
 ## Why blurring on the main thread?
-Because blurring in other thread would introduce 2-3 frames latency
+Because blurring on some other thread would introduce 1-2 frames latency.
+Though this is possible and already done on the very old branch as an experiment (which should be rewritten from scratch TBH)
 
 License
 -------
 
-    Copyright 2016 Dmitry Saviuk
+    Copyright 2021 Dmitry Saviuk
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
