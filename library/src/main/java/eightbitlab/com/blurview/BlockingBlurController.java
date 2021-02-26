@@ -5,12 +5,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * Blur Controller that handles all blur logic for the attached View.
@@ -32,7 +33,7 @@ final class BlockingBlurController implements BlurController {
     private float blurRadius = DEFAULT_BLUR_RADIUS;
 
     private BlurAlgorithm blurAlgorithm;
-    private Canvas internalCanvas;
+    private BlurViewCanvas internalCanvas;
     private Bitmap internalBitmap;
 
     @SuppressWarnings("WeakerAccess")
@@ -93,7 +94,7 @@ final class BlockingBlurController implements BlurController {
 
         blurView.setWillNotDraw(false);
         allocateBitmap(measuredWidth, measuredHeight);
-        internalCanvas = new Canvas(internalBitmap);
+        internalCanvas = new BlurViewCanvas(internalBitmap);
         initialized = true;
 
         if (hasFixedTransformationMatrix) {
@@ -153,8 +154,10 @@ final class BlockingBlurController implements BlurController {
         if (!blurEnabled || !initialized) {
             return true;
         }
-        // Not blurring own children
-        if (canvas == internalCanvas) {
+        // Not blurring itself or other BlurViews to not cause recursive draw calls
+        // Related: https://github.com/Dimezis/BlurView/issues/110
+        //          https://github.com/Dimezis/BlurView/issues/110
+        if (canvas instanceof BlurViewCanvas) {
             return false;
         }
 
