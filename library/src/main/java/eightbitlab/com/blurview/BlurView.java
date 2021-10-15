@@ -120,4 +120,8 @@ public class BlurView extends FrameLayout {
     public BlurViewFacade setBlurEnabled(boolean enabled) {
         return blurController.setBlurEnabled(enabled);
     }
+
+    public BlurViewFacade setBlurCornerRadius(int cornerRadius) {
+        return blurController.setBlurCornerRadius(cornerRadius);
+    }
 }

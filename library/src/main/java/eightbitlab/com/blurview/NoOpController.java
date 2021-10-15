@@ -53,4 +53,9 @@ class NoOpController implements BlurController {
     public BlurViewFacade setHasFixedTransformationMatrix(boolean hasFixedTransformationMatrix) {
         return this;
     }
+
+    @Override
+    public BlurViewFacade setBlurCornerRadius(int cornerRadius) {
+        return null;
+    }
 }

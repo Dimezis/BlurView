@@ -4,6 +4,10 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +48,7 @@ final class BlockingBlurController implements BlurController {
     private final int[] blurViewLocation = new int[2];
     private final SizeScaler sizeScaler = new SizeScaler(DEFAULT_SCALE_FACTOR);
     private float scaleFactor = 1f;
+    private int cornerRadius = 0;
 
     private final ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
         @Override
@@ -165,7 +170,7 @@ final class BlockingBlurController implements BlurController {
 
         canvas.save();
         canvas.scale(scaleFactor, scaleFactor);
-        canvas.drawBitmap(internalBitmap, 0, 0, paint);
+        canvas.drawBitmap(getRoundedCornerBitmap(internalBitmap, cornerRadius), 0, 0, paint);
         canvas.restore();
 
         if (overlayColor != TRANSPARENT) {
@@ -243,5 +248,29 @@ final class BlockingBlurController implements BlurController {
             blurView.invalidate();
         }
         return this;
+    }
+
+    @Override
+    public BlurViewFacade setBlurCornerRadius(int cornerRadius) {
+        this.cornerRadius = cornerRadius;
+        return this;
+    }
+
+    private static Bitmap getRoundedCornerBitmap(Bitmap bitmap, int cornerRadius) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap
+                .getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        final RectF rectF = new RectF(rect);
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawRoundRect(rectF, (float) cornerRadius, (float) cornerRadius, paint);
+        canvas.drawRect(0, bitmap.getHeight() / 2f, bitmap.getWidth(), bitmap.getHeight(), paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        return output;
     }
 }
