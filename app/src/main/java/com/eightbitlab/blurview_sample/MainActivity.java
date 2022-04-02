@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 
-import com.eightbitlab.supportrenderscriptblur.SupportRenderScriptBlur;
 import com.google.android.material.tabs.TabLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +13,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import eightbitlab.com.blurview.BlurView;
+import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -58,13 +58,13 @@ public class MainActivity extends AppCompatActivity {
 
         topBlurView.setupWith(root)
                 .setFrameClearDrawable(windowBackground)
-                .setBlurAlgorithm(new SupportRenderScriptBlur(this))
+                .setBlurAlgorithm(new RenderScriptBlur(this))
                 .setBlurRadius(radius)
                 .setHasFixedTransformationMatrix(true);
 
         bottomBlurView.setupWith(root)
                 .setFrameClearDrawable(windowBackground)
-                .setBlurAlgorithm(new SupportRenderScriptBlur(this))
+                .setBlurAlgorithm(new RenderScriptBlur(this))
                 .setBlurRadius(radius)
                 .setHasFixedTransformationMatrix(true);
 

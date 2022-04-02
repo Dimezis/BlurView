@@ -23,7 +23,7 @@ def getVersionName() {
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 32
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -32,7 +32,7 @@ android {
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 29
+        targetSdkVersion 32
     }
 }
 

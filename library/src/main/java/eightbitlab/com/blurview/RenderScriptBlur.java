@@ -11,9 +11,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 /**
- * Blur using RenderScript, processed on GPU.
+ * Blur using RenderScript, processed on GPU (when device drivers support it).
  * Requires API 17+
+ * @deprecated because RenderScript is deprecated and its hardware acceleration is not guaranteed
  */
+@Deprecated
 public final class RenderScriptBlur implements BlurAlgorithm {
     private final RenderScript renderScript;
     private final ScriptIntrinsicBlur blurScript;

@@ -1,16 +1,21 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 32
 
     defaultConfig {
-        renderscriptTargetApi 29
+        renderscriptTargetApi 32
         renderscriptSupportModeEnabled true
         applicationId "com.eightbitlab.blurview_sample"
-        minSdkVersion 14
-        targetSdkVersion 29
+        minSdkVersion 17
+        targetSdkVersion 32
         versionCode 3
         versionName "1.1"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     buildTypes {
@@ -32,5 +37,4 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     implementation project(':library')
-    implementation project(':supportrenderscriptblur')
 }
