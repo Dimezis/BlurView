@@ -38,37 +38,12 @@ It honors its position and size changes, including view animation and property a
            .setBlurAlgorithm(new RenderScriptBlur(this))
            .setBlurRadius(radius)
            .setBlurAutoUpdate(true)
-           .setHasFixedTransformationMatrix(true); // Or false if it's in a scrolling container or might be animated
 ```
 
 Always try to choose the closest possible root layout to BlurView. This will greatly reduce the amount of work needed for creating View hierarchy snapshot.
 
-You can use `setHasFixedTransformationMatrix(true)` in case if you are not animating your BlurView, or not putting it in the scrolling container, this might slightly improve the performance as BlurView won't have to recalculate its coordinates on each frame. 
-
 DO NOT set `View.LAYER_TYPE_HARDWARE` or `View.LAYER_TYPE_SOFTWARE` on the BlurView.
 It's not supported (even though it could be), because it wouldn't bring any performance benefits.
-
-## Supporting API < 17
-If you need to support API < 17, you can include
-
-```Groovy
-implementation 'com.eightbitlab:supportrenderscriptblur:1.0.2'
-```
-
-setup BlurView with
-
-```Java
-blurAlgorithm(new SupportRenderScriptBlur(this))
-```
-
-and enable RenderScript support mode
-
-```Groovy
- defaultConfig {
-        renderscriptTargetApi 28 //must match target sdk and build tools
-        renderscriptSupportModeEnabled true
- }
-```
 
 ## Important
 BlurView can be used only in a hardware-accelerated window.
@@ -76,7 +51,7 @@ Otherwise, blur will not be drawn. It will fallback to a regular FrameLayout dra
 
 ## Gradle
 ```Groovy
-implementation 'com.eightbitlab:blurview:1.6.6'
+implementation 'com.eightbitlab:blurview:2.0.0'
 ```
 Since JCenter is closing, consider using https://jitpack.io/ and release tags as a source of stable artifacts.
 Soon the old artifacts won't be available.
@@ -88,7 +63,7 @@ Though this is possible and already done on the very old branch as an experiment
 License
 -------
 
-    Copyright 2021 Dmitry Saviuk
+    Copyright 2022 Dmitry Saviuk
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

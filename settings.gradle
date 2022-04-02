@@ -1,1 +1,1 @@
-include ':app', ':library', ':supportrenderscriptblur'
+include ':app', ':library'
