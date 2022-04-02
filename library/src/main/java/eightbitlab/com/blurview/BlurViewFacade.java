@@ -28,9 +28,11 @@ public interface BlurViewFacade {
      * If you are not changing these properties (for example, during animation), this behavior can be changed
      * to calculate them only once during initialization.
      *
+     * @deprecated It was a confusing API that didn't do much for the performance. Now this method is no-op
      * @param hasFixedTransformationMatrix indicates if this BlurView has fixed transformation Matrix.
      * @return {@link BlurViewFacade}
      */
+    @Deprecated
     BlurViewFacade setHasFixedTransformationMatrix(boolean hasFixedTransformationMatrix);
 
     /**
