@@ -43,7 +43,6 @@ final class BlockingBlurController implements BlurController {
     private final int[] rootLocation = new int[2];
     private final int[] blurViewLocation = new int[2];
     private final SizeScaler sizeScaler = new SizeScaler(DEFAULT_SCALE_FACTOR);
-    private float scaleFactor = 1f;
 
     private final ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
         @Override
@@ -63,7 +62,6 @@ final class BlockingBlurController implements BlurController {
 
     @Nullable
     private Drawable frameClearDrawable;
-    private boolean hasFixedTransformationMatrix;
     private final Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
     /**
@@ -93,13 +91,10 @@ final class BlockingBlurController implements BlurController {
         }
 
         blurView.setWillNotDraw(false);
-        allocateBitmap(measuredWidth, measuredHeight);
+        SizeScaler.Size bitmapSize = sizeScaler.scale(measuredWidth, measuredHeight);
+        internalBitmap = Bitmap.createBitmap(bitmapSize.width, bitmapSize.height, blurAlgorithm.getSupportedBitmapConfig());
         internalCanvas = new BlurViewCanvas(internalBitmap);
         initialized = true;
-
-        if (hasFixedTransformationMatrix) {
-            setupInternalCanvasMatrix();
-        }
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -114,22 +109,12 @@ final class BlockingBlurController implements BlurController {
             frameClearDrawable.draw(internalCanvas);
         }
 
-        if (hasFixedTransformationMatrix) {
-            rootView.draw(internalCanvas);
-        } else {
-            internalCanvas.save();
-            setupInternalCanvasMatrix();
-            rootView.draw(internalCanvas);
-            internalCanvas.restore();
-        }
+        internalCanvas.save();
+        setupInternalCanvasMatrix();
+        rootView.draw(internalCanvas);
+        internalCanvas.restore();
 
         blurAndSave();
-    }
-
-    private void allocateBitmap(int measuredWidth, int measuredHeight) {
-        SizeScaler.Size bitmapSize = sizeScaler.scale(measuredWidth, measuredHeight);
-        scaleFactor = bitmapSize.scaleFactor;
-        internalBitmap = Bitmap.createBitmap(bitmapSize.width, bitmapSize.height, blurAlgorithm.getSupportedBitmapConfig());
     }
 
     /**
@@ -142,11 +127,15 @@ final class BlockingBlurController implements BlurController {
         int left = blurViewLocation[0] - rootLocation[0];
         int top = blurViewLocation[1] - rootLocation[1];
 
-        float scaledLeftPosition = -left / scaleFactor;
-        float scaledTopPosition = -top / scaleFactor;
+        // https://github.com/Dimezis/BlurView/issues/128
+        float scaleFactorH = (float) blurView.getHeight() / internalBitmap.getHeight();
+        float scaleFactorW = (float) blurView.getWidth() / internalBitmap.getWidth();
+
+        float scaledLeftPosition = -left / scaleFactorW;
+        float scaledTopPosition = -top / scaleFactorH;
 
         internalCanvas.translate(scaledLeftPosition, scaledTopPosition);
-        internalCanvas.scale(1 / scaleFactor, 1 / scaleFactor);
+        internalCanvas.scale(1 / scaleFactorW, 1 / scaleFactorH);
     }
 
     @Override
@@ -163,8 +152,12 @@ final class BlockingBlurController implements BlurController {
 
         updateBlur();
 
+        // https://github.com/Dimezis/BlurView/issues/128
+        float scaleFactorH = (float) blurView.getHeight() / internalBitmap.getHeight();
+        float scaleFactorW = (float) blurView.getWidth() / internalBitmap.getWidth();
+
         canvas.save();
-        canvas.scale(scaleFactor, scaleFactor);
+        canvas.scale(scaleFactorW, scaleFactorH);
         canvas.drawBitmap(internalBitmap, 0, 0, paint);
         canvas.restore();
 
@@ -223,16 +216,16 @@ final class BlockingBlurController implements BlurController {
     }
 
     public BlurViewFacade setBlurAutoUpdate(final boolean enabled) {
-        blurView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
+        rootView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
         if (enabled) {
-            blurView.getViewTreeObserver().addOnPreDrawListener(drawListener);
+            rootView.getViewTreeObserver().addOnPreDrawListener(drawListener);
         }
         return this;
     }
 
     @Override
+    @Deprecated
     public BlurViewFacade setHasFixedTransformationMatrix(boolean hasFixedTransformationMatrix) {
-        this.hasFixedTransformationMatrix = hasFixedTransformationMatrix;
         return this;
     }
 

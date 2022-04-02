@@ -49,6 +49,7 @@ public class SizeScaler {
 
         final int width;
         final int height;
+        // TODO this is probably not needed anymore
         final float scaleFactor;
 
         Size(int width, int height, float scaleFactor) {

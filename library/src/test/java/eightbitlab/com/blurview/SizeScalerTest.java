@@ -33,6 +33,7 @@ class SizeScalerTest {
         assertEquals(isZeroSized, scaler.isZeroSized(x, y));
     }
 
+    @SuppressWarnings("unused")
     private static Stream<Arguments> scalingResults() {
         return Stream.of(
                 of(64, 64, size(64, 64, 1f)),
@@ -47,7 +48,9 @@ class SizeScalerTest {
                 of(900, 256, size(128, 37, 7.03125f)),
                 of(900, 200, size(128, 29, 7.03125f)),
                 of(907, 203, size(128, 29, 7.0859375f)),
-                of(1080, 104, size(192, 19, 5.625f))
+                of(1080, 104, size(192, 19, 5.625f)),
+                of(1080, 192, size(192, 35, 5.625f)),
+                of(1080, 1149, size(192, 205, 5.625f))
         );
     }
 
