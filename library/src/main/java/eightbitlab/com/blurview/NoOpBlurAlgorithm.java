@@ -1,6 +1,7 @@
 package eightbitlab.com.blurview;
 
 import android.graphics.Bitmap;
+
 import androidx.annotation.NonNull;
 
 class NoOpBlurAlgorithm implements BlurAlgorithm {
@@ -22,5 +23,10 @@ class NoOpBlurAlgorithm implements BlurAlgorithm {
     @Override
     public Bitmap.Config getSupportedBitmapConfig() {
         return Bitmap.Config.ARGB_8888;
+    }
+
+    @Override
+    public float scaleFactor() {
+        return 1;
     }
 }

@@ -1,5 +1,7 @@
 package eightbitlab.com.blurview;
 
+import static eightbitlab.com.blurview.BlurController.DEFAULT_SCALE_FACTOR;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -7,6 +9,7 @@ import android.renderscript.Allocation;
 import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
@@ -85,5 +88,10 @@ public final class RenderScriptBlur implements BlurAlgorithm {
     @Override
     public Bitmap.Config getSupportedBitmapConfig() {
         return Bitmap.Config.ARGB_8888;
+    }
+
+    @Override
+    public float scaleFactor() {
+        return DEFAULT_SCALE_FACTOR;
     }
 }

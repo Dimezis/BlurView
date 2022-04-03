@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
@@ -37,12 +36,11 @@ final class BlockingBlurController implements BlurController {
     private Bitmap internalBitmap;
 
     @SuppressWarnings("WeakerAccess")
-    final View blurView;
+    final BlurView blurView;
     private int overlayColor;
     private final ViewGroup rootView;
     private final int[] rootLocation = new int[2];
     private final int[] blurViewLocation = new int[2];
-    private final SizeScaler sizeScaler = new SizeScaler(DEFAULT_SCALE_FACTOR);
 
     private final ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
         @Override
@@ -70,7 +68,7 @@ final class BlockingBlurController implements BlurController {
      *                 Can be Activity's root content layout (android.R.id.content)
      *                 or some of your custom root layouts.
      */
-    BlockingBlurController(@NonNull View blurView, @NonNull ViewGroup rootView, @ColorInt int overlayColor) {
+    BlockingBlurController(@NonNull BlurView blurView, @NonNull ViewGroup rootView, @ColorInt int overlayColor) {
         this.rootView = rootView;
         this.blurView = blurView;
         this.overlayColor = overlayColor;
@@ -84,6 +82,7 @@ final class BlockingBlurController implements BlurController {
 
     @SuppressWarnings("WeakerAccess")
     void init(int measuredWidth, int measuredHeight) {
+        SizeScaler sizeScaler = new SizeScaler(blurAlgorithm.scaleFactor());
         if (sizeScaler.isZeroSized(measuredWidth, measuredHeight)) {
             // Will be initialized later when the View reports a size change
             blurView.setWillNotDraw(true);
@@ -152,15 +151,17 @@ final class BlockingBlurController implements BlurController {
 
         updateBlur();
 
-        // https://github.com/Dimezis/BlurView/issues/128
-        float scaleFactorH = (float) blurView.getHeight() / internalBitmap.getHeight();
-        float scaleFactorW = (float) blurView.getWidth() / internalBitmap.getWidth();
+        // TODO This is hacky. Maybe BlurAlgorithm should have a method to control this instead?
+        if (!(blurAlgorithm instanceof RenderEffectBlur)) {
+            // https://github.com/Dimezis/BlurView/issues/128
+            float scaleFactorH = (float) blurView.getHeight() / internalBitmap.getHeight();
+            float scaleFactorW = (float) blurView.getWidth() / internalBitmap.getWidth();
 
-        canvas.save();
-        canvas.scale(scaleFactorW, scaleFactorH);
-        canvas.drawBitmap(internalBitmap, 0, 0, paint);
-        canvas.restore();
-
+            canvas.save();
+            canvas.scale(scaleFactorW, scaleFactorH);
+            canvas.drawBitmap(internalBitmap, 0, 0, paint);
+            canvas.restore();
+        }
         if (overlayColor != TRANSPARENT) {
             canvas.drawColor(overlayColor);
         }
@@ -189,12 +190,14 @@ final class BlockingBlurController implements BlurController {
         initialized = false;
     }
 
+    // TODO this should rather be a part of the blur algo
     @Override
     public BlurViewFacade setBlurRadius(float radius) {
         this.blurRadius = radius;
         return this;
     }
 
+    // TODO should be immutable
     @Override
     public BlurViewFacade setBlurAlgorithm(BlurAlgorithm algorithm) {
         this.blurAlgorithm = algorithm;
