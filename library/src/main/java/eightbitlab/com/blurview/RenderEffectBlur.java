@@ -18,6 +18,7 @@ import androidx.annotation.RequiresApi;
  * Leverages the new RenderEffect.createBlurEffect API to perform blur.
  * Hardware acceleration is supported.
  * Its performance and stability is not yet well studied, use at own risk.
+ * There's a known downside - this BlurAlgorithm constantly triggers a redraw of the BlurView.
  */
 @RequiresApi(Build.VERSION_CODES.S)
 public class RenderEffectBlur implements BlurAlgorithm {
