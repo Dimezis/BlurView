@@ -53,8 +53,12 @@ Otherwise, blur will not be drawn. It will fallback to a regular FrameLayout dra
 ```Groovy
 implementation 'com.eightbitlab:blurview:2.0.0'
 ```
+
 Since JCenter is closing, consider using https://jitpack.io/ and release tags as a source of stable artifacts.
 Soon the old artifacts won't be available.
+```Groovy
+implementation 'com.github.Dimezis:BlurView:version-2.0.0'
+```
 
 ## Why blurring on the main thread?
 Because blurring on some other thread would introduce 1-2 frames latency.
