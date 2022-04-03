@@ -2,12 +2,12 @@
 
 ![alt tag](https://github.com/Dimezis/BlurView/blob/master/BlurScreenshot.png)
 
-Dynamic iOS-like blur of underlying Views for Android. 
-Includes library and small example project.
+Dynamic iOS-like blur for Android Views. Includes library and small example project.
 
-BlurView can be used as a regular FrameLayout. It blurs its underlying content and draws it as a background for its children.
-BlurView redraws its blurred content when changes in view hierarchy are detected (draw() called). 
-It honors its position and size changes, including view animation and property animation.
+BlurView can be used as a regular FrameLayout. It blurs its underlying content and draws it as a
+background for its children. The children of the BlurView are not blurred. BlurView redraws its
+blurred content when changes in view hierarchy are detected (draw() called). It honors its position
+and size changes, including view animation and property animation.
 
 ## How to use
 ```XML
