@@ -24,16 +24,25 @@ def getVersionName() {
 }
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 31
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    externalNativeBuild {
+        cmake { path "src/main/cpp/CMakeLists.txt" }
+    }
+
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 32
+        targetSdkVersion 31
+
+        ndk.abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'
+        externalNativeBuild {
+            cmake { cppFlags "" }
+        }
     }
 }
 
@@ -43,6 +52,8 @@ configurations {
 
 dependencies {
     implementation 'androidx.annotation:annotation:1.3.0'
+    implementation("com.otaliastudios.opengl:egloo:0.6.1")
+
     javadocDeps 'androidx.annotation:annotation:1.3.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'

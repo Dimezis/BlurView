@@ -13,6 +13,14 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import eightbitlab.com.blurview.gl.GlBlur;
+import kotlin.jvm.Volatile;
+
 /**
  * Blur Controller that handles all blur logic for the attached View.
  * It honors View size changes, View animation and Visibility changes.
@@ -29,6 +37,8 @@ final class BlockingBlurController implements BlurController {
 
     @ColorInt
     static final int TRANSPARENT = 0;
+    @Volatile
+    private GlBlur glBlur;
 
     private float blurRadius = DEFAULT_BLUR_RADIUS;
 
@@ -78,6 +88,8 @@ final class BlockingBlurController implements BlurController {
 
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();
+
+        glBlur = new GlBlur();
 
         init(measuredWidth, measuredHeight);
     }
@@ -168,7 +180,10 @@ final class BlockingBlurController implements BlurController {
     }
 
     private void blurAndSave() {
-        internalBitmap = blurAlgorithm.blur(internalBitmap, blurRadius);
+        long start = System.currentTimeMillis();
+        internalBitmap = glBlur.blur(internalBitmap, blurRadius);
+        long end = System.currentTimeMillis();
+        System.out.println("LOL " + (end - start));
         if (!blurAlgorithm.canModifyBitmap()) {
             internalCanvas.setBitmap(internalBitmap);
         }
