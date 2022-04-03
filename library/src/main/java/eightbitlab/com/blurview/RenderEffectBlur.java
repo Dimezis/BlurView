@@ -1,6 +1,7 @@
 package eightbitlab.com.blurview;
 
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.graphics.RenderEffect;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
@@ -27,9 +28,11 @@ public class RenderEffectBlur implements BlurAlgorithm {
      * ViewGroup's children.
      */
     private final View backgroundView;
+    private final RenderEffectPrecision precision;
 
-    public RenderEffectBlur(BlurView blurView) {
+    public RenderEffectBlur(BlurView blurView, RenderEffectPrecision precision) {
         backgroundView = new View(blurView.getContext());
+        this.precision = precision;
 
         blurView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -50,13 +53,19 @@ public class RenderEffectBlur implements BlurAlgorithm {
             BitmapDrawable background = new BitmapDrawable(backgroundView.getResources(), bitmap);
             backgroundView.setBackground(background);
         }
-        // TODO alternatively, it's possible to blur a downscaled bitmap by creating a chain of
-        //  createBitmapEffect -> createBlurEffect with BitmapEffect as an input.
-        //  It will reduce the amount of pixels to blur, but will demonstrate the downscaling artifacts
-        //  similar to other blur methods.
-        //  It's also not clear whether having this kind of RenderEffect chain is more performant than
-        //  a single createBlurEffect call, as it's quite hard to measure.
-        RenderEffect blurEffect = RenderEffect.createBlurEffect(blurRadius, blurRadius, Shader.TileMode.MIRROR);
+        RenderEffect blurEffect;
+        if (precision == RenderEffectPrecision.EXACT) {
+            blurEffect = RenderEffect.createBlurEffect(blurRadius, blurRadius, Shader.TileMode.MIRROR);
+        } else {
+            // It's possible to blur a downscaled bitmap by creating a chain of
+            //  createBitmapEffect -> createBlurEffect with BitmapEffect as an input.
+            //  It will reduce the amount of pixels to blur, but will demonstrate the downscaling artifacts
+            //  similar to other blur methods.
+            //  It's also not clear whether having this kind of RenderEffect chain is more performant than
+            //  a single createBlurEffect call, as it's quite hard to measure.
+            RenderEffect bitmapInput = RenderEffect.createBitmapEffect(bitmap, null, new Rect(0, 0, backgroundView.getWidth(), backgroundView.getBottom()));
+            blurEffect = RenderEffect.createBlurEffect(blurRadius, blurRadius, bitmapInput, Shader.TileMode.MIRROR);
+        }
         backgroundView.setRenderEffect(blurEffect);
         backgroundView.invalidate();
         return bitmap;
@@ -80,6 +89,10 @@ public class RenderEffectBlur implements BlurAlgorithm {
     @Override
     public float scaleFactor() {
         // There's no benefit in downscaling for this algorithm, because its input is the whole View's content
-        return 1;
+        if (precision == RenderEffectPrecision.EXACT) {
+            return 1;
+        } else {
+            return 4;
+        }
     }
 }
