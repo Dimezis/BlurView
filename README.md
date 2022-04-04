@@ -60,6 +60,18 @@ Soon the old artifacts won't be available.
 implementation 'com.github.Dimezis:BlurView:version-2.0.0'
 ```
 
+## Rounded corners
+Since so many people are asking the same thing - yes, it's possible to set rounded corners. It works absolutely the same way as with any other View:
+
+Create a rounded drawable, and set it as a background.
+
+Then set up the clipping, so the BlurView doesn't draw outside the corners 
+```Java
+blurView.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
+blurView.setClipToOutline(true);
+```
+Related thread - https://github.com/Dimezis/BlurView/issues/37
+
 ## Why blurring on the main thread?
 Because blurring on some other thread would introduce 1-2 frames latency.
 Though this is possible and already done on the very old branch as an experiment (which should be rewritten from scratch TBH)
