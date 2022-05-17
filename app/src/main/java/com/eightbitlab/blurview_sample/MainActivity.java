@@ -7,18 +7,12 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.*;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 
-import eightbitlab.com.blurview.BlurAlgorithm;
-import eightbitlab.com.blurview.BlurView;
-import eightbitlab.com.blurview.RenderEffectBlur;
-import eightbitlab.com.blurview.RenderEffectPrecision;
-import eightbitlab.com.blurview.RenderScriptBlur;
+import eightbitlab.com.blurview.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -130,6 +124,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             Fragment getFragment() {
                 return new ImageFragment();
+            }
+        },
+        FOURTH("Transparent") {
+            @Override
+            Fragment getFragment() {
+                return new TransparentFragment();
             }
         };
 

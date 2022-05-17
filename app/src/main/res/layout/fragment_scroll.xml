@@ -3,6 +3,7 @@
     android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     android:paddingBottom="@dimen/bottom_tab_height"
     android:clipToPadding="false"
     android:scrollbars="none">
