@@ -1,7 +1,8 @@
 package eightbitlab.com.blurview;
 
 import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
+import android.view.View;
+
 import androidx.annotation.Nullable;
 
 //Used in edit mode and in case if no BlurController was set
@@ -35,7 +36,7 @@ class NoOpController implements BlurController {
     }
 
     @Override
-    public BlurViewFacade setFrameClearDrawable(@Nullable Drawable windowBackground) {
+    public BlurViewFacade setFrameClearDrawable(@Nullable View windowBackground) {
         return this;
     }
 

@@ -1,8 +1,8 @@
 package com.eightbitlab.blurview_sample;
 
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 
@@ -48,12 +48,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupBlurView() {
-        final float radius = 25f;
+        final float radius = 5f;
         final float minBlurRadius = 10f;
         final float step = 4f;
 
         //set background, if your root layout doesn't have one
-        final Drawable windowBackground = getWindow().getDecorView().getBackground();
+        final View windowBackground = getWindow().getDecorView();
 
         BlurAlgorithm algorithm;
         if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
