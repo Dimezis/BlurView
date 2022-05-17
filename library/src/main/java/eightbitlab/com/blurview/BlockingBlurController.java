@@ -1,16 +1,9 @@
 package eightbitlab.com.blurview;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
+import android.graphics.*;
+import android.view.*;
 
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.annotation.*;
 
 /**
  * Blur Controller that handles all blur logic for the attached View.
@@ -59,7 +52,7 @@ final class BlockingBlurController implements BlurController {
     private boolean initialized;
 
     @Nullable
-    private Drawable frameClearDrawable;
+    private View frameClearDrawable;
     private final Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
     /**
@@ -105,7 +98,7 @@ final class BlockingBlurController implements BlurController {
         if (frameClearDrawable == null) {
             internalBitmap.eraseColor(Color.TRANSPARENT);
         } else {
-            frameClearDrawable.draw(internalCanvas);
+            frameClearDrawable.getBackground().draw(internalCanvas);
         }
 
         internalCanvas.save();
@@ -205,7 +198,7 @@ final class BlockingBlurController implements BlurController {
     }
 
     @Override
-    public BlurViewFacade setFrameClearDrawable(@Nullable Drawable frameClearDrawable) {
+    public BlurViewFacade setFrameClearDrawable(@Nullable View frameClearDrawable) {
         this.frameClearDrawable = frameClearDrawable;
         return this;
     }

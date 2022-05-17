@@ -1,6 +1,7 @@
 package eightbitlab.com.blurview;
 
-import android.graphics.drawable.Drawable;
+import android.view.View;
+
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 
@@ -41,7 +42,7 @@ public interface BlurViewFacade {
      *                           Optional, by default frame is cleared with a transparent color.
      * @return {@link BlurViewFacade}
      */
-    BlurViewFacade setFrameClearDrawable(@Nullable Drawable frameClearDrawable);
+    BlurViewFacade setFrameClearDrawable(@Nullable View frameClearDrawable);
 
     /**
      * @param radius sets the blur radius
