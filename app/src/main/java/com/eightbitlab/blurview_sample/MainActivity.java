@@ -17,7 +17,6 @@ import com.google.android.material.tabs.TabLayout;
 import eightbitlab.com.blurview.BlurAlgorithm;
 import eightbitlab.com.blurview.BlurView;
 import eightbitlab.com.blurview.RenderEffectBlur;
-import eightbitlab.com.blurview.RenderEffectPrecision;
 import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class MainActivity extends AppCompatActivity {
@@ -63,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         BlurAlgorithm algorithm;
         if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            algorithm = new RenderEffectBlur(topBlurView, RenderEffectPrecision.EXACT);
+            algorithm = new RenderEffectBlur();
         } else {
             algorithm = new RenderScriptBlur(this);
         }
@@ -74,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
         bottomBlurView.setupWith(root)
                 .setFrameClearDrawable(windowBackground)
-                .setBlurAlgorithm(new RenderScriptBlur(this))
+                .setBlurAlgorithm(algorithm)
                 .setBlurRadius(radius);
 
         int initialProgress = (int) (radius * step);

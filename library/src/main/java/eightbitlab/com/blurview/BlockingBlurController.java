@@ -1,13 +1,14 @@
 package eightbitlab.com.blurview;
 
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
+import androidx.annotation.ChecksSdkIntAtLeast;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,8 +33,7 @@ final class BlockingBlurController implements BlurController {
     private float blurRadius = DEFAULT_BLUR_RADIUS;
 
     private BlurAlgorithm blurAlgorithm;
-    private BlurViewCanvas internalCanvas;
-    private Bitmap internalBitmap;
+    private Renderer renderer;
 
     @SuppressWarnings("WeakerAccess")
     final BlurView blurView;
@@ -60,7 +60,6 @@ final class BlockingBlurController implements BlurController {
 
     @Nullable
     private Drawable frameClearDrawable;
-    private final Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
     /**
      * @param blurView View which will draw it's blurred underlying content
@@ -91,9 +90,18 @@ final class BlockingBlurController implements BlurController {
 
         blurView.setWillNotDraw(false);
         SizeScaler.Size bitmapSize = sizeScaler.scale(measuredWidth, measuredHeight);
-        internalBitmap = Bitmap.createBitmap(bitmapSize.width, bitmapSize.height, blurAlgorithm.getSupportedBitmapConfig());
-        internalCanvas = new BlurViewCanvas(internalBitmap);
+        if (supportsHardwarePath()) {
+            renderer = new HardwareRenderer((RenderEffectBlur) blurAlgorithm);
+        } else {
+            renderer = new SoftwareRenderer(blurAlgorithm);
+        }
+        renderer.init(bitmapSize.width, bitmapSize.height);
         initialized = true;
+    }
+
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
+    private boolean supportsHardwarePath() {
+        return blurAlgorithm instanceof RenderEffectBlur;
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -101,25 +109,39 @@ final class BlockingBlurController implements BlurController {
         if (!blurEnabled || !initialized) {
             return;
         }
+        Canvas canvas = renderer.prepareForViewSnapshot();
 
         if (frameClearDrawable == null) {
-            internalBitmap.eraseColor(Color.TRANSPARENT);
+            canvas.drawColor(Color.TRANSPARENT);
         } else {
-            frameClearDrawable.draw(internalCanvas);
+            frameClearDrawable.draw(canvas);
         }
 
-        internalCanvas.save();
-        setupInternalCanvasMatrix();
-        rootView.draw(internalCanvas);
-        internalCanvas.restore();
+        canvas.save();
+        setupCanvasMatrix();
+        // Exclude the BlurView from drawing. For some reason drawing on a RenderNode causes a
+        // stack overflow in native code on the RenderThread, if this visibility hack is not applied.
+        // This will cause a constant View invalidation though, which is not ideal, but so far I couldn't find
+        // a way to avoid it. Simply having an internal drawing flag here does not help - the RenderNode
+        // turns empty in the end.
+        if (supportsHardwarePath()) {
+            blurView.setVisibility(View.INVISIBLE);
+        }
+        rootView.draw(canvas);
+        if (supportsHardwarePath()) {
+            blurView.setVisibility(View.VISIBLE);
+        }
 
-        blurAndSave();
+        canvas.restore();
+        renderer.blur(blurRadius);
     }
 
     /**
      * Set up matrix to draw starting from blurView's position
      */
-    private void setupInternalCanvasMatrix() {
+    private void setupCanvasMatrix() {
+        Canvas internalCanvas = renderer.canvas();
+
         rootView.getLocationOnScreen(rootLocation);
         blurView.getLocationOnScreen(blurViewLocation);
 
@@ -127,8 +149,8 @@ final class BlockingBlurController implements BlurController {
         int top = blurViewLocation[1] - rootLocation[1];
 
         // https://github.com/Dimezis/BlurView/issues/128
-        float scaleFactorH = (float) blurView.getHeight() / internalBitmap.getHeight();
-        float scaleFactorW = (float) blurView.getWidth() / internalBitmap.getWidth();
+        float scaleFactorH = (float) blurView.getHeight() / internalCanvas.getHeight();
+        float scaleFactorW = (float) blurView.getWidth() / internalCanvas.getWidth();
 
         float scaledLeftPosition = -left / scaleFactorW;
         float scaledTopPosition = -top / scaleFactorH;
@@ -144,35 +166,26 @@ final class BlockingBlurController implements BlurController {
         }
         // Not blurring itself or other BlurViews to not cause recursive draw calls
         // Related: https://github.com/Dimezis/BlurView/issues/110
-        //          https://github.com/Dimezis/BlurView/issues/110
-        if (canvas instanceof BlurViewCanvas) {
+        if (renderer.shouldSkipDrawing(canvas)) {
             return false;
         }
 
         updateBlur();
 
-        // TODO This is hacky. Maybe BlurAlgorithm should have a method to control this instead?
-        if (!(blurAlgorithm instanceof RenderEffectBlur)) {
-            // https://github.com/Dimezis/BlurView/issues/128
-            float scaleFactorH = (float) blurView.getHeight() / internalBitmap.getHeight();
-            float scaleFactorW = (float) blurView.getWidth() / internalBitmap.getWidth();
+        Canvas internalCanvas = renderer.canvas();
+        // https://github.com/Dimezis/BlurView/issues/128
+        float scaleFactorH = (float) blurView.getHeight() / internalCanvas.getHeight();
+        float scaleFactorW = (float) blurView.getWidth() / internalCanvas.getWidth();
 
-            canvas.save();
-            canvas.scale(scaleFactorW, scaleFactorH);
-            canvas.drawBitmap(internalBitmap, 0, 0, paint);
-            canvas.restore();
-        }
+        canvas.save();
+        canvas.scale(scaleFactorW, scaleFactorH);
+        renderer.drawBlurredSnapshot(canvas);
+        canvas.restore();
+
         if (overlayColor != TRANSPARENT) {
             canvas.drawColor(overlayColor);
         }
         return true;
-    }
-
-    private void blurAndSave() {
-        internalBitmap = blurAlgorithm.blur(internalBitmap, blurRadius);
-        if (!blurAlgorithm.canModifyBitmap()) {
-            internalCanvas.setBitmap(internalBitmap);
-        }
     }
 
     @Override
