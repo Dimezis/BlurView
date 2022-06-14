@@ -91,6 +91,7 @@ final class BlockingBlurController implements BlurController {
         blurView.setWillNotDraw(false);
         SizeScaler.Size bitmapSize = sizeScaler.scale(measuredWidth, measuredHeight);
         if (supportsHardwarePath()) {
+            // FIXME it only works when the rootView is a direct parent of the BlurView
             renderer = new HardwareRenderer((RenderEffectBlur) blurAlgorithm);
         } else {
             renderer = new SoftwareRenderer(blurAlgorithm);
