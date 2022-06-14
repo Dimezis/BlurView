@@ -1,7 +1,6 @@
 package com.eightbitlab.blurview_sample;
 
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
@@ -14,10 +13,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 
-import eightbitlab.com.blurview.BlurAlgorithm;
 import eightbitlab.com.blurview.BlurView;
-import eightbitlab.com.blurview.RenderEffectBlur;
-import eightbitlab.com.blurview.RenderEffectPrecision;
 import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class MainActivity extends AppCompatActivity {
@@ -61,15 +57,9 @@ public class MainActivity extends AppCompatActivity {
         //set background, if your root layout doesn't have one
         final Drawable windowBackground = getWindow().getDecorView().getBackground();
 
-        BlurAlgorithm algorithm;
-        if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            algorithm = new RenderEffectBlur(topBlurView, RenderEffectPrecision.EXACT);
-        } else {
-            algorithm = new RenderScriptBlur(this);
-        }
         topBlurView.setupWith(root)
                 .setFrameClearDrawable(windowBackground)
-                .setBlurAlgorithm(algorithm)
+                .setBlurAlgorithm(new RenderScriptBlur(this))
                 .setBlurRadius(radius);
 
         bottomBlurView.setupWith(root)

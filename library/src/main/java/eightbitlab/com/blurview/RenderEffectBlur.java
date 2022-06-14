@@ -19,8 +19,12 @@ import androidx.annotation.RequiresApi;
  * Hardware acceleration is supported.
  * Its performance and stability is not yet well studied, use at own risk.
  * There's a known downside - this BlurAlgorithm constantly triggers a redraw of the BlurView.
+ *
+ * @deprecated not exactly deprecated, but this algorithm shouldn't be used, because it causes a constant redraw of the BlurView,
+ * and doesn't seem to provide a significant benefit over RenderScriptBlur.
  */
 @RequiresApi(Build.VERSION_CODES.S)
+@Deprecated
 public class RenderEffectBlur implements BlurAlgorithm {
 
     /**
@@ -35,20 +39,29 @@ public class RenderEffectBlur implements BlurAlgorithm {
         backgroundView = new View(blurView.getContext());
         this.precision = precision;
 
-        blurView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                blurView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                ViewGroup.LayoutParams params = new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        blurView.getMeasuredHeight()
-                );
-                if (backgroundView.getParent() != null) {
-                    ((ViewGroup)backgroundView.getParent()).removeView(backgroundView);
+        if (blurView.isInLayout() || !blurView.isLaidOut()) {
+            blurView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    blurView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    addBackground(blurView);
                 }
-                blurView.addView(backgroundView, 0, params);
-            }
-        });
+            });
+        } else {
+            addBackground(blurView);
+        }
+    }
+
+    private void addBackground(BlurView blurView) {
+        ViewGroup.LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                blurView.getMeasuredHeight()
+        );
+        // https://github.com/Dimezis/BlurView/pull/180
+        // Guard against some android quirk
+        if (backgroundView.getParent() == null) {
+            blurView.addView(backgroundView, 0, params);
+        }
     }
 
     @Override
