@@ -43,6 +43,9 @@ public class RenderEffectBlur implements BlurAlgorithm {
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         blurView.getMeasuredHeight()
                 );
+                if (backgroundView.getParent() != null) {
+                    ((ViewGroup)backgroundView.getParent()).removeView(backgroundView);
+                }
                 blurView.addView(backgroundView, 0, params);
             }
         });
