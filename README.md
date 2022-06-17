@@ -1,7 +1,7 @@
 # BlurView
 
-![alt tag](https://github.com/Dimezis/BlurView/blob/master/BlurScreenshot.png)
-
+<a href="url"><img src="https://user-images.githubusercontent.com/1433500/174388338-1258c3db-08ff-4f3e-ab83-30c2f5a2400a.png" height="768" width="432" ></a>
+  
 Dynamic iOS-like blur for Android Views. Includes library and small example project.
 
 BlurView can be used as a regular FrameLayout. It blurs its underlying content and draws it as a
