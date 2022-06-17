@@ -26,15 +26,17 @@ and size changes, including view animation and property animation.
     float radius = 20f;
 
     View decorView = getWindow().getDecorView();
-    //ViewGroup you want to start blur from. Choose root as close to BlurView in hierarchy as possible.
+    // ViewGroup you want to start blur from. Choose root as close to BlurView in hierarchy as possible.
     ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
-    //Set drawable to draw in the beginning of each blurred frame (Optional). 
-    //Can be used in case your layout has a lot of transparent space and your content
-    //gets kinda lost after after blur is applied.
+    
+    // Optional:
+    // Set drawable to draw in the beginning of each blurred frame.
+    // Can be used in case your layout has a lot of transparent space and your content
+    // gets a too low alpha value after blur is applied.
     Drawable windowBackground = decorView.getBackground();
 
     blurView.setupWith(rootView)
-           .setFrameClearDrawable(windowBackground)
+           .setFrameClearDrawable(windowBackground) // Optional
            .setBlurAlgorithm(new RenderScriptBlur(this))
            .setBlurRadius(radius)
            .setBlurAutoUpdate(true)
@@ -42,12 +44,8 @@ and size changes, including view animation and property animation.
 
 Always try to choose the closest possible root layout to BlurView. This will greatly reduce the amount of work needed for creating View hierarchy snapshot.
 
-DO NOT set `View.LAYER_TYPE_HARDWARE` or `View.LAYER_TYPE_SOFTWARE` on the BlurView.
-It's not supported (even though it could be), because it wouldn't bring any performance benefits.
-
-## Important
-BlurView can be used only in a hardware-accelerated window.
-Otherwise, blur will not be drawn. It will fallback to a regular FrameLayout drawing process.
+## SurfaceView, TextureView, VideoView, MapFragment, GLSurfaceView, etc
+BlurView currently doesn't support blurring of these targets, because they work only with hardware-accelerated Canvas, and BlurView relies on a software Canvas to make a snapshot of Views to blur.
 
 ## Gradle
 ```Groovy
@@ -61,7 +59,7 @@ implementation 'com.github.Dimezis:BlurView:version-2.0.0'
 ```
 
 ## Rounded corners
-Since so many people are asking the same thing - yes, it's possible to set rounded corners. It works absolutely the same way as with any other View:
+It's possible to set rounded corners without, the algorithm is the same way as with other regular Views:
 
 Create a rounded drawable, and set it as a background.
 
@@ -73,8 +71,16 @@ blurView.setClipToOutline(true);
 Related thread - https://github.com/Dimezis/BlurView/issues/37
 
 ## Why blurring on the main thread?
-Because blurring on some other thread would introduce 1-2 frames latency.
-Though this is possible and already done on the very old branch as an experiment (which should be rewritten from scratch TBH)
+Because blurring on some other thread would introduce 1-2 frames of latency.
+
+## Comparing to other blurring libs
+The main advantage of BlurView over almost any other library is that it doesn't trigger redundant redraw.
+The BlurView never invalidates itself or other Views in the hierarchy and updates only when needed relying on just a Bitmap mutation.
+It also supports multiple BlurViews on the screen without triggering a draw loop.
+It uses optimized RenderScript Allocations on devices that requires certain Allocation sizes, which greatly increases perforamance.
+
+- 🛑 [BlurKit](https://github.com/CameraKit/blurkit-android) - constantly invalidates itself
+- 🛑 [RealtimeBlurView](https://github.com/mmin18/RealtimeBlurView) - constantly invalidates itself
 
 License
 -------
