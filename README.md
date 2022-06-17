@@ -74,18 +74,20 @@ Related thread - https://github.com/Dimezis/BlurView/issues/37
 Because blurring on some other thread would introduce 1-2 frames of latency.
 
 ## Comparing to other blurring libs
-The main advantage of BlurView over almost any other library is that it doesn't trigger redundant redraw.
-The BlurView never invalidates itself or other Views in the hierarchy and updates only when needed relying on just a Bitmap mutation.
-It also supports multiple BlurViews on the screen without triggering a draw loop.
-It uses optimized RenderScript Allocations on devices that requires certain Allocation sizes, which greatly increases perforamance.
+- The main advantage of BlurView over almost any other library is that it doesn't trigger redundant redraw.
+- The BlurView never invalidates itself or other Views in the hierarchy and updates only when needed relying on just a Bitmap mutation.
+- It supports multiple BlurViews on the screen without triggering a draw loop.
+- It uses optimized RenderScript Allocations on devices that require certain Allocation sizes, which greatly increases blur performance.
+- It allows choosing a custom root view to take a snapshot from, which reduces the amount of drawing traversals and allows greater flexibility.
 
+Other libs:
 - 🛑 [BlurKit](https://github.com/CameraKit/blurkit-android) - constantly invalidates itself
 - 🛑 [RealtimeBlurView](https://github.com/mmin18/RealtimeBlurView) - constantly invalidates itself
 
 License
 -------
 
-    Copyright 2022 Dmitry Saviuk
+    Copyright 2022 Dmytro Saviuk
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
