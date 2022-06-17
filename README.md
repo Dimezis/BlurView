@@ -71,15 +71,15 @@ blurView.setClipToOutline(true);
 Related thread - https://github.com/Dimezis/BlurView/issues/37
 
 ## Why blurring on the main thread?
-Because blurring on some other thread would introduce 1-2 frames of latency.
+Because blurring on other threads would introduce 1-2 frames of latency.
 
 ## Comparing to other blurring libs
 - The main advantage of BlurView over almost any other library is that it doesn't trigger redundant redraw.
-- The BlurView never invalidates itself or other Views in the hierarchy and updates only when needed relying on just a Bitmap mutation.
+- The BlurView never invalidates itself or other Views in the hierarchy and updates only when needed relying on just a Bitmap mutation, which is recorded on a hardware-accelerated canvas.
 - It supports multiple BlurViews on the screen without triggering a draw loop.
 - It uses optimized RenderScript Allocations on devices that require certain Allocation sizes, which greatly increases blur performance.
 - It allows choosing a custom root view to take a snapshot from, which reduces the amount of drawing traversals and allows greater flexibility.
-- Supports blur of Dialogs (and Dialog's background)
+- Supports blurring of Dialogs (and Dialog's background)
 
 Other libs:
 - 🛑 [BlurKit](https://github.com/CameraKit/blurkit-android) - constantly invalidates itself
