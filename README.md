@@ -1,3 +1,5 @@
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://vshymanskyy.github.io/StandWithUkraine)
+
 # BlurView
 
 <a href="url"><img src="https://user-images.githubusercontent.com/1433500/174389657-f52837db-005b-4a68-b9c6-ce196fa03395.jpg" width="432" ></a>
