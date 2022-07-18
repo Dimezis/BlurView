@@ -1,6 +1,7 @@
 package eightbitlab.com.blurview;
 
 import android.graphics.drawable.Drawable;
+
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 
@@ -23,19 +24,6 @@ public interface BlurViewFacade {
     BlurViewFacade setBlurAutoUpdate(boolean enabled);
 
     /**
-     * Can be set to true to optimize position calculation before blur.
-     * By default, BlurView calculates its translation, rotation and scale before each draw call.
-     * If you are not changing these properties (for example, during animation), this behavior can be changed
-     * to calculate them only once during initialization.
-     *
-     * @deprecated It was a confusing API that didn't do much for the performance. Now this method is no-op
-     * @param hasFixedTransformationMatrix indicates if this BlurView has fixed transformation Matrix.
-     * @return {@link BlurViewFacade}
-     */
-    @Deprecated
-    BlurViewFacade setHasFixedTransformationMatrix(boolean hasFixedTransformationMatrix);
-
-    /**
      * @param frameClearDrawable sets the drawable to draw before view hierarchy.
      *                           Can be used to draw Activity's window background if your root layout doesn't provide any background
      *                           Optional, by default frame is cleared with a transparent color.
@@ -49,12 +37,6 @@ public interface BlurViewFacade {
      * @return {@link BlurViewFacade}
      */
     BlurViewFacade setBlurRadius(float radius);
-
-    /**
-     * @param algorithm sets the blur algorithm
-     * @return {@link BlurViewFacade}
-     */
-    BlurViewFacade setBlurAlgorithm(BlurAlgorithm algorithm);
 
     /**
      * Sets the color overlay to be drawn on top of blurred content

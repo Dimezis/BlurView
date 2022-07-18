@@ -1,10 +1,12 @@
 package com.eightbitlab.blurview_sample;
 
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -13,7 +15,9 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 
+import eightbitlab.com.blurview.BlurAlgorithm;
 import eightbitlab.com.blurview.BlurView;
+import eightbitlab.com.blurview.RenderEffectBlur;
 import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class MainActivity extends AppCompatActivity {
@@ -51,20 +55,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupBlurView() {
         final float radius = 25f;
-        final float minBlurRadius = 10f;
+        final float minBlurRadius = 4f;
         final float step = 4f;
 
         //set background, if your root layout doesn't have one
         final Drawable windowBackground = getWindow().getDecorView().getBackground();
+        BlurAlgorithm algorithm = getBlurAlgorithm();
 
-        topBlurView.setupWith(root)
+        topBlurView.setupWith(root, algorithm)
                 .setFrameClearDrawable(windowBackground)
-                .setBlurAlgorithm(new RenderScriptBlur(this))
                 .setBlurRadius(radius);
 
-        bottomBlurView.setupWith(root)
+        bottomBlurView.setupWith(root, new RenderScriptBlur(this))
                 .setFrameClearDrawable(windowBackground)
-                .setBlurAlgorithm(new RenderScriptBlur(this))
                 .setBlurRadius(radius);
 
         int initialProgress = (int) (radius * step);
@@ -79,6 +82,17 @@ public class MainActivity extends AppCompatActivity {
                 bottomBlurView.setBlurRadius(blurRadius);
             }
         });
+    }
+
+    @NonNull
+    private BlurAlgorithm getBlurAlgorithm() {
+        BlurAlgorithm algorithm;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            algorithm = new RenderEffectBlur();
+        } else {
+            algorithm = new RenderScriptBlur(this);
+        }
+        return algorithm;
     }
 
     static class ViewPagerAdapter extends FragmentPagerAdapter {

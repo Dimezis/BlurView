@@ -39,9 +39,8 @@ and size changes, including view animation and property animation.
 
     blurView.setupWith(rootView)
            .setFrameClearDrawable(windowBackground) // Optional
-           .setBlurAlgorithm(new RenderScriptBlur(this))
+           .setBlurAlgorithm(new RenderScriptBlur(this)) // or RenderEffectBlur
            .setBlurRadius(radius)
-           .setBlurAutoUpdate(true)
 ```
 
 Always try to choose the closest possible root layout to BlurView. This will greatly reduce the amount of work needed for creating View hierarchy snapshot.
@@ -50,14 +49,11 @@ Always try to choose the closest possible root layout to BlurView. This will gre
 BlurView currently doesn't support blurring of these targets, because they work only with hardware-accelerated Canvas, and BlurView relies on a software Canvas to make a snapshot of Views to blur.
 
 ## Gradle
-```Groovy
-implementation 'com.eightbitlab:blurview:2.0.0'
-```
 
-Since JCenter is closing, consider using https://jitpack.io/ and release tags as a source of stable artifacts.
-Soon the old artifacts won't be available.
+Since JCenter is closing, please use https://jitpack.io/ and release tags as the source of stable
+artifacts.
 ```Groovy
-implementation 'com.github.Dimezis:BlurView:version-2.0.0'
+implementation 'com.github.Dimezis:BlurView:version-2.0.2'
 ```
 
 ## Rounded corners

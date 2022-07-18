@@ -16,8 +16,6 @@
         android:id="@+id/topBlurView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:elevation="4dp"
-        android:outlineProvider="bounds"
         app:blurOverlayColor="@color/colorOverlay"
         tools:targetApi="lollipop">
 
@@ -47,8 +45,6 @@
         android:layout_width="match_parent"
         android:layout_gravity="bottom"
         android:layout_height="wrap_content"
-        android:elevation="8dp"
-        android:outlineProvider="bounds"
         app:blurOverlayColor="@color/colorOverlay"
         tools:targetApi="lollipop">
 
