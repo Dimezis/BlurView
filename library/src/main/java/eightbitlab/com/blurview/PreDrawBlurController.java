@@ -21,7 +21,6 @@ import androidx.annotation.Nullable;
  * It uses {@link ViewTreeObserver.OnPreDrawListener} to detect when
  * blur should be updated.
  * <p>
- * Blur is done on the main thread.
  */
 final class PreDrawBlurController implements BlurController {
 
