@@ -37,9 +37,8 @@ and size changes, including view animation and property animation.
     // gets a too low alpha value after blur is applied.
     Drawable windowBackground = decorView.getBackground();
 
-    blurView.setupWith(rootView)
+    blurView.setupWith(rootView, new RenderScriptBlur(this)) // or RenderEffectBlur
            .setFrameClearDrawable(windowBackground) // Optional
-           .setBlurAlgorithm(new RenderScriptBlur(this)) // or RenderEffectBlur
            .setBlurRadius(radius)
 ```
 
