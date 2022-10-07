@@ -5,6 +5,7 @@ import static eightbitlab.com.blurview.PreDrawBlurController.TRANSPARENT;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ViewGroup;
@@ -12,6 +13,9 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.util.Objects;
 
 /**
  * FrameLayout that blurs its underlying content.
@@ -21,7 +25,7 @@ public class BlurView extends FrameLayout {
 
     private static final String TAG = BlurView.class.getSimpleName();
 
-    BlurController blurController = new NoOpController();
+    BlurController blurController = NoOpController.INSTANCE;
 
     @ColorInt
     private int overlayColor;
@@ -78,15 +82,31 @@ public class BlurView extends FrameLayout {
     }
 
     /**
+     * @see #setupWith(ViewGroup, BlurAlgorithm)
+     */
+    @SuppressWarnings("deprecation")
+    public BlurViewFacade setupWith(@NonNull ViewGroup rootView) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            return this.setupWith(rootView, Build.VERSION.SDK_INT < Build.VERSION_CODES.S ?
+                    new RenderScriptBlur(this.getContext()) : new RenderEffectBlur());
+        } else {
+            this.blurController.destroy();
+            return this.blurController = NoOpController.INSTANCE;
+        }
+    }
+
+    /**
      * @param rootView  root to start blur from.
      *                  Can be Activity's root content layout (android.R.id.content)
      *                  or (preferably) some of your layouts. The lower amount of Views are in the root, the better for performance.
      * @param algorithm sets the blur algorithm
      * @return {@link BlurView} to setup needed params.
      */
-    public BlurViewFacade setupWith(@NonNull ViewGroup rootView, BlurAlgorithm algorithm) {
+    public BlurViewFacade setupWith(@NonNull ViewGroup rootView,@Nullable BlurAlgorithm algorithm) {
+        Objects.requireNonNull(rootView, "rootView == null");
         this.blurController.destroy();
-        BlurController blurController = new PreDrawBlurController(this, rootView, overlayColor, algorithm);
+        BlurController blurController = algorithm == null ? NoOpController.INSTANCE :
+                new PreDrawBlurController(this, rootView, overlayColor, algorithm);
         this.blurController = blurController;
 
         return blurController;

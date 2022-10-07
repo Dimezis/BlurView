@@ -7,6 +7,10 @@ import androidx.annotation.Nullable;
 
 //Used in edit mode and in case if no BlurController was set
 class NoOpController implements BlurController {
+    static final NoOpController INSTANCE = new NoOpController();
+
+    private NoOpController() {}
+
     @Override
     public boolean draw(Canvas canvas) {
         return true;
