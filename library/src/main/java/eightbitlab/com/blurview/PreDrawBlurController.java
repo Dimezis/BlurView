@@ -110,10 +110,13 @@ final class PreDrawBlurController implements BlurController {
             frameClearDrawable.draw(internalCanvas);
         }
 
-        internalCanvas.save();
-        setupInternalCanvasMatrix();
-        rootView.draw(internalCanvas);
-        internalCanvas.restore();
+        internalCanvas.saveRoot();
+        try {
+            setupInternalCanvasMatrix();
+            rootView.draw(internalCanvas);
+        } finally {
+            internalCanvas.restoreRoot();
+        }
 
         blurAndSave();
     }
