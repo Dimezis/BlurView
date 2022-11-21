@@ -23,7 +23,7 @@ import androidx.annotation.RequiresApi;
  * RenderEffectBlur is the best alternative at the moment.
  */
 @Deprecated
-public final class RenderScriptBlur implements BlurAlgorithm {
+public class RenderScriptBlur implements BlurAlgorithm {
     private final Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
     private final RenderScript renderScript;
     private final ScriptIntrinsicBlur blurScript;
@@ -36,12 +36,12 @@ public final class RenderScriptBlur implements BlurAlgorithm {
      * @param context Context to create the {@link RenderScript}
      */
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public RenderScriptBlur(Context context) {
+    public RenderScriptBlur(@NonNull Context context) {
         renderScript = RenderScript.create(context);
         blurScript = ScriptIntrinsicBlur.create(renderScript, Element.U8_4(renderScript));
     }
 
-    private boolean canReuseAllocation(Bitmap bitmap) {
+    private boolean canReuseAllocation(@NonNull Bitmap bitmap) {
         return bitmap.getHeight() == lastBitmapHeight && bitmap.getWidth() == lastBitmapWidth;
     }
 
@@ -52,7 +52,7 @@ public final class RenderScriptBlur implements BlurAlgorithm {
      */
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
-    public final Bitmap blur(Bitmap bitmap, float blurRadius) {
+    public Bitmap blur(@NonNull Bitmap bitmap, float blurRadius) {
         //Allocation will use the same backing array of pixels as bitmap if created with USAGE_SHARED flag
         Allocation inAllocation = Allocation.createFromBitmap(renderScript, bitmap);
 

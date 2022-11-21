@@ -69,6 +69,10 @@ final class PreDrawBlurController implements BlurController {
         this.blurView = blurView;
         this.overlayColor = overlayColor;
         this.blurAlgorithm = algorithm;
+        if (algorithm instanceof RenderEffectBlur) {
+            // noinspection NewApi
+            ((RenderEffectBlur) algorithm).setContext(blurView.getContext());
+        }
 
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();
