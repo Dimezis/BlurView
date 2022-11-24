@@ -105,11 +105,7 @@ public class BlurView extends FrameLayout {
      */
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     public BlurViewFacade setupWith(@NonNull ViewGroup rootView) {
-        this.blurController.destroy();
-        BlurController blurController = new PreDrawBlurController(this, rootView, overlayColor, getBlurAlgorithm());
-        this.blurController = blurController;
-
-        return blurController;
+        return setupWith(rootView, getBlurAlgorithm());
     }
 
     // Setters duplicated to be able to conveniently change these settings outside of setupWith chain
