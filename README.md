@@ -52,7 +52,7 @@ BlurView currently doesn't support blurring of these targets, because they work 
 Since JCenter is closing, please use https://jitpack.io/ and release tags as the source of stable
 artifacts.
 ```Groovy
-implementation 'com.github.Dimezis:BlurView:version-2.0.2'
+implementation 'com.github.Dimezis:BlurView:version-2.0.3'
 ```
 
 ## Rounded corners
