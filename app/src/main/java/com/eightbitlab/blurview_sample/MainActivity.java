@@ -1,9 +1,12 @@
 package com.eightbitlab.blurview_sample;
 
+import android.graphics.Outline;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 import android.widget.SeekBar;
 
 import androidx.annotation.NonNull;
@@ -43,6 +46,17 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tabLayout);
         bottomBlurView = findViewById(R.id.bottomBlurView);
         topBlurView = findViewById(R.id.topBlurView);
+        // Rounded corners + casting elevation shadow with transparent background
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            topBlurView.setClipToOutline(true);
+            topBlurView.setOutlineProvider(new ViewOutlineProvider() {
+                @Override
+                public void getOutline(View view, Outline outline) {
+                    topBlurView.getBackground().getOutline(outline);
+                    outline.setAlpha(1f);
+                }
+            });
+        }
         radiusSeekBar = findViewById(R.id.radiusSeekBar);
         root = findViewById(R.id.root);
     }

@@ -16,6 +16,9 @@
         android:id="@+id/topBlurView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:elevation="16dp"
+        android:layout_margin="8dp"
+        android:background="@drawable/rounded"
         app:blurOverlayColor="@color/colorOverlay"
         tools:targetApi="lollipop">
 
