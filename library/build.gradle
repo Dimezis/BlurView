@@ -50,9 +50,9 @@ afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                groupId = 'com.github.Dimezis'
+                groupId = 'com.github.stemyke'
                 artifactId = 'BlurView'
-                version = 'react-support-2.0.5'
+                version = 'react-support-2.0.6'
 
                 afterEvaluate {
                     from components.release
