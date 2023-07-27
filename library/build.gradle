@@ -1,6 +1,5 @@
 apply plugin: 'com.android.library'
 apply plugin: 'de.mannodermaus.android-junit5'
-apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion 31
@@ -44,20 +43,4 @@ task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
 task androidSourcesJar(type: Jar) {
     classifier = 'sources'
     from android.sourceSets.main.java.srcDirs
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                groupId = 'com.github.stemyke'
-                artifactId = 'BlurView'
-                version = 'react-support-2.0.9'
-
-                afterEvaluate {
-                    from components.release
-                }
-            }
-        }
-    }
 }
