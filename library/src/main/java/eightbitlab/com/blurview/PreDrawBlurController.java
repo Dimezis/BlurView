@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
@@ -34,7 +35,7 @@ public final class PreDrawBlurController implements BlurController {
     private Bitmap internalBitmap;
 
     @SuppressWarnings("WeakerAccess")
-    final BlurView blurView;
+    final View blurView;
     private int overlayColor;
     private final ViewGroup rootView;
     private final int[] rootLocation = new int[2];
@@ -64,7 +65,7 @@ public final class PreDrawBlurController implements BlurController {
      *                  Can be Activity's root content layout (android.R.id.content)
      * @param algorithm sets the blur algorithm
      */
-    public PreDrawBlurController(@NonNull BlurView blurView, @NonNull ViewGroup rootView, @ColorInt int overlayColor, BlurAlgorithm algorithm) {
+    public PreDrawBlurController(@NonNull View blurView, @NonNull ViewGroup rootView, @ColorInt int overlayColor, BlurAlgorithm algorithm) {
         this.rootView = rootView;
         this.blurView = blurView;
         this.overlayColor = overlayColor;
