@@ -52,7 +52,7 @@ afterEvaluate {
             release(MavenPublication) {
                 groupId = 'com.github.stemyke'
                 artifactId = 'BlurView'
-                version = 'react-support-2.0.6'
+                version = 'react-support-2.0.7'
 
                 afterEvaluate {
                     from components.release

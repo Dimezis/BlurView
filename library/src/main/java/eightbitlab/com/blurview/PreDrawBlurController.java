@@ -25,7 +25,7 @@ import androidx.annotation.Nullable;
 public final class PreDrawBlurController implements BlurController {
 
     @ColorInt
-    static final int TRANSPARENT = 0;
+    public static final int TRANSPARENT = 0;
 
     private float blurRadius = DEFAULT_BLUR_RADIUS;
 

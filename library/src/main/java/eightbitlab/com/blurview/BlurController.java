@@ -2,7 +2,7 @@ package eightbitlab.com.blurview;
 
 import android.graphics.Canvas;
 
-interface BlurController extends BlurViewFacade {
+public interface BlurController extends BlurViewFacade {
 
     float DEFAULT_SCALE_FACTOR = 6f;
     float DEFAULT_BLUR_RADIUS = 16f;
