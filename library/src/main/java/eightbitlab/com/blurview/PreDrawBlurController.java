@@ -22,7 +22,7 @@ import androidx.annotation.Nullable;
  * blur should be updated.
  * <p>
  */
-final class PreDrawBlurController implements BlurController {
+public final class PreDrawBlurController implements BlurController {
 
     @ColorInt
     static final int TRANSPARENT = 0;
