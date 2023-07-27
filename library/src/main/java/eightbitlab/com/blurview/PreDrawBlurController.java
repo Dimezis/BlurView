@@ -64,7 +64,7 @@ public final class PreDrawBlurController implements BlurController {
      *                  Can be Activity's root content layout (android.R.id.content)
      * @param algorithm sets the blur algorithm
      */
-    PreDrawBlurController(@NonNull BlurView blurView, @NonNull ViewGroup rootView, @ColorInt int overlayColor, BlurAlgorithm algorithm) {
+    public PreDrawBlurController(@NonNull BlurView blurView, @NonNull ViewGroup rootView, @ColorInt int overlayColor, BlurAlgorithm algorithm) {
         this.rootView = rootView;
         this.blurView = blurView;
         this.overlayColor = overlayColor;
