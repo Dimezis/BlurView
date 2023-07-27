@@ -52,7 +52,7 @@ afterEvaluate {
             release(MavenPublication) {
                 groupId = 'com.github.Dimezis'
                 artifactId = 'BlurView'
-                version = 'react-support-2.0.4'
+                version = 'react-support-2.0.5'
 
                 afterEvaluate {
                     from components.release
