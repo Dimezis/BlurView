@@ -10,7 +10,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 18
         targetSdkVersion 34
     }
     namespace 'eightbitlab.com.blurview'

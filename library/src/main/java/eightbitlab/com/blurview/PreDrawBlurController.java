@@ -213,8 +213,13 @@ public final class PreDrawBlurController implements BlurController {
 
     public BlurViewFacade setBlurAutoUpdate(final boolean enabled) {
         rootView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
+        blurView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
         if (enabled) {
             rootView.getViewTreeObserver().addOnPreDrawListener(drawListener);
+            // Track changes in the blurView window too, for example if it's in a bottom sheet dialog
+            if (rootView.getWindowId() != blurView.getWindowId()) {
+                blurView.getViewTreeObserver().addOnPreDrawListener(drawListener);
+            }
         }
         return this;
     }
