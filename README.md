@@ -52,7 +52,7 @@ BlurView currently doesn't support blurring of these targets, because they work 
 Since JCenter is closing, please use https://jitpack.io/ and release tags as the source of stable
 artifacts.
 ```Groovy
-implementation 'com.github.Dimezis:BlurView:version-2.0.3'
+implementation 'com.github.Dimezis:BlurView:version-2.0.5'
 ```
 
 ## Rounded corners
@@ -70,7 +70,7 @@ Related thread - https://github.com/Dimezis/BlurView/issues/37
 ## Why blurring on the main thread?
 Because blurring on other threads would introduce 1-2 frames of latency.
 
-## Comparing to other blurring libs
+## Compared to other blurring libs
 - The main advantage of BlurView over almost any other library is that it doesn't trigger redundant redraw.
 - The BlurView never invalidates itself or other Views in the hierarchy and updates only when needed relying on just a Bitmap mutation, which is recorded on a hardware-accelerated canvas.
 - It supports multiple BlurViews on the screen without triggering a draw loop.
