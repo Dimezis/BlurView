@@ -37,8 +37,8 @@ and size changes, including view animation and property animation.
     // gets a too low alpha value after blur is applied.
     Drawable windowBackground = decorView.getBackground();
 
-    blurView.setupWith(rootView, new RenderScriptBlur(this)) // or RenderEffectBlur
-           .setFrameClearDrawable(windowBackground) // Optional
+    blurView.setupWith(rootView) // Optionally pass RenderEffectBlur or RenderScriptBlur as the second parameter
+           .setFrameClearDrawable(windowBackground) // Optional. Useful when your root has a lot of transparent background, which results in semi-transparent blurred content. This will make the background opaque
            .setBlurRadius(radius)
 ```
 
@@ -56,7 +56,7 @@ implementation 'com.github.Dimezis:BlurView:version-2.0.5'
 ```
 
 ## Rounded corners
-It's possible to set rounded corners without, the algorithm is the same way as with other regular Views:
+It's possible to set rounded corners without any custom API, the algorithm is the same as with other regular View:
 
 Create a rounded drawable, and set it as a background.
 
@@ -69,6 +69,7 @@ Related thread - https://github.com/Dimezis/BlurView/issues/37
 
 ## Why blurring on the main thread?
 Because blurring on other threads would introduce 1-2 frames of latency.
+For what it's worth, `RenderEffectBlur` performs blur on the Render Thread.
 
 ## Compared to other blurring libs
 - The main advantage of BlurView over almost any other library is that it doesn't trigger redundant redraw.
@@ -85,7 +86,7 @@ Other libs:
 License
 -------
 
-    Copyright 2022 Dmytro Saviuk
+    Copyright 2024 Dmytro Saviuk
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
