@@ -23,7 +23,7 @@ public class BlurView extends FrameLayout {
 
     private static final String TAG = BlurView.class.getSimpleName();
 
-    BlurController blurController = new NoOpController();
+    protected BlurController blurController = new NoOpController();
 
     @ColorInt
     private int overlayColor;
@@ -81,6 +81,16 @@ public class BlurView extends FrameLayout {
     }
 
     /**
+     * @param blurController controller to handle blur drawing
+     * @return {@link BlurView} to setup needed params.
+     */
+    public BlurViewFacade setupWith(@NonNull BlurController blurController) {
+        this.blurController.destroy();
+        this.blurController = blurController;
+        return blurController;
+    }
+
+    /**
      * @param rootView  root to start blur from.
      *                  Can be Activity's root content layout (android.R.id.content)
      *                  or (preferably) some of your layouts. The lower amount of Views are in the root, the better for performance.
@@ -88,11 +98,9 @@ public class BlurView extends FrameLayout {
      * @return {@link BlurView} to setup needed params.
      */
     public BlurViewFacade setupWith(@NonNull ViewGroup rootView, BlurAlgorithm algorithm) {
-        this.blurController.destroy();
         BlurController blurController = new PreDrawBlurController(this, rootView, overlayColor, algorithm);
-        this.blurController = blurController;
 
-        return blurController;
+        return setupWith(blurController);
     }
 
     /**

@@ -88,7 +88,7 @@ public class RenderEffectBlur implements BlurAlgorithm {
         }
     }
 
-    void setContext(@NonNull Context context) {
+    public void setContext(@NonNull Context context) {
         this.context = context;
     }
 }

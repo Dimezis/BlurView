@@ -23,21 +23,21 @@ import androidx.annotation.Nullable;
  * blur should be updated.
  * <p>
  */
-public final class PreDrawBlurController implements BlurController {
+public class PreDrawBlurController implements BlurController {
 
     @ColorInt
     public static final int TRANSPARENT = 0;
 
     private float blurRadius = DEFAULT_BLUR_RADIUS;
 
-    private final BlurAlgorithm blurAlgorithm;
-    private BlurViewCanvas internalCanvas;
-    private Bitmap internalBitmap;
+    protected final BlurAlgorithm blurAlgorithm;
+    protected BlurViewCanvas internalCanvas;
+    protected Bitmap internalBitmap;
 
     @SuppressWarnings("WeakerAccess")
-    final View blurView;
-    private int overlayColor;
-    private final ViewGroup rootView;
+    protected final View blurView;
+    protected int overlayColor;
+    protected final ViewGroup rootView;
     private final int[] rootLocation = new int[2];
     private final int[] blurViewLocation = new int[2];
 
@@ -104,7 +104,7 @@ public final class PreDrawBlurController implements BlurController {
     }
 
     @SuppressWarnings("WeakerAccess")
-    void updateBlur() {
+    protected void updateBlur() {
         if (!blurEnabled || !initialized) {
             return;
         }
@@ -169,7 +169,7 @@ public final class PreDrawBlurController implements BlurController {
         return true;
     }
 
-    private void blurAndSave() {
+    protected void blurAndSave() {
         internalBitmap = blurAlgorithm.blur(internalBitmap, blurRadius);
         if (!blurAlgorithm.canModifyBitmap()) {
             internalCanvas.setBitmap(internalBitmap);

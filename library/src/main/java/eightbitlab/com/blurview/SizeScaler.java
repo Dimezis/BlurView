@@ -16,7 +16,7 @@ public class SizeScaler {
         this.scaleFactor = scaleFactor;
     }
 
-    Size scale(int width, int height) {
+    public Size scale(int width, int height) {
         int nonRoundedScaledWidth = downscaleSize(width);
         int scaledWidth = roundSize(nonRoundedScaledWidth);
         //Only width has to be aligned to ROUNDING_VALUE
@@ -27,7 +27,7 @@ public class SizeScaler {
         return new Size(scaledWidth, scaledHeight, roundingScaleFactor);
     }
 
-    boolean isZeroSized(int measuredWidth, int measuredHeight) {
+    public boolean isZeroSized(int measuredWidth, int measuredHeight) {
         return downscaleSize(measuredHeight) == 0 || downscaleSize(measuredWidth) == 0;
     }
 
@@ -45,7 +45,7 @@ public class SizeScaler {
         return (int) Math.ceil(value / scaleFactor);
     }
 
-    static class Size {
+    public static class Size {
 
         final int width;
         final int height;
@@ -56,6 +56,14 @@ public class SizeScaler {
             this.width = width;
             this.height = height;
             this.scaleFactor = scaleFactor;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
         }
 
         @Override
