@@ -27,6 +27,7 @@ public class BlurView extends FrameLayout {
 
     @ColorInt
     private int overlayColor;
+    private boolean blurAutoUpdate = true;
 
     public BlurView(Context context) {
         super(context);
@@ -75,7 +76,7 @@ public class BlurView extends FrameLayout {
         if (!isHardwareAccelerated()) {
             Log.e(TAG, "BlurView can't be used in not hardware-accelerated window!");
         } else {
-            blurController.setBlurAutoUpdate(true);
+            blurController.setBlurAutoUpdate(this.blurAutoUpdate);
         }
     }
 
@@ -129,6 +130,7 @@ public class BlurView extends FrameLayout {
      * @see BlurViewFacade#setBlurAutoUpdate(boolean)
      */
     public BlurViewFacade setBlurAutoUpdate(boolean enabled) {
+        this.blurAutoUpdate = enabled;
         return blurController.setBlurAutoUpdate(enabled);
     }
 
