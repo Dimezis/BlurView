@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'de.mannodermaus.android-junit5'
+apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion 36
@@ -53,3 +54,42 @@ task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
 task androidSourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
 }
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.github.Dimezis'
+            artifactId = 'BlurView'
+            version = "3.0.0"
+            
+            pom {
+                name = 'BlurView'
+                description = 'Dynamic iOS-like blur on Android'
+                url = 'https://github.com/Dimezis/BlurView'
+                
+                licenses {
+                    license {
+                        name = 'Apache License, Version 2.0'
+                        url = 'https://opensource.org/license/apache-2-0'
+                    }
+                }
+                
+                developers {
+                    developer {
+                        id = 'dimezis'
+                        name = 'Dmytro Saviuk'
+                    }
+                }
+                
+                scm {
+                    connection = 'scm:git:git://github.com/Dimezis/BlurView.git'
+                    developerConnection = 'scm:git:ssh://github.com:Dimezis/BlurView.git'
+                    url = 'https://github.com/Dimezis/BlurView/tree/master'
+                }
+            }
+        }
+    }
+}
+
+// Task to be run by JitPack
+task install(dependsOn: publishToMavenLocal)
