@@ -49,18 +49,26 @@ task androidJavadocs(type: Javadoc) {
 
 task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
     from androidJavadocs.destinationDir
+    archiveClassifier = 'javadoc'
 }
 
 task androidSourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
+    archiveClassifier = 'sources'
 }
 
 publishing {
     publications {
         maven(MavenPublication) {
             groupId = 'com.github.Dimezis'
-            artifactId = 'BlurView'
+            artifactId = 'BlurView' 
             version = "3.0.0"
+            
+            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar") {
+                builtBy assemble
+            }
+            artifact androidSourcesJar
+            artifact androidJavadocsJar
             
             pom {
                 name = 'BlurView'
@@ -79,12 +87,6 @@ publishing {
                         id = 'dimezis'
                         name = 'Dmytro Saviuk'
                     }
-                }
-                
-                scm {
-                    connection = 'scm:git:git://github.com/Dimezis/BlurView.git'
-                    developerConnection = 'scm:git:ssh://github.com:Dimezis/BlurView.git'
-                    url = 'https://github.com/Dimezis/BlurView/tree/master'
                 }
             }
         }
