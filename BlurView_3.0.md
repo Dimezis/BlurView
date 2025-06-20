@@ -37,6 +37,7 @@ All this comes at the cost of a more complex API.
 Now you have to wrap the content you want to blur
 into a `BlurTarget`, and pass it into the `setupWith()` method of the `BlurView`.
 The BlurTarget may not contain a BlurView that targets the same BlurTarget.
+The BlurTarget may contain other BlurTargets and BlurViews though.
 
 While the BlurView keeps honoring its position, scale, rotation transformations, you now have to
 manually notify it about certain changes.

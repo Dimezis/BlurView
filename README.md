@@ -12,7 +12,7 @@ blurred content when changes in view hierarchy are detected. It honors its posit
 and size changes, including view animation and property animation.
 
 > [!IMPORTANT]
-> Version 3.0 and [key changes](BlurView_3.0.md)
+> Version 3.0 info, key changes, migration steps, and what you need to know is [here](BlurView_3.0.md) 
 
 ## How to use
 ```XML
