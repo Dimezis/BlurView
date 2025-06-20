@@ -35,7 +35,8 @@ All this comes at the cost of a more complex API.
 ## Migration
 
 Now you have to wrap the content you want to blur
-into a `BlurTarget`, and the BlurTarget may not contain a BlurView that targets the same BlurTarget.
+into a `BlurTarget`, and pass it into the `setupWith()` method of the `BlurView`.
+The BlurTarget may not contain a BlurView that targets the same BlurTarget.
 
 While the BlurView keeps honoring its position, scale, rotation transformations, you now have to
 manually notify it about certain changes.
@@ -48,3 +49,14 @@ Also, you can't animate the `BlurTarget` with these property animators, but you 
 content to achieve the same effect.
 
 It's a radical rewrite, so I expect some things to be broken. Please report any issues you find.
+
+## Scale factor
+
+The scale factor was always used in BlurView to reduce the size of the View snapshot to improve the
+blur
+performance at the cost of snapshot (and blur) quality/precision.
+Right now the default scale factor is set to 4 down from 6 in the previous versions.
+You can also now control it by passing it to `setupWith()` method.
+On API <31 the scale factor is a key part to make the blur perform reasonably well, but on newer
+versions the performance difference is not as immediately noticeable, although I haven't measured
+it :) 

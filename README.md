@@ -11,6 +11,9 @@ background for its children. The children of the BlurView are not blurred. BlurV
 blurred content when changes in view hierarchy are detected. It honors its position
 and size changes, including view animation and property animation.
 
+> [!IMPORTANT]
+> Version 3.0 and [key changes](BlurView_3.0.md)
+
 ## How to use
 ```XML
     <eightbitlab.com.blurview.BlurView
@@ -84,10 +87,9 @@ On API 31+ the blur is done on the system Render Thread.
 
 ## Compared to other blurring libs
 - BlurView and Haze for Compose are the only libraries that leverage hardware acceleration for View snapshotting and have near zero overhead of snapshotting.
-- The main advantage of BlurView over almost any other library is that it doesn't trigger redundant redraw.
 - The BlurView never invalidates itself or other Views in the hierarchy and updates only when needed.
 - It supports multiple BlurViews on the screen without triggering a draw loop.
-- It uses optimized RenderScript Allocations on devices that require certain Allocation sizes, which greatly increases blur performance.
+- On API < 31 it uses optimized RenderScript Allocations on devices that require certain Allocation sizes, which greatly increases blur performance.
 - Supports blurring of Dialogs (and Dialog's background)
 
 Other libs:
