@@ -12,7 +12,8 @@ blurred content when changes in the view hierarchy are detected. It honors its p
 and size changes, including view animation and property animation.
 
 > [!IMPORTANT]
-> Version 3.0 info, key changes, migration steps, and what you need to know is [here](BlurView_3.0.md) 
+> Version 3.0 info, key changes, migration steps, and what you need to know is [here](BlurView_3.0.md).<br/>
+> Also, the code path on API 31+ is now completely different from API < 31, so keep in mind to test both.
 
 ## How to use
 ```XML
