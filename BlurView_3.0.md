@@ -1,4 +1,5 @@
-The BlurView version 3.0 significantly changes the API and the way it works.
+> [!IMPORTANT]
+> The BlurView version 3.0 significantly changes the API and the way it works.
 
 ## Why?
 
@@ -22,42 +23,41 @@ issues:
 - It crashed on rendering of Hardware Bitmaps
 
 The new 3.0 version comes with a new API that's based on RenderNodes and RenderEffect (for API 31+
-only, on older versions it falls back to the old code path).
+only, on older versions it falls back to the old code path).<br/>
 The View snapshotting is now fully hardware-accelerated, it supports all of the previously
-unsupported targets.
+unsupported targets.<br/>
 The View snapshotting has basically zero overhead. The BlurTarget records the snapshot on a
-RenderNode, and then draws the same RenderNode on the system canvas.
+RenderNode, and then draws the same RenderNode on the system canvas.<br/>
 The RenderNode snapshot is automatically updated whenever the View hierarchy changes, there's 0
-additional
-`invalidate()` or `draw()` calls.
+additional`invalidate()` or `draw()` calls.<br/>
 All this comes at the cost of a more complex API.
 
 ## Migration
 
 Now you have to wrap the content you want to blur
-into a `BlurTarget`, and pass it into the `setupWith()` method of the `BlurView`.
-The BlurTarget may not contain a BlurView that targets the same BlurTarget.
-The BlurTarget may contain other BlurTargets and BlurViews though.
+into a `BlurTarget`, and pass it into the `setupWith()` method of the `BlurView`.<br/>
+The BlurTarget may not contain a BlurView that targets the same BlurTarget.<br/>
+The BlurTarget may contain other BlurTargets and BlurViews though.<br/>
 
 While the BlurView keeps honoring its position, scale, rotation transformations, you now have to
-manually notify it about certain changes.
+manually notify it about certain changes.<br/>
 If you are animating the BlurView using `setTranslationX`, `setScaleX`, etc, you're fine and don't
-have to do anything extra.
+have to do anything extra.<br/>
 If you're animating it with `blurView.animate().translationX(...)...`, you have to attach an update
-listener to the animator and call `blurView.notifyTranslationXChanged(...)` on every update.
+listener to the animator and call `blurView.notifyTranslationXChanged(...)` on every update.<br/>
 
 Also, you can't animate the `BlurTarget` with these property animators, but you can animate its
-content to achieve the same effect.
+content to achieve the same effect.<br/>
 
-It's a radical rewrite, so I expect some things to be broken. Please report any issues you find.
+It's a radical rewrite, so I expect some things to be broken. Please report any issues you
+find.<br/>
 
 ## Scale factor
 
 The scale factor was always used in BlurView to reduce the size of the View snapshot to improve the
-blur
-performance at the cost of snapshot (and blur) quality/precision.
-Right now the default scale factor is set to 4 down from 6 in the previous versions.
-You can also now control it by passing it to `setupWith()` method.
+blur performance at the cost of snapshot (and blur) quality/precision.<br/>
+Right now the default scale factor is set to 4 down from 6 in the previous versions.<br/>
+You can also now control it by passing it to `setupWith()` method.<br/>
 On API <31 the scale factor is a key part to make the blur perform reasonably well, but on newer
 versions the performance difference is not as immediately noticeable, although I haven't measured
 it :) 
