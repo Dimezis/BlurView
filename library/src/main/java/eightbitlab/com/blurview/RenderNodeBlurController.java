@@ -32,6 +32,9 @@ public class RenderNodeBlurController implements BlurController {
     private float blurRadius = 1f;
     private boolean enabled = true;
 
+    private float layoutTranslationX = 0f;
+    private float layoutTranslationY = 0f;
+
     // Potentially cached stuff from the slow software path
     @Nullable
     private Bitmap cachedBitmap;
@@ -69,27 +72,40 @@ public class RenderNodeBlurController implements BlurController {
     }
 
     private void hardwarePath(Canvas canvas) {
-        RenderEffect renderEffect = RenderEffect.createBlurEffect(blurRadius, blurRadius, Shader.TileMode.MIRROR);
         SizeScaler sizeScaler = new SizeScaler(scaleFactor, true);
         Size original = new Size(target.getWidth(), target.getHeight());
         Size scaled = sizeScaler.scale(original);
-        Size scaledBlurView = sizeScaler.scale(blurView.getWidth(), blurView.getHeight());
 
-        int left = blurViewLocation[0] - targetLocation[0];
-        int top = blurViewLocation[1] - targetLocation[1];
-        float scaleFactorH = (float) original.height / scaled.height;
-        float scaleFactorW = (float) original.width / scaled.width;
-        int scaledLeftPosition = (int) (-left / scaleFactorW);
-        int scaledTopPosition = (int) (-top / scaleFactorH);
+        float scaleX = (float) original.width / scaled.width;
+        float scaleY = (float) original.height / scaled.height;
+        float scaledTranslationX = (-getLeft() / scaleX);
+        float scaledTranslationY = (-getTop() / scaleY);
+        float scaledBlurViewWidth = blurView.getWidth() / scaleX;
+        float scaledBlurViewHeight = blurView.getHeight() / scaleY;
+        // We need to keep track of the original translation values so we can re-apply them
+        // in updateTranslationY and updateTranslationX methods.
+        layoutTranslationX = scaledTranslationX;
+        layoutTranslationY = scaledTranslationY;
 
         // TODO would be good to keep it the size of the BlurView instead of the target, but then the animation
         //  like translation and rotation would go out of bounds. Not sure if there's a good fix for this
-        blurNode.setPosition(scaledLeftPosition, scaledTopPosition, scaled.width, scaled.height);
+        blurNode.setPosition(0, 0, scaled.width, scaled.height);
         // Pivot point for the rotation and scale (in case it's applied)
-        blurNode.setPivotX(scaledBlurView.width / 2f - scaledLeftPosition);
-        blurNode.setPivotY(scaledBlurView.height / 2f - scaledTopPosition);
-        blurNode.setRenderEffect(renderEffect);
+        blurNode.setPivotX(scaledBlurViewWidth / 2f - scaledTranslationX);
+        blurNode.setPivotY(scaledBlurViewHeight / 2f - scaledTranslationY);
+        blurNode.setTranslationX(scaledTranslationX);
+        blurNode.setTranslationY(scaledTranslationY);
 
+        drawSnapshot(scaleX, scaleY);
+
+        // Draw on the system canvas
+        canvas.save();
+        canvas.scale((float) target.getWidth() / scaled.width, (float) target.getHeight() / scaled.height);
+        canvas.drawRenderNode(blurNode);
+        canvas.restore();
+    }
+
+    private void drawSnapshot(float scaleFactorW, float scaleFactorH) {
         RecordingCanvas recordingCanvas = blurNode.beginRecording();
         if (frameClearDrawable != null) {
             frameClearDrawable.draw(recordingCanvas);
@@ -100,16 +116,14 @@ public class RenderNodeBlurController implements BlurController {
         recordingCanvas.scale(1 / scaleFactorW, 1 / scaleFactorH);
         recordingCanvas.drawRenderNode(target.renderNode);
         recordingCanvas.restore();
+
+        // Looks like the order of this doesn't matter
+        applyBlur();
+
         if (overlayColor != Color.TRANSPARENT) {
             recordingCanvas.drawColor(overlayColor);
         }
         blurNode.endRecording();
-
-        // Draw on the system canvas
-        canvas.save();
-        canvas.scale((float) target.getWidth() / scaled.width, (float) target.getHeight() / scaled.height);
-        canvas.drawRenderNode(blurNode);
-        canvas.restore();
     }
 
     private void softwarePath(Canvas canvas) {
@@ -146,18 +160,23 @@ public class RenderNodeBlurController implements BlurController {
      * Set up matrix to draw starting from blurView's position
      */
     private void setupCanvasMatrix(Canvas canvas, Size targetSize, Size scaledSize) {
-        int left = blurViewLocation[0] - targetLocation[0];
-        int top = blurViewLocation[1] - targetLocation[1];
-
         // https://github.com/Dimezis/BlurView/issues/128
         float scaleFactorH = (float) targetSize.height / scaledSize.height;
         float scaleFactorW = (float) targetSize.width / scaledSize.width;
 
-        float scaledLeftPosition = -left / scaleFactorW;
-        float scaledTopPosition = -top / scaleFactorH;
+        float scaledLeftPosition = -getLeft() / scaleFactorW;
+        float scaledTopPosition = -getTop() / scaleFactorH;
 
         canvas.translate(scaledLeftPosition, scaledTopPosition);
         canvas.scale(1 / scaleFactorW, 1 / scaleFactorH);
+    }
+
+    private int getTop() {
+        return blurViewLocation[1] - targetLocation[1];
+    }
+
+    private int getLeft() {
+        return blurViewLocation[0] - targetLocation[0];
     }
 
     @Override
@@ -196,9 +215,13 @@ public class RenderNodeBlurController implements BlurController {
     @Override
     public BlurViewFacade setBlurRadius(float radius) {
         this.blurRadius = radius;
+        applyBlur();
+        return this;
+    }
+
+    private void applyBlur() {
         RenderEffect renderEffect = RenderEffect.createBlurEffect(blurRadius, blurRadius, Shader.TileMode.MIRROR);
         blurNode.setRenderEffect(renderEffect);
-        return this;
     }
 
     @Override
@@ -211,11 +234,11 @@ public class RenderNodeBlurController implements BlurController {
     }
 
     void updateTranslationY(float translationY) {
-        blurNode.setTranslationY(-translationY);
+        blurNode.setTranslationY(layoutTranslationY - translationY);
     }
 
     void updateTranslationX(float translationX) {
-        blurNode.setTranslationX(-translationX);
+        blurNode.setTranslationX(layoutTranslationX - translationX);
     }
 
     void updateTranslationZ(float translationZ) {
