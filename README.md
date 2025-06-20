@@ -2,13 +2,13 @@
 
 # BlurView
 
-<a href="url"><img src="https://user-images.githubusercontent.com/1433500/174389657-f52837db-005b-4a68-b9c6-ce196fa03395.jpg" width="432" ></a>
+<a href="url"><img src="https://github.com/user-attachments/assets/5abb1034-021b-4dfb-ad1b-3136a2a00a02" width="432" ></a>
 
-Dynamic iOS-like blur for Android Views. Includes library and small example project.
+Dynamic iOS-like blur for Android Views. Includes a library and a small example project.
 
 BlurView can be used as a regular FrameLayout. It blurs its underlying content and draws it as a
 background for its children. The children of the BlurView are not blurred. BlurView updates its
-blurred content when changes in view hierarchy are detected. It honors its position
+blurred content when changes in the view hierarchy are detected. It honors its position
 and size changes, including view animation and property animation.
 
 > [!IMPORTANT]
