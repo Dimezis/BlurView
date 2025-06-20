@@ -86,6 +86,7 @@ public class BlurView extends FrameLayout {
      * @param algorithm   sets the blur algorithm. Ignored on API >= 31 where efficient hardware rendering pipeline is used.
      * @param scaleFactor a scale factor to downscale the view snapshot before blurring.
      *                    Helps achieving stronger blur and potentially better performance at the expense of blur precision.
+     *                    The blur radius is essentially the radius * scaleFactor.
      * @return {@link BlurView} to setup needed params.
      */
     public BlurViewFacade setupWith(@NonNull BlurTarget target, BlurAlgorithm algorithm, float scaleFactor) {
@@ -101,11 +102,12 @@ public class BlurView extends FrameLayout {
     }
 
     /**
-     * @param rootView    root to start blur from.
+     * @param rootView    the root to start blur from.
      *                    BlurAlgorithm is automatically picked based on the API version.
      *                    It uses RenderEffect on API 31+, and RenderScriptBlur on older versions.
      * @param scaleFactor a scale factor to downscale the view snapshot before blurring.
      *                    Helps achieving stronger blur and potentially better performance at the expense of blur precision.
+     *                    The blur radius is essentially the radius * scaleFactor.
      * @return {@link BlurView} to setup needed params.
      */
     public BlurViewFacade setupWith(@NonNull BlurTarget rootView, float scaleFactor) {
