@@ -3,7 +3,6 @@ package eightbitlab.com.blurview;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.RecordingCanvas;
 import android.graphics.RenderEffect;
 import android.graphics.RenderNode;
@@ -40,8 +39,6 @@ public class RenderNodeBlurController implements BlurController {
     private Bitmap cachedBitmap;
     @Nullable
     private RenderScriptBlur fallbackBlur;
-    @Nullable
-    private Paint paint;
 
     public RenderNodeBlurController(@NonNull BlurView blurView, @NonNull BlurTarget target, int overlayColor, float scaleFactor) {
         this.blurView = blurView;
@@ -102,6 +99,10 @@ public class RenderNodeBlurController implements BlurController {
         canvas.save();
         canvas.scale((float) target.getWidth() / scaled.width, (float) target.getHeight() / scaled.height);
         canvas.drawRenderNode(blurNode);
+        Noise.apply(canvas, blurView.getContext(), scaled.width, scaled.height);
+        if (overlayColor != Color.TRANSPARENT) {
+            canvas.drawColor(overlayColor);
+        }
         canvas.restore();
     }
 
@@ -120,9 +121,6 @@ public class RenderNodeBlurController implements BlurController {
         // Looks like the order of this doesn't matter
         applyBlur();
 
-        if (overlayColor != Color.TRANSPARENT) {
-            recordingCanvas.drawColor(overlayColor);
-        }
         blurNode.endRecording();
     }
 
@@ -145,15 +143,12 @@ public class RenderNodeBlurController implements BlurController {
 
         if (fallbackBlur == null) {
             fallbackBlur = new RenderScriptBlur(blurView.getContext());
-            paint = new Paint();
-            paint.setFilterBitmap(true);
         }
         fallbackBlur.blur(cachedBitmap, blurRadius);
         if (overlayColor != Color.TRANSPARENT) {
             softwareCanvas.drawColor(overlayColor);
         }
-
-        canvas.drawBitmap(cachedBitmap, 0f, 0f, paint);
+        fallbackBlur.render(canvas, cachedBitmap);
     }
 
     /**
@@ -220,8 +215,8 @@ public class RenderNodeBlurController implements BlurController {
     }
 
     private void applyBlur() {
-        RenderEffect renderEffect = RenderEffect.createBlurEffect(blurRadius, blurRadius, Shader.TileMode.MIRROR);
-        blurNode.setRenderEffect(renderEffect);
+        RenderEffect blur = RenderEffect.createBlurEffect(blurRadius, blurRadius, Shader.TileMode.MIRROR);
+        blurNode.setRenderEffect(blur);
     }
 
     @Override

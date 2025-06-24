@@ -92,5 +92,6 @@ public class RenderScriptBlur implements BlurAlgorithm {
     @Override
     public void render(@NonNull Canvas canvas, @NonNull Bitmap bitmap) {
         canvas.drawBitmap(bitmap, 0f, 0f, paint);
+        Noise.apply(canvas, renderScript.getApplicationContext(), bitmap.getWidth(), bitmap.getHeight());
     }
 }
