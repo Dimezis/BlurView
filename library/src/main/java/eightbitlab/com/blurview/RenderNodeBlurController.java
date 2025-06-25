@@ -68,59 +68,43 @@ public class RenderNodeBlurController implements BlurController {
         return true;
     }
 
+    // Not doing any scaleFactor-related manipulations here, because RenderEffect blur internally
+    // already scales down the snapshot depending on the blur radius.
+    // https://cs.android.com/android/platform/superproject/main/+/main:external/skia/src/core/SkImageFilterTypes.cpp;drc=61197364367c9e404c7da6900658f1b16c42d0da;l=2103
+    // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/libs/hwui/jni/RenderEffect.cpp;l=39;drc=61197364367c9e404c7da6900658f1b16c42d0da?q=nativeCreateBlurEffect&ss=android%2Fplatform%2Fsuperproject%2Fmain
     private void hardwarePath(Canvas canvas) {
-        SizeScaler sizeScaler = new SizeScaler(scaleFactor, true);
-        Size original = new Size(target.getWidth(), target.getHeight());
-        Size scaled = sizeScaler.scale(original);
-
-        float scaleX = (float) original.width / scaled.width;
-        float scaleY = (float) original.height / scaled.height;
-        float scaledTranslationX = (-getLeft() / scaleX);
-        float scaledTranslationY = (-getTop() / scaleY);
-        float scaledBlurViewWidth = blurView.getWidth() / scaleX;
-        float scaledBlurViewHeight = blurView.getHeight() / scaleY;
         // We need to keep track of the original translation values so we can re-apply them
         // in updateTranslationY and updateTranslationX methods.
-        layoutTranslationX = scaledTranslationX;
-        layoutTranslationY = scaledTranslationY;
+        layoutTranslationX = -getLeft();
+        layoutTranslationY = -getTop();
 
         // TODO would be good to keep it the size of the BlurView instead of the target, but then the animation
         //  like translation and rotation would go out of bounds. Not sure if there's a good fix for this
-        blurNode.setPosition(0, 0, scaled.width, scaled.height);
+        blurNode.setPosition(0, 0, target.getWidth(), target.getHeight());
         // Pivot point for the rotation and scale (in case it's applied)
-        blurNode.setPivotX(scaledBlurViewWidth / 2f - scaledTranslationX);
-        blurNode.setPivotY(scaledBlurViewHeight / 2f - scaledTranslationY);
-        blurNode.setTranslationX(scaledTranslationX);
-        blurNode.setTranslationY(scaledTranslationY);
+        blurNode.setPivotX(blurView.getWidth() / 2f - layoutTranslationX);
+        blurNode.setPivotY(blurView.getHeight() / 2f - layoutTranslationY);
+        blurNode.setTranslationX(layoutTranslationX);
+        blurNode.setTranslationY(layoutTranslationY);
 
-        drawSnapshot(scaleX, scaleY);
+        drawSnapshot();
 
         // Draw on the system canvas
-        canvas.save();
-        canvas.scale((float) target.getWidth() / scaled.width, (float) target.getHeight() / scaled.height);
         canvas.drawRenderNode(blurNode);
-        Noise.apply(canvas, blurView.getContext(), scaled.width, scaled.height);
+        Noise.apply(canvas, blurView.getContext(), blurView.getWidth(), blurView.getHeight());
         if (overlayColor != Color.TRANSPARENT) {
             canvas.drawColor(overlayColor);
         }
-        canvas.restore();
     }
 
-    private void drawSnapshot(float scaleFactorW, float scaleFactorH) {
+    private void drawSnapshot() {
         RecordingCanvas recordingCanvas = blurNode.beginRecording();
         if (frameClearDrawable != null) {
             frameClearDrawable.draw(recordingCanvas);
         }
-        recordingCanvas.save();
-        // Not reusing setupCanvasMatrix here because there are some weird clipping issues during rotation animation.
-        // Instead, setting the scaled translation in blurNode.setPosition and scaling here
-        recordingCanvas.scale(1 / scaleFactorW, 1 / scaleFactorH);
         recordingCanvas.drawRenderNode(target.renderNode);
-        recordingCanvas.restore();
-
         // Looks like the order of this doesn't matter
         applyBlur();
-
         blurNode.endRecording();
     }
 
@@ -215,7 +199,10 @@ public class RenderNodeBlurController implements BlurController {
     }
 
     private void applyBlur() {
-        RenderEffect blur = RenderEffect.createBlurEffect(blurRadius, blurRadius, Shader.TileMode.MIRROR);
+        // scaleFactor is only used to increase the blur radius
+        // because RenderEffect already scales down the snapshot when needed.
+        float realBlurRadius = blurRadius * scaleFactor;
+        RenderEffect blur = RenderEffect.createBlurEffect(realBlurRadius, realBlurRadius, Shader.TileMode.CLAMP);
         blurNode.setRenderEffect(blur);
     }
 
