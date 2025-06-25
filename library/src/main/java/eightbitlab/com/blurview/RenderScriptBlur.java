@@ -1,5 +1,7 @@
 package eightbitlab.com.blurview;
 
+import static java.lang.Math.min;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -59,7 +61,7 @@ public class RenderScriptBlur implements BlurAlgorithm {
             lastBitmapHeight = bitmap.getHeight();
         }
 
-        blurScript.setRadius(blurRadius);
+        blurScript.setRadius(min(blurRadius, 25f));
         blurScript.setInput(inAllocation);
         //do not use inAllocation in forEach. it will cause visual artifacts on blurred Bitmap
         blurScript.forEach(outAllocation);
