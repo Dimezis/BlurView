@@ -25,6 +25,7 @@ public class RenderNodeBlurController implements BlurController {
     private final BlurTarget target;
     private final RenderNode blurNode = new RenderNode("BlurView node");
     private final float scaleFactor;
+    private final boolean applyNoise;
 
     private Drawable frameClearDrawable;
     private int overlayColor;
@@ -40,11 +41,12 @@ public class RenderNodeBlurController implements BlurController {
     @Nullable
     private RenderScriptBlur fallbackBlur;
 
-    public RenderNodeBlurController(@NonNull BlurView blurView, @NonNull BlurTarget target, int overlayColor, float scaleFactor) {
+    public RenderNodeBlurController(@NonNull BlurView blurView, @NonNull BlurTarget target, int overlayColor, float scaleFactor, boolean applyNoise) {
         this.blurView = blurView;
         this.overlayColor = overlayColor;
         this.target = target;
         this.scaleFactor = scaleFactor;
+        this.applyNoise = applyNoise;
         blurView.setWillNotDraw(false);
     }
 
@@ -91,7 +93,9 @@ public class RenderNodeBlurController implements BlurController {
 
         // Draw on the system canvas
         canvas.drawRenderNode(blurNode);
-        Noise.apply(canvas, blurView.getContext(), blurView.getWidth(), blurView.getHeight());
+        if (applyNoise) {
+            Noise.apply(canvas, blurView.getContext(), blurView.getWidth(), blurView.getHeight());
+        }
         if (overlayColor != Color.TRANSPARENT) {
             canvas.drawColor(overlayColor);
         }
@@ -129,10 +133,16 @@ public class RenderNodeBlurController implements BlurController {
             fallbackBlur = new RenderScriptBlur(blurView.getContext());
         }
         fallbackBlur.blur(cachedBitmap, blurRadius);
-        if (overlayColor != Color.TRANSPARENT) {
-            softwareCanvas.drawColor(overlayColor);
-        }
+        canvas.save();
+        canvas.scale((float) original.width / scaled.width, (float) original.height / scaled.height);
         fallbackBlur.render(canvas, cachedBitmap);
+        canvas.restore();
+        if (applyNoise) {
+            Noise.apply(canvas, blurView.getContext(), blurView.getWidth(), blurView.getHeight());
+        }
+        if (overlayColor != Color.TRANSPARENT) {
+            canvas.drawColor(overlayColor);
+        }
     }
 
     /**

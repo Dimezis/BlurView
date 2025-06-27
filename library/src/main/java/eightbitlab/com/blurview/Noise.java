@@ -37,7 +37,7 @@ class Noise {
         Bitmap alphaBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(alphaBitmap);
         Paint paint = new Paint();
-        paint.setAlpha(30); // 12% opacity
+        paint.setAlpha(38); // 15% opacity
         canvas.drawBitmap(bitmap, 0, 0, paint);
         return alphaBitmap;
     }

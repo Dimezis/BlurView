@@ -87,15 +87,16 @@ public class BlurView extends FrameLayout {
      * @param scaleFactor a scale factor to downscale the view snapshot before blurring.
      *                    Helps achieving stronger blur and potentially better performance at the expense of blur precision.
      *                    The blur radius is essentially the radius * scaleFactor.
+     * @param applyNoise  optional blue noise texture over the blurred content to make it look more natural. True by default.
      * @return {@link BlurView} to setup needed params.
      */
-    public BlurViewFacade setupWith(@NonNull BlurTarget target, BlurAlgorithm algorithm, float scaleFactor) {
+    public BlurViewFacade setupWith(@NonNull BlurTarget target, BlurAlgorithm algorithm, float scaleFactor, boolean applyNoise) {
         blurController.destroy();
         if (BlurTarget.canUseHardwareRendering) {
             // Ignores the blur algorithm, always uses RenderEffect
-            blurController = new RenderNodeBlurController(this, target, overlayColor, scaleFactor);
+            blurController = new RenderNodeBlurController(this, target, overlayColor, scaleFactor, applyNoise);
         } else {
-            blurController = new PreDrawBlurController(this, target, overlayColor, algorithm, scaleFactor);
+            blurController = new PreDrawBlurController(this, target, overlayColor, algorithm, scaleFactor, applyNoise);
         }
 
         return blurController;
@@ -108,9 +109,10 @@ public class BlurView extends FrameLayout {
      * @param scaleFactor a scale factor to downscale the view snapshot before blurring.
      *                    Helps achieving stronger blur and potentially better performance at the expense of blur precision.
      *                    The blur radius is essentially the radius * scaleFactor.
+     * @param applyNoise  optional blue noise texture over the blurred content to make it look more natural. True by default.
      * @return {@link BlurView} to setup needed params.
      */
-    public BlurViewFacade setupWith(@NonNull BlurTarget rootView, float scaleFactor) {
+    public BlurViewFacade setupWith(@NonNull BlurTarget rootView, float scaleFactor, boolean applyNoise) {
         BlurAlgorithm algorithm;
         if (BlurTarget.canUseHardwareRendering) {
             // Ignores the blur algorithm, always uses RenderNodeBlurController and RenderEffect
@@ -118,18 +120,19 @@ public class BlurView extends FrameLayout {
         } else {
             algorithm = new RenderScriptBlur(getContext());
         }
-        return setupWith(rootView, algorithm, scaleFactor);
+        return setupWith(rootView, algorithm, scaleFactor, applyNoise);
     }
 
     /**
      * @param rootView root to start blur from.
      *                 BlurAlgorithm is automatically picked based on the API version.
      *                 It uses RenderEffect on API 31+, and RenderScriptBlur on older versions.
-     *                 The {@link DEFAULT_SCALE_FACTOR} scale factor for view snapshot is used
+     *                 The {@link DEFAULT_SCALE_FACTOR} scale factor for view snapshot is used.
+     *                 Blue noise texture is applied by default.
      * @return {@link BlurView} to setup needed params.
      */
     public BlurViewFacade setupWith(@NonNull BlurTarget rootView) {
-        return setupWith(rootView, DEFAULT_SCALE_FACTOR);
+        return setupWith(rootView, DEFAULT_SCALE_FACTOR, true);
     }
 
     // Setters duplicated to be able to conveniently change these settings outside of setupWith chain

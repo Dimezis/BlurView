@@ -32,6 +32,7 @@ public final class PreDrawBlurController implements BlurController {
 
     private final BlurAlgorithm blurAlgorithm;
     private final float scaleFactor;
+    private final boolean applyNoise;
     private BlurViewCanvas internalCanvas;
     private Bitmap internalBitmap;
 
@@ -67,17 +68,20 @@ public final class PreDrawBlurController implements BlurController {
      * @param algorithm   sets the blur algorithm
      * @param scaleFactor a scale factor to downscale the view snapshot before blurring.
      *                    Helps achieving stronger blur and potentially better performance at the expense of blur precision.
+     * @param applyNoise  optional blue noise texture over the blurred content to make it look more natural. True by default.
      */
     public PreDrawBlurController(@NonNull View blurView,
                                  @NonNull ViewGroup rootView,
                                  @ColorInt int overlayColor,
                                  BlurAlgorithm algorithm,
-                                 float scaleFactor) {
+                                 float scaleFactor,
+                                 boolean applyNoise) {
         this.rootView = rootView;
         this.blurView = blurView;
         this.overlayColor = overlayColor;
         this.blurAlgorithm = algorithm;
         this.scaleFactor = scaleFactor;
+        this.applyNoise = applyNoise;
 
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();
@@ -167,6 +171,9 @@ public final class PreDrawBlurController implements BlurController {
         canvas.scale(scaleFactorW, scaleFactorH);
         blurAlgorithm.render(canvas, internalBitmap);
         canvas.restore();
+        if (applyNoise) {
+            Noise.apply(canvas, blurView.getContext(), blurView.getWidth(), blurView.getHeight());
+        }
         if (overlayColor != TRANSPARENT) {
             canvas.drawColor(overlayColor);
         }
