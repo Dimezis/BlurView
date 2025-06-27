@@ -39,25 +39,37 @@ into a `BlurTarget`, and pass it into the `setupWith()` method of the `BlurView`
 The BlurTarget may not contain a BlurView that targets the same BlurTarget.<br/>
 The BlurTarget may contain other BlurTargets and BlurViews though.<br/>
 
-While the BlurView keeps honoring its position, scale, rotation transformations, you now have to
-manually notify it about certain changes.<br/>
-If you are animating the BlurView using `setTranslationX`, `setScaleX`, etc, you're fine and don't
-have to do anything extra.<br/>
-If you're animating it with `blurView.animate().translationX(...)...`, you have to attach an update
-listener to the animator and call `blurView.notifyTranslationXChanged(...)` on every update.<br/>
-
-Also, you can't animate the `BlurTarget` with these property animators, but you can animate its
-content to achieve the same effect.<br/>
-
-It's a radical rewrite, so I expect some things to be broken. Please report any issues you
-find.<br/>
-
 ## Scale factor
 
 The scale factor was always used in BlurView to reduce the size of the View snapshot to improve the
 blur performance at the cost of snapshot (and blur) quality/precision.<br/>
 Right now the default scale factor is set to 4 down from 6 in the previous versions.<br/>
 You can also now control it by passing it to `setupWith()` method.<br/>
-On API <31 the scale factor is a key part to make the blur perform reasonably well, but on newer
-versions the performance difference is not as immediately noticeable, although I haven't measured
-it :) 
+On API <31 the scale factor is a key part to make the blur perform reasonably well, but on API 31+<br/> 
+the RenderEffect already internally scales the snapshot when needed, so on newer APIs passing a<br/>
+blur radius of 20 and scale factor of 3 is the same as passing a blur radius of 60 and scale factor of 1.<br/>
+
+## Animation 
+
+While the BlurView keeps honoring its position, scale, rotation transformations, you now have to
+manually notify it about certain changes.<br/>
+If you're animating the BlurView using `setTranslationX`, `setScaleX`, etc, you're fine and don't
+have to do anything extra.<br/>
+If you're animating it with `blurView.animate().translationX(...)...`, you have to attach an update
+listener to the animator and call `blurView.notifyTranslationXChanged(...)` on every update.<br/>
+
+Example:
+```Java
+int endY = 1000;
+blurView.animate().translationY(endY).setUpdateListener(animation -> {
+    // getAnimatedValue really returns just a fraction from 0 to 1
+    blurView.notifyTranslationYChanged((Float) animation.getAnimatedValue() * endY);        
+});
+```
+
+Also, you can't animate the `BlurTarget` with these property animators, but you can animate its
+content to achieve the same effect.<br/>
+
+## Bugs
+It's a radical rewrite, so I expect some things to be broken. Please report any issues you
+find.<br/>
