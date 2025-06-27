@@ -16,12 +16,11 @@ class Noise {
     private static Paint noisePaint;
 
     static void apply(Canvas canvas, Context context, int width, int height) {
-        initShader(context);
+        initPaint(context);
         canvas.drawRect(0, 0, width, height, noisePaint);
     }
 
-    // TODO rename to
-    private static void initShader(Context context) {
+    private static void initPaint(Context context) {
         if (noisePaint == null) {
             Bitmap alphaBitmap = getNoiseBitmap(context);
             noisePaint = new Paint();
