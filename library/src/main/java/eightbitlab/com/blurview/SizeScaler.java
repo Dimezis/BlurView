@@ -1,5 +1,7 @@
 package eightbitlab.com.blurview;
 
+import java.util.Objects;
+
 /**
  * Scales width and height by [scaleFactor],
  * and then rounds the size proportionally so the width is divisible by [ROUNDING_VALUE]
@@ -11,9 +13,15 @@ public class SizeScaler {
     // Usually it's 16, but on Samsung devices it's 64 for some reason.
     private static final int ROUNDING_VALUE = 64;
     private final float scaleFactor;
+    private final boolean noStrideAlignment;
 
     public SizeScaler(float scaleFactor) {
+        this(scaleFactor, false);
+    }
+
+    public SizeScaler(float scaleFactor, boolean noStrideAlignment) {
         this.scaleFactor = scaleFactor;
+        this.noStrideAlignment = noStrideAlignment;
     }
 
     Size scale(int width, int height) {
@@ -24,7 +32,11 @@ public class SizeScaler {
         //Ceiling because rounding or flooring might leave empty space on the View's bottom
         int scaledHeight = (int) Math.ceil(height / roundingScaleFactor);
 
-        return new Size(scaledWidth, scaledHeight, roundingScaleFactor);
+        return new Size(scaledWidth, scaledHeight);
+    }
+
+    Size scale(Size size) {
+        return scale(size.width, size.height);
     }
 
     boolean isZeroSized(int measuredWidth, int measuredHeight) {
@@ -35,6 +47,9 @@ public class SizeScaler {
      * Rounds a value to the nearest divisible by {@link #ROUNDING_VALUE} to meet stride requirement
      */
     private int roundSize(int value) {
+        if (noStrideAlignment) {
+            return value;
+        }
         if (value % ROUNDING_VALUE == 0) {
             return value;
         }
@@ -49,33 +64,22 @@ public class SizeScaler {
 
         final int width;
         final int height;
-        // TODO this is probably not needed anymore
-        final float scaleFactor;
 
-        Size(int width, int height, float scaleFactor) {
+        Size(int width, int height) {
             this.width = width;
             this.height = height;
-            this.scaleFactor = scaleFactor;
         }
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-
             Size size = (Size) o;
-
-            if (width != size.width) return false;
-            if (height != size.height) return false;
-            return Float.compare(size.scaleFactor, scaleFactor) == 0;
+            return width == size.width && height == size.height;
         }
 
         @Override
         public int hashCode() {
-            int result = width;
-            result = 31 * result + height;
-            result = 31 * result + (scaleFactor != +0.0f ? Float.floatToIntBits(scaleFactor) : 0);
-            return result;
+            return Objects.hash(width, height);
         }
 
         @Override
@@ -83,7 +87,6 @@ public class SizeScaler {
             return "Size{" +
                     "width=" + width +
                     ", height=" + height +
-                    ", scaleFactor=" + scaleFactor +
                     '}';
         }
     }

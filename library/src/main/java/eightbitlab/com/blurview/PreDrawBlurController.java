@@ -31,6 +31,8 @@ public final class PreDrawBlurController implements BlurController {
     private float blurRadius = DEFAULT_BLUR_RADIUS;
 
     private final BlurAlgorithm blurAlgorithm;
+    private final float scaleFactor;
+    private final boolean applyNoise;
     private BlurViewCanvas internalCanvas;
     private Bitmap internalBitmap;
 
@@ -60,20 +62,26 @@ public final class PreDrawBlurController implements BlurController {
     private Drawable frameClearDrawable;
 
     /**
-     * @param blurView  View which will draw it's blurred underlying content
-     * @param rootView  Root View where blurView's underlying content starts drawing.
-     *                  Can be Activity's root content layout (android.R.id.content)
-     * @param algorithm sets the blur algorithm
+     * @param blurView    View which will draw it's blurred underlying content
+     * @param rootView    Root View where blurView's underlying content starts drawing.
+     *                    Can be Activity's root content layout (android.R.id.content)
+     * @param algorithm   sets the blur algorithm
+     * @param scaleFactor a scale factor to downscale the view snapshot before blurring.
+     *                    Helps achieving stronger blur and potentially better performance at the expense of blur precision.
+     * @param applyNoise  optional blue noise texture over the blurred content to make it look more natural. True by default.
      */
-    public PreDrawBlurController(@NonNull View blurView, @NonNull ViewGroup rootView, @ColorInt int overlayColor, BlurAlgorithm algorithm) {
+    public PreDrawBlurController(@NonNull View blurView,
+                                 @NonNull ViewGroup rootView,
+                                 @ColorInt int overlayColor,
+                                 BlurAlgorithm algorithm,
+                                 float scaleFactor,
+                                 boolean applyNoise) {
         this.rootView = rootView;
         this.blurView = blurView;
         this.overlayColor = overlayColor;
         this.blurAlgorithm = algorithm;
-        if (algorithm instanceof RenderEffectBlur) {
-            // noinspection NewApi
-            ((RenderEffectBlur) algorithm).setContext(blurView.getContext());
-        }
+        this.scaleFactor = scaleFactor;
+        this.applyNoise = applyNoise;
 
         int measuredWidth = blurView.getMeasuredWidth();
         int measuredHeight = blurView.getMeasuredHeight();
@@ -84,7 +92,7 @@ public final class PreDrawBlurController implements BlurController {
     @SuppressWarnings("WeakerAccess")
     void init(int measuredWidth, int measuredHeight) {
         setBlurAutoUpdate(true);
-        SizeScaler sizeScaler = new SizeScaler(blurAlgorithm.scaleFactor());
+        SizeScaler sizeScaler = new SizeScaler(scaleFactor);
         if (sizeScaler.isZeroSized(measuredWidth, measuredHeight)) {
             // Will be initialized later when the View reports a size change
             blurView.setWillNotDraw(true);
@@ -163,6 +171,9 @@ public final class PreDrawBlurController implements BlurController {
         canvas.scale(scaleFactorW, scaleFactorH);
         blurAlgorithm.render(canvas, internalBitmap);
         canvas.restore();
+        if (applyNoise) {
+            Noise.apply(canvas, blurView.getContext(), blurView.getWidth(), blurView.getHeight());
+        }
         if (overlayColor != TRANSPARENT) {
             canvas.drawColor(overlayColor);
         }

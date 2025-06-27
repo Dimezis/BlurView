@@ -2,15 +2,17 @@ package com.eightbitlab.blurview_sample;
 
 import android.graphics.Outline;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.widget.SeekBar;
 
-import androidx.annotation.NonNull;
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -18,19 +20,17 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 
-import eightbitlab.com.blurview.BlurAlgorithm;
+import eightbitlab.com.blurview.BlurTarget;
 import eightbitlab.com.blurview.BlurView;
-import eightbitlab.com.blurview.RenderEffectBlur;
-import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class MainActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
+    private BlurTarget target;
     private TabLayout tabLayout;
     private BlurView bottomBlurView;
     private BlurView topBlurView;
     private SeekBar radiusSeekBar;
-    private ViewGroup root;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +39,17 @@ public class MainActivity extends AppCompatActivity {
         initView();
         setupBlurView();
         setupViewPager();
+        EdgeToEdge.enable(this);
+
+        ViewCompat.setOnApplyWindowInsetsListener(bottomBlurView, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            bottomBlurView.setPadding(0, 0, 0, insets.bottom);
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) topBlurView.getLayoutParams();
+            params.topMargin = (int) (insets.top * 1.5);
+            topBlurView.setLayoutParams(params);
+
+            return windowInsets;
+        });
     }
 
     private void initView() {
@@ -46,19 +57,17 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tabLayout);
         bottomBlurView = findViewById(R.id.bottomBlurView);
         topBlurView = findViewById(R.id.topBlurView);
+        target = findViewById(R.id.target);
         // Rounded corners + casting elevation shadow with transparent background
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            topBlurView.setClipToOutline(true);
-            topBlurView.setOutlineProvider(new ViewOutlineProvider() {
-                @Override
-                public void getOutline(View view, Outline outline) {
-                    topBlurView.getBackground().getOutline(outline);
-                    outline.setAlpha(1f);
-                }
-            });
-        }
+        topBlurView.setClipToOutline(true);
+        topBlurView.setOutlineProvider(new ViewOutlineProvider() {
+            @Override
+            public void getOutline(View view, Outline outline) {
+                topBlurView.getBackground().getOutline(outline);
+                outline.setAlpha(1f);
+            }
+        });
         radiusSeekBar = findViewById(R.id.radiusSeekBar);
-        root = findViewById(R.id.root);
     }
 
     private void setupViewPager() {
@@ -74,13 +83,11 @@ public class MainActivity extends AppCompatActivity {
 
         //set background, if your root layout doesn't have one
         final Drawable windowBackground = getWindow().getDecorView().getBackground();
-        BlurAlgorithm algorithm = getBlurAlgorithm();
-
-        topBlurView.setupWith(root, algorithm)
+        topBlurView.setupWith(target)
                 .setFrameClearDrawable(windowBackground)
                 .setBlurRadius(radius);
 
-        bottomBlurView.setupWith(root, new RenderScriptBlur(this))
+        bottomBlurView.setupWith(target)
                 .setFrameClearDrawable(windowBackground)
                 .setBlurRadius(radius);
 
@@ -96,17 +103,6 @@ public class MainActivity extends AppCompatActivity {
                 bottomBlurView.setBlurRadius(blurRadius);
             }
         });
-    }
-
-    @NonNull
-    private BlurAlgorithm getBlurAlgorithm() {
-        BlurAlgorithm algorithm;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            algorithm = new RenderEffectBlur();
-        } else {
-            algorithm = new RenderScriptBlur(this);
-        }
-        return algorithm;
     }
 
     static class ViewPagerAdapter extends FragmentPagerAdapter {

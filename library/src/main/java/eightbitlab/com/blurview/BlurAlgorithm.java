@@ -11,7 +11,7 @@ public interface BlurAlgorithm {
      * @param blurRadius blur radius
      * @return blurred bitmap
      */
-    Bitmap blur(@NonNull Bitmap bitmap, @NonNull float blurRadius);
+    Bitmap blur(@NonNull Bitmap bitmap, float blurRadius);
 
     /**
      * Frees allocated resources
@@ -36,8 +36,6 @@ public interface BlurAlgorithm {
      */
     @NonNull
     Bitmap.Config getSupportedBitmapConfig();
-
-    float scaleFactor();
 
     void render(@NonNull Canvas canvas, @NonNull Bitmap bitmap);
 }

@@ -1,19 +1,20 @@
 package eightbitlab.com.blurview;
 
+import static eightbitlab.com.blurview.BlurController.DEFAULT_SCALE_FACTOR;
 import static eightbitlab.com.blurview.PreDrawBlurController.TRANSPARENT;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
+
+import com.eightbitlab.blurview.R;
 
 /**
  * FrameLayout that blurs its underlying content.
@@ -51,7 +52,7 @@ public class BlurView extends FrameLayout {
     }
 
     @Override
-    public void draw(Canvas canvas) {
+    public void draw(@NonNull Canvas canvas) {
         boolean shouldDraw = blurController.draw(canvas);
         if (shouldDraw) {
             super.draw(canvas);
@@ -81,32 +82,57 @@ public class BlurView extends FrameLayout {
     }
 
     /**
-     * @param rootView  root to start blur from.
-     *                  Can be Activity's root content layout (android.R.id.content)
-     *                  or (preferably) some of your layouts. The lower amount of Views are in the root, the better for performance.
-     * @param algorithm sets the blur algorithm
+     * @param target      the root to start blur from.
+     * @param algorithm   sets the blur algorithm. Ignored on API >= 31 where efficient hardware rendering pipeline is used.
+     * @param scaleFactor a scale factor to downscale the view snapshot before blurring.
+     *                    Helps achieving stronger blur and potentially better performance at the expense of blur precision.
+     *                    The blur radius is essentially the radius * scaleFactor.
+     * @param applyNoise  optional blue noise texture over the blurred content to make it look more natural. True by default.
      * @return {@link BlurView} to setup needed params.
      */
-    public BlurViewFacade setupWith(@NonNull ViewGroup rootView, BlurAlgorithm algorithm) {
-        this.blurController.destroy();
-        BlurController blurController = new PreDrawBlurController(this, rootView, overlayColor, algorithm);
-        this.blurController = blurController;
+    public BlurViewFacade setupWith(@NonNull BlurTarget target, BlurAlgorithm algorithm, float scaleFactor, boolean applyNoise) {
+        blurController.destroy();
+        if (BlurTarget.canUseHardwareRendering) {
+            // Ignores the blur algorithm, always uses RenderEffect
+            blurController = new RenderNodeBlurController(this, target, overlayColor, scaleFactor, applyNoise);
+        } else {
+            blurController = new PreDrawBlurController(this, target, overlayColor, algorithm, scaleFactor, applyNoise);
+        }
 
         return blurController;
     }
 
     /**
-     * @param rootView root to start blur from.
-     *                 Can be Activity's root content layout (android.R.id.content)
-     *                 or (preferably) some of your layouts. The lower amount of Views are in the root, the better for performance.
-     *                 <p>
-     *                 BlurAlgorithm is automatically picked based on the API version.
-     *                 It uses RenderEffectBlur on API 31+, and RenderScriptBlur on older versions.
+     * @param rootView    the root to start blur from.
+     *                    BlurAlgorithm is automatically picked based on the API version.
+     *                    It uses RenderEffect on API 31+, and RenderScriptBlur on older versions.
+     * @param scaleFactor a scale factor to downscale the view snapshot before blurring.
+     *                    Helps achieving stronger blur and potentially better performance at the expense of blur precision.
+     *                    The blur radius is essentially the radius * scaleFactor.
+     * @param applyNoise  optional blue noise texture over the blurred content to make it look more natural. True by default.
      * @return {@link BlurView} to setup needed params.
      */
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public BlurViewFacade setupWith(@NonNull ViewGroup rootView) {
-        return setupWith(rootView, getBlurAlgorithm());
+    public BlurViewFacade setupWith(@NonNull BlurTarget rootView, float scaleFactor, boolean applyNoise) {
+        BlurAlgorithm algorithm;
+        if (BlurTarget.canUseHardwareRendering) {
+            // Ignores the blur algorithm, always uses RenderNodeBlurController and RenderEffect
+            algorithm = null;
+        } else {
+            algorithm = new RenderScriptBlur(getContext());
+        }
+        return setupWith(rootView, algorithm, scaleFactor, applyNoise);
+    }
+
+    /**
+     * @param rootView root to start blur from.
+     *                 BlurAlgorithm is automatically picked based on the API version.
+     *                 It uses RenderEffect on API 31+, and RenderScriptBlur on older versions.
+     *                 The {@link DEFAULT_SCALE_FACTOR} scale factor for view snapshot is used.
+     *                 Blue noise texture is applied by default.
+     * @return {@link BlurView} to setup needed params.
+     */
+    public BlurViewFacade setupWith(@NonNull BlurTarget rootView) {
+        return setupWith(rootView, DEFAULT_SCALE_FACTOR, true);
     }
 
     // Setters duplicated to be able to conveniently change these settings outside of setupWith chain
@@ -141,15 +167,73 @@ public class BlurView extends FrameLayout {
         return blurController.setBlurEnabled(enabled);
     }
 
-    @NonNull
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
-    private BlurAlgorithm getBlurAlgorithm() {
-        BlurAlgorithm algorithm;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            algorithm = new RenderEffectBlur();
-        } else {
-            algorithm = new RenderScriptBlur(getContext());
+    @Override
+    public void setTranslationY(float translationY) {
+        super.setTranslationY(translationY);
+        notifyTranslationYChanged(translationY);
+    }
+
+    @Override
+    public void setTranslationX(float translationX) {
+        super.setTranslationX(translationX);
+        notifyTranslationXChanged(translationX);
+    }
+
+    @Override
+    public void setTranslationZ(float translationZ) {
+        super.setTranslationZ(translationZ);
+        notifyTranslationZChanged(translationZ);
+    }
+
+    @Override
+    public void setRotation(float rotation) {
+        super.setRotation(rotation);
+        notifyRotationChanged(rotation);
+    }
+
+    @SuppressLint("NewApi")
+    public void notifyTranslationYChanged(float translationY) {
+        if (usingRenderNode()) {
+            ((RenderNodeBlurController) blurController).updateTranslationY(translationY);
         }
-        return algorithm;
+    }
+
+    @SuppressLint("NewApi")
+    public void notifyTranslationXChanged(float translationX) {
+        if (usingRenderNode()) {
+            ((RenderNodeBlurController) blurController).updateTranslationX(translationX);
+        }
+    }
+
+    @SuppressLint("NewApi")
+    private void notifyTranslationZChanged(float translationZ) {
+        if (usingRenderNode()) {
+            ((RenderNodeBlurController) blurController).updateTranslationZ(translationZ);
+        }
+    }
+
+    @SuppressLint("NewApi")
+    public void notifyRotationChanged(float rotation) {
+        if (usingRenderNode()) {
+            ((RenderNodeBlurController) blurController).updateRotation(rotation);
+        }
+    }
+
+    @SuppressLint("NewApi")
+    public void notifyScaleXChanged(float scaleX) {
+        if (usingRenderNode()) {
+            ((RenderNodeBlurController) blurController).updateScaleX(scaleX);
+        }
+    }
+
+    @SuppressLint("NewApi")
+    public void notifyScaleYChanged(float scaleY) {
+        if (usingRenderNode()) {
+            ((RenderNodeBlurController) blurController).updateScaleY(scaleY);
+        }
+    }
+
+    private boolean usingRenderNode() {
+        return blurController instanceof RenderNodeBlurController;
     }
 }

@@ -32,7 +32,7 @@ public interface BlurViewFacade {
     BlurViewFacade setFrameClearDrawable(@Nullable Drawable frameClearDrawable);
 
     /**
-     * @param radius sets the blur radius
+     * @param radius sets the blur radius. The real blur radius is radius * scaleFactor.
      *               Default value is {@link BlurController#DEFAULT_BLUR_RADIUS}
      * @return {@link BlurViewFacade}
      */
