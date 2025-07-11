@@ -8,9 +8,8 @@ issues:
 
 - It used software rendering for view snapshotting. It comes with a whole bunch of caveats, some of
   which even I might not be aware of.
-- Some things are simply impossible to render in software, for example SurfaceView, TextureView,
-  GLSurfaceView, VideoView, Google Maps, game engine views, etc.
-  The old version didn't support blurring of these targets.
+- Some things are simply impossible to render in software. For example, TextureView and everything TextureView-based.
+  The old version didn't support this target.
 - The software rendering also had a large performance impact. The view snapshot had to be redrawn
   every time something changed in the hierarchy,
   and the software drawing itself is usually much slower than hardware rendering. All this is added
