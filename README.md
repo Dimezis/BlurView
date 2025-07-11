@@ -60,7 +60,7 @@ and size changes, including view animation and property animation.
 ```
 
 ## SurfaceView, TextureView, VideoView, MapFragment, GLSurfaceView, etc
-These targets can be blurred only on API 31+
+TextureView can be blurred only on API 31+. Everything else (which is SurfaceView-based) can't be blurred, unfortunately.
 
 ## Gradle
 
@@ -88,7 +88,7 @@ On API 31+ the blur is done on the system Render Thread.
 
 ## Compared to other blurring libs
 - BlurView and Haze for Compose are the only libraries that leverage hardware acceleration for View snapshotting and have near zero overhead of snapshotting.
-- Supports SurfaceView, TextureView, VideoView, MapFragment, GLSurfaceView, etc on API 31+.
+- Supports TextureView blur on API 31+.
 - The BlurView never invalidates itself or other Views in the hierarchy and updates only when needed.
 - It supports multiple BlurViews on the screen without triggering a draw loop.
 - On API < 31 it uses optimized RenderScript Allocations on devices that require certain Allocation sizes, which greatly increases blur performance.
