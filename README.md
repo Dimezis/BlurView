@@ -16,6 +16,10 @@ and size changes, including view animation and property animation.
 > Also, the code path on API 31+ is now completely different from API < 31, so keep in mind to test both.
 
 ## How to use
+Now you have to wrap the content you want to blur
+into a `BlurTarget`, and pass it into the `setupWith()` method of the `BlurView`.<br/>
+The BlurTarget may not contain a BlurView that targets the same BlurTarget.<br/>
+The BlurTarget may contain other BlurTargets and BlurViews though.<br/>
 ```XML
     <!--This is the content to be blurred by the BlurView. 
     It will render normally, and BlurView will use its snapshot for blurring-->
