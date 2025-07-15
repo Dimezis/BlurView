@@ -17,16 +17,6 @@ and size changes, including view animation and property animation.
 
 ## How to use
 ```XML
-    <eightbitlab.com.blurview.BlurView
-      android:id="@+id/blurView"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      app:blurOverlayColor="@color/colorOverlay">
-    
-       <!--Any child View here, TabLayout for example. This View will NOT be blurred -->
-    
-    </eightbitlab.com.blurview.BlurView>
-
     <!--This is the content to be blurred by the BlurView. 
     It will render normally, and BlurView will use its snapshot for blurring-->
     <eightbitlab.com.blurview.BlurTarget
@@ -37,6 +27,16 @@ and size changes, including view animation and property animation.
         <!--Your main content here-->
 
     </eightbitlab.com.blurview.BlurTarget>
+
+    <eightbitlab.com.blurview.BlurView
+      android:id="@+id/blurView"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      app:blurOverlayColor="@color/colorOverlay">
+    
+       <!--Any child View here, TabLayout for example. This View will NOT be blurred -->
+    
+    </eightbitlab.com.blurview.BlurView>
 ```
 
 ```Java
