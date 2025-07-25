@@ -28,7 +28,7 @@ unsupported targets.<br/>
 The View snapshotting has basically zero overhead. The BlurTarget records the snapshot on a
 RenderNode, and then draws the same RenderNode on the system canvas.<br/>
 The RenderNode snapshot is automatically updated whenever the View hierarchy changes, there's 0
-additional`invalidate()` or `draw()` calls.<br/>
+additional `invalidate()` or `draw()` calls.<br/>
 All this comes at the cost of a more complex API.
 
 ## Migration
@@ -52,23 +52,19 @@ blur radius of 20 and scale factor of 3 is the same as passing a blur radius of 
 
 While the BlurView keeps honoring its position, scale, rotation transformations, you now have to
 manually notify it about certain changes.<br/>
-If you're animating the BlurView using `setTranslationX`, `setScaleX`, etc, you're fine and don't
-have to do anything extra.<br/>
-If you're animating it with `blurView.animate().translationX(...)...`, you have to attach an update
-listener to the animator and call `blurView.notifyTranslationXChanged(...)` on every update.<br/>
+If you're animating translation X or Y, you're fine and don't have to do anything extra.<br/>
+If you're animating the BlurView using `setScaleX`, `setRotation`, etc, you're also good.
+If you're animating it with `blurView.animate().rotation(...)...`, you have to attach an update
+listener to the animator and call `blurView.notifyRotationChanged(...)` on every update.<br/>
 
 Example:
 ```Java
-int endY = 1000;
-blurView.animate().translationY(endY).setUpdateListener(animation -> {
+int angle = 90;
+blurView.animate().rotation(angle).setUpdateListener(animation -> {
     // getAnimatedValue really returns just a fraction from 0 to 1
-    blurView.notifyTranslationYChanged((Float) animation.getAnimatedValue() * endY);        
+    blurView.notifyRotationChanged((Float) animation.getAnimatedValue() * angle);        
 });
 ```
-
-Also, you can't animate the `BlurTarget` with these property animators, but you can animate its
-content to achieve the same effect.<br/>
-
 ## Bugs
 It's a radical rewrite, so I expect some things to be broken. Please report any issues you
 find.<br/>

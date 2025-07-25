@@ -71,7 +71,7 @@ TextureView can be blurred only on API 31+. Everything else (which is SurfaceVie
 Use Jitpack https://jitpack.io/#Dimezis/BlurView and release tags as the source of stable
 artifacts.
 ```Groovy
-implementation 'com.github.Dimezis:BlurView:version-3.0.0'
+implementation 'com.github.Dimezis:BlurView:version-3.1.0'
 ```
 
 ## Rounded corners
