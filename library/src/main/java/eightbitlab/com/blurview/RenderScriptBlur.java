@@ -10,6 +10,7 @@ import android.renderscript.Allocation;
 import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -49,25 +50,31 @@ public class RenderScriptBlur implements BlurAlgorithm {
      */
     @Override
     public Bitmap blur(@NonNull Bitmap bitmap, float blurRadius) {
-        //Allocation will use the same backing array of pixels as bitmap if created with USAGE_SHARED flag
-        Allocation inAllocation = Allocation.createFromBitmap(renderScript, bitmap);
+        try {
+            //Allocation will use the same backing array of pixels as bitmap if created with USAGE_SHARED flag
+            Allocation inAllocation = Allocation.createFromBitmap(renderScript, bitmap);
 
-        if (!canReuseAllocation(bitmap)) {
-            if (outAllocation != null) {
-                outAllocation.destroy();
+            if (!canReuseAllocation(bitmap)) {
+                if (outAllocation != null) {
+                    outAllocation.destroy();
+                }
+                outAllocation = Allocation.createTyped(renderScript, inAllocation.getType());
+                lastBitmapWidth = bitmap.getWidth();
+                lastBitmapHeight = bitmap.getHeight();
             }
-            outAllocation = Allocation.createTyped(renderScript, inAllocation.getType());
-            lastBitmapWidth = bitmap.getWidth();
-            lastBitmapHeight = bitmap.getHeight();
+
+            blurScript.setRadius(min(blurRadius, 25f));
+            blurScript.setInput(inAllocation);
+            //do not use inAllocation in forEach. it will cause visual artifacts on blurred Bitmap
+            blurScript.forEach(outAllocation);
+            outAllocation.copyTo(bitmap);
+
+            inAllocation.destroy();
+        } catch (Exception e) {
+            // Can potentially crash because RenderScript context was released by someone else via RenderScript.releaseAllContexts()
+            // Some Glide transformations can cause this.
+            Log.e("BlurView", "RenderScript blur failed. Rendering unblurred snapshot", e);
         }
-
-        blurScript.setRadius(min(blurRadius, 25f));
-        blurScript.setInput(inAllocation);
-        //do not use inAllocation in forEach. it will cause visual artifacts on blurred Bitmap
-        blurScript.forEach(outAllocation);
-        outAllocation.copyTo(bitmap);
-
-        inAllocation.destroy();
         return bitmap;
     }
 

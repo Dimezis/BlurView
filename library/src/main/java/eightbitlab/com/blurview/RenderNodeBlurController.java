@@ -9,6 +9,8 @@ import android.graphics.RenderNode;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.util.Log;
+import android.view.ViewTreeObserver;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,14 +34,18 @@ public class RenderNodeBlurController implements BlurController {
     private float blurRadius = 1f;
     private boolean enabled = true;
 
-    private float layoutTranslationX = 0f;
-    private float layoutTranslationY = 0f;
-
     // Potentially cached stuff from the slow software path
     @Nullable
     private Bitmap cachedBitmap;
     @Nullable
     private RenderScriptBlur fallbackBlur;
+
+    // This tracks BlurView location in scrollable containers, during animations, etc.
+    private final ViewTreeObserver.OnPreDrawListener drawListener = () -> {
+        saveOnScreenLocation();
+        updateRenderNodeProperties();
+        return true;
+    };
 
     public RenderNodeBlurController(@NonNull BlurView blurView, @NonNull BlurTarget target, int overlayColor, float scaleFactor, boolean applyNoise) {
         this.blurView = blurView;
@@ -48,6 +54,7 @@ public class RenderNodeBlurController implements BlurController {
         this.scaleFactor = scaleFactor;
         this.applyNoise = applyNoise;
         blurView.setWillNotDraw(false);
+        blurView.getViewTreeObserver().addOnPreDrawListener(drawListener);
     }
 
     @Override
@@ -55,8 +62,7 @@ public class RenderNodeBlurController implements BlurController {
         if (!enabled) {
             return true;
         }
-        target.getLocationOnScreen(targetLocation);
-        blurView.getLocationOnScreen(blurViewLocation);
+        saveOnScreenLocation();
 
         if (canvas.isHardwareAccelerated()) {
             hardwarePath(canvas);
@@ -75,19 +81,10 @@ public class RenderNodeBlurController implements BlurController {
     // https://cs.android.com/android/platform/superproject/main/+/main:external/skia/src/core/SkImageFilterTypes.cpp;drc=61197364367c9e404c7da6900658f1b16c42d0da;l=2103
     // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/libs/hwui/jni/RenderEffect.cpp;l=39;drc=61197364367c9e404c7da6900658f1b16c42d0da?q=nativeCreateBlurEffect&ss=android%2Fplatform%2Fsuperproject%2Fmain
     private void hardwarePath(Canvas canvas) {
-        // We need to keep track of the original translation values so we can re-apply them
-        // in updateTranslationY and updateTranslationX methods.
-        layoutTranslationX = -getLeft();
-        layoutTranslationY = -getTop();
-
         // TODO would be good to keep it the size of the BlurView instead of the target, but then the animation
         //  like translation and rotation would go out of bounds. Not sure if there's a good fix for this
         blurNode.setPosition(0, 0, target.getWidth(), target.getHeight());
-        // Pivot point for the rotation and scale (in case it's applied)
-        blurNode.setPivotX(blurView.getWidth() / 2f - layoutTranslationX);
-        blurNode.setPivotY(blurView.getHeight() / 2f - layoutTranslationY);
-        blurNode.setTranslationX(layoutTranslationX);
-        blurNode.setTranslationY(layoutTranslationY);
+        updateRenderNodeProperties();
 
         drawSnapshot();
 
@@ -99,6 +96,17 @@ public class RenderNodeBlurController implements BlurController {
         if (overlayColor != Color.TRANSPARENT) {
             canvas.drawColor(overlayColor);
         }
+    }
+
+    private void updateRenderNodeProperties() {
+        float layoutTranslationX = -getLeft();
+        float layoutTranslationY = -getTop();
+
+        // Pivot point for the rotation and scale (in case it's applied)
+        blurNode.setPivotX(blurView.getWidth() / 2f - layoutTranslationX);
+        blurNode.setPivotY(blurView.getHeight() / 2f - layoutTranslationY);
+        blurNode.setTranslationX(layoutTranslationX);
+        blurNode.setTranslationY(layoutTranslationY);
     }
 
     private void drawSnapshot() {
@@ -126,7 +134,12 @@ public class RenderNodeBlurController implements BlurController {
         if (frameClearDrawable != null) {
             frameClearDrawable.draw(canvas);
         }
-        target.draw(softwareCanvas);
+        try {
+            target.draw(softwareCanvas);
+        } catch (Exception e) {
+            // Can potentially fail on rendering Hardware Bitmaps or something like that
+            Log.e("BlurView", "Error during snapshot capturing", e);
+        }
         softwareCanvas.restore();
 
         if (fallbackBlur == null) {
@@ -191,7 +204,10 @@ public class RenderNodeBlurController implements BlurController {
 
     @Override
     public BlurViewFacade setBlurAutoUpdate(boolean enabled) {
-        // No auto update setting, we draw on system demand and RenderNode keeps track of changes
+        blurView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
+        if (enabled) {
+            blurView.getViewTreeObserver().addOnPreDrawListener(drawListener);
+        }
         return this;
     }
 
@@ -225,18 +241,6 @@ public class RenderNodeBlurController implements BlurController {
         return this;
     }
 
-    void updateTranslationY(float translationY) {
-        blurNode.setTranslationY(layoutTranslationY - translationY);
-    }
-
-    void updateTranslationX(float translationX) {
-        blurNode.setTranslationX(layoutTranslationX - translationX);
-    }
-
-    void updateTranslationZ(float translationZ) {
-        blurNode.setTranslationZ(-translationZ);
-    }
-
     void updateRotation(float rotation) {
         blurNode.setRotationZ(-rotation);
     }
@@ -247,5 +251,10 @@ public class RenderNodeBlurController implements BlurController {
 
     public void updateScaleY(float scaleY) {
         blurNode.setScaleY(1 / scaleY);
+    }
+
+    private void saveOnScreenLocation() {
+        target.getLocationOnScreen(targetLocation);
+        blurView.getLocationOnScreen(blurViewLocation);
     }
 }

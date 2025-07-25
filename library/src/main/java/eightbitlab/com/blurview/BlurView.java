@@ -22,8 +22,6 @@ import com.eightbitlab.blurview.R;
  */
 public class BlurView extends FrameLayout {
 
-    private static final String TAG = BlurView.class.getSimpleName();
-
     BlurController blurController = new NoOpController();
 
     @ColorInt
@@ -75,7 +73,7 @@ public class BlurView extends FrameLayout {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (!isHardwareAccelerated()) {
-            Log.e(TAG, "BlurView can't be used in not hardware-accelerated window!");
+            Log.e("BlurView", "BlurView can't be used in not hardware-accelerated window!");
         } else {
             blurController.setBlurAutoUpdate(this.blurAutoUpdate);
         }
@@ -168,48 +166,9 @@ public class BlurView extends FrameLayout {
     }
 
     @Override
-    public void setTranslationY(float translationY) {
-        super.setTranslationY(translationY);
-        notifyTranslationYChanged(translationY);
-    }
-
-    @Override
-    public void setTranslationX(float translationX) {
-        super.setTranslationX(translationX);
-        notifyTranslationXChanged(translationX);
-    }
-
-    @Override
-    public void setTranslationZ(float translationZ) {
-        super.setTranslationZ(translationZ);
-        notifyTranslationZChanged(translationZ);
-    }
-
-    @Override
     public void setRotation(float rotation) {
         super.setRotation(rotation);
         notifyRotationChanged(rotation);
-    }
-
-    @SuppressLint("NewApi")
-    public void notifyTranslationYChanged(float translationY) {
-        if (usingRenderNode()) {
-            ((RenderNodeBlurController) blurController).updateTranslationY(translationY);
-        }
-    }
-
-    @SuppressLint("NewApi")
-    public void notifyTranslationXChanged(float translationX) {
-        if (usingRenderNode()) {
-            ((RenderNodeBlurController) blurController).updateTranslationX(translationX);
-        }
-    }
-
-    @SuppressLint("NewApi")
-    private void notifyTranslationZChanged(float translationZ) {
-        if (usingRenderNode()) {
-            ((RenderNodeBlurController) blurController).updateTranslationZ(translationZ);
-        }
     }
 
     @SuppressLint("NewApi")

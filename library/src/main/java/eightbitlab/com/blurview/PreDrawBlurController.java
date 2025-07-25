@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -125,7 +126,12 @@ public final class PreDrawBlurController implements BlurController {
 
         internalCanvas.save();
         setupInternalCanvasMatrix();
-        rootView.draw(internalCanvas);
+        try {
+            rootView.draw(internalCanvas);
+        } catch (Exception e) {
+            // Can potentially fail on rendering Hardware Bitmaps or something like that
+            Log.e("BlurView", "Error during snapshot capturing", e);
+        }
         internalCanvas.restore();
 
         blurAndSave();
