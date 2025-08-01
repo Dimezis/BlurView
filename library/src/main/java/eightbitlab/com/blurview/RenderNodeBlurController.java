@@ -88,6 +88,9 @@ public class RenderNodeBlurController implements BlurController {
 
         drawSnapshot();
 
+        canvas.save();
+        // Don't draw outside of the BlurView bounds if parent has clipChildren = false
+        canvas.clipRect(0f, 0f, blurView.getWidth(), blurView.getHeight());
         // Draw on the system canvas
         canvas.drawRenderNode(blurNode);
         if (applyNoise) {
@@ -96,6 +99,7 @@ public class RenderNodeBlurController implements BlurController {
         if (overlayColor != Color.TRANSPARENT) {
             canvas.drawColor(overlayColor);
         }
+        canvas.restore();
     }
 
     private void updateRenderNodeProperties() {

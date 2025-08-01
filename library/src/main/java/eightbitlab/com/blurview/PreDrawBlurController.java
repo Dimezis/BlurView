@@ -174,8 +174,12 @@ public final class PreDrawBlurController implements BlurController {
         float scaleFactorW = (float) blurView.getWidth() / internalBitmap.getWidth();
 
         canvas.save();
+        // Don't draw outside of the BlurView bounds if parent has clipChildren = false
+        canvas.clipRect(0f, 0f, blurView.getWidth(), blurView.getHeight());
+        canvas.save();
         canvas.scale(scaleFactorW, scaleFactorH);
         blurAlgorithm.render(canvas, internalBitmap);
+        // restore scale so we don't upscale the noise texture
         canvas.restore();
         if (applyNoise) {
             Noise.apply(canvas, blurView.getContext(), blurView.getWidth(), blurView.getHeight());
@@ -183,6 +187,8 @@ public final class PreDrawBlurController implements BlurController {
         if (overlayColor != TRANSPARENT) {
             canvas.drawColor(overlayColor);
         }
+        // restore clip rect
+        canvas.restore();
         return true;
     }
 
