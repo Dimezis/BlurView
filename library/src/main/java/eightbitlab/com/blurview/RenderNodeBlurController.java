@@ -111,6 +111,12 @@ public class RenderNodeBlurController implements BlurController {
         blurNode.setPivotY(blurView.getHeight() / 2f - layoutTranslationY);
         blurNode.setTranslationX(layoutTranslationX);
         blurNode.setTranslationY(layoutTranslationY);
+
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.S) {
+            // There's a bug on API 31 - blurNode doesn't get re-rendered on setting new translation/scale/rotation,
+            // so we need to re-apply the blur effect to trigger a redraw.
+            applyBlur();
+        }
     }
 
     private void drawSnapshot() {
