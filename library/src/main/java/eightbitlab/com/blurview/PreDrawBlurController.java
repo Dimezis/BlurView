@@ -130,7 +130,11 @@ public final class PreDrawBlurController implements BlurController {
             rootView.draw(internalCanvas);
         } catch (Exception e) {
             // Can potentially fail on rendering Hardware Bitmaps or something like that
-            Log.e("BlurView", "Error during snapshot capturing", e);
+            // See: "Software rendering doesn't support hardware bitmaps" crashes when
+            // a HW bitmap is drawn into this software-backed canvas.
+            Log.e("BlurView", "Error during snapshot capturing, disabling blur", e);
+            // Fail safe: disable further blur updates for this view rather than crashing
+            setBlurEnabled(false);
         }
         internalCanvas.restore();
 
