@@ -78,7 +78,8 @@ publishing {
                 licenses {
                     license {
                         name = 'Apache License, Version 2.0'
-                        url = 'https://opensource.org/license/apache-2-0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0'
+                        distribution = 'repo'
                     }
                 }
                 
@@ -87,6 +88,12 @@ publishing {
                         id = 'dimezis'
                         name = 'Dmytro Saviuk'
                     }
+                }
+
+                scm {
+                    url = 'https://github.com/Dimezis/BlurView'
+                    connection = 'scm:git:git://github.com/Dimezis/BlurView.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/Dimezis/BlurView.git'
                 }
             }
         }
