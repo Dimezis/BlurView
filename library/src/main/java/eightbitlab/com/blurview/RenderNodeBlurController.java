@@ -64,7 +64,7 @@ public class RenderNodeBlurController implements BlurController {
         }
         saveOnScreenLocation();
 
-        if (canvas.isHardwareAccelerated()) {
+        if (canvas.isHardwareAccelerated() && target.renderNode.hasDisplayList()) {
             hardwarePath(canvas);
         } else {
             // Rendering on a software canvas.
