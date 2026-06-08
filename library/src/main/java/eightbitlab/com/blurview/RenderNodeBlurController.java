@@ -64,7 +64,14 @@ public class RenderNodeBlurController implements BlurController {
         }
         saveOnScreenLocation();
 
-        if (canvas.isHardwareAccelerated() && target.renderNode.hasDisplayList()) {
+       if (canvas.isHardwareAccelerated()) {
+            if (!target.renderNode.hasDisplayList()) {
+                // The target and the BlurView are presumably in different windows
+                // and the BlurView's Window was traversed before the target's, so
+                // we don't have a valid renderNode to blur.
+                // Invalidate the BlurView until the target is drawn
+                blurView.invalidate();
+            }
             hardwarePath(canvas);
         } else {
             // Rendering on a software canvas.
