@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.RecordingCanvas;
+import android.graphics.Rect;
 import android.graphics.RenderEffect;
 import android.graphics.RenderNode;
 import android.graphics.Shader;
@@ -15,6 +16,8 @@ import android.view.ViewTreeObserver;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+
+import java.util.Objects;
 
 import eightbitlab.com.blurview.SizeScaler.Size;
 
@@ -28,6 +31,12 @@ public class RenderNodeBlurController implements BlurController {
     private final RenderNode blurNode = new RenderNode("BlurView node");
     private final float scaleFactor;
     private final boolean applyNoise;
+
+    @Nullable
+    private Integer reservedOffset;
+    @Nullable
+    private Rect cropRect;
+    private final Rect cropRectTemp = new Rect();
 
     private Drawable frameClearDrawable;
     private int overlayColor;
@@ -43,6 +52,9 @@ public class RenderNodeBlurController implements BlurController {
     // This tracks BlurView location in scrollable containers, during animations, etc.
     private final ViewTreeObserver.OnPreDrawListener drawListener = () -> {
         saveOnScreenLocation();
+        if (invalidateCropIfStale()) {
+            drawSnapshot();
+        }
         updateRenderNodeProperties();
         return true;
     };
@@ -88,9 +100,7 @@ public class RenderNodeBlurController implements BlurController {
     // https://cs.android.com/android/platform/superproject/main/+/main:external/skia/src/core/SkImageFilterTypes.cpp;drc=61197364367c9e404c7da6900658f1b16c42d0da;l=2103
     // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/libs/hwui/jni/RenderEffect.cpp;l=39;drc=61197364367c9e404c7da6900658f1b16c42d0da?q=nativeCreateBlurEffect&ss=android%2Fplatform%2Fsuperproject%2Fmain
     private void hardwarePath(Canvas canvas) {
-        // TODO would be good to keep it the size of the BlurView instead of the target, but then the animation
-        //  like translation and rotation would go out of bounds. Not sure if there's a good fix for this
-        blurNode.setPosition(0, 0, target.getWidth(), target.getHeight());
+        invalidateCropIfStale();
         updateRenderNodeProperties();
 
         drawSnapshot();
@@ -109,9 +119,68 @@ public class RenderNodeBlurController implements BlurController {
         canvas.restore();
     }
 
+    private Rect currentCropRect() {
+        Rect crop = cropRect;
+        if (crop == null) {
+            crop = new Rect();
+            computeCropRect(crop, reservedOffset);
+            cropRect = crop;
+        }
+        return crop;
+    }
+
+    private void computeCropRect(Rect out, @Nullable Integer offset) {
+        if (offset == null) {
+            out.set(0, 0, target.getWidth(), target.getHeight());
+            return;
+        }
+        // Be conservative about how much padding the blur needs
+        int blurOffset = (int) Math.ceil(2f * blurRadius * scaleFactor);
+        int padding = blurOffset + offset;
+        out.set(
+            getLeft() - padding,
+            getTop() - padding,
+            getLeft() + blurView.getWidth() + padding,
+            getTop() + blurView.getHeight() + padding
+        );
+        if (!out.intersect(0, 0, target.getWidth(), target.getHeight())) {
+            out.setEmpty();
+        }
+    }
+
+    private boolean invalidateCropIfStale() {
+        Rect crop = cropRect;
+        if (crop == null) {
+            return true;
+        }
+        boolean stale;
+        if (reservedOffset == null) {
+            stale = crop.right != target.getWidth() || crop.bottom != target.getHeight();
+        } else {
+            computeCropRect(cropRectTemp, 0);
+            stale = (!cropRectTemp.isEmpty() && !crop.contains(cropRectTemp))
+                || crop.right > target.getWidth()
+                || crop.bottom > target.getHeight();
+            cropRectTemp.setEmpty();
+        }
+        if (stale) {
+            cropRect = null;
+        }
+        return stale;
+    }
+
+    public void setReservedOffset(@Nullable Integer reservedOffset) {
+        if (!Objects.equals(this.reservedOffset, reservedOffset)) {
+            this.reservedOffset = reservedOffset;
+            cropRect = null;
+            blurView.invalidate();
+        }
+    }
+
     private void updateRenderNodeProperties() {
-        float layoutTranslationX = -getLeft();
-        float layoutTranslationY = -getTop();
+        Rect crop = currentCropRect();
+        float layoutTranslationX = -getLeft() + crop.left;
+        float layoutTranslationY = -getTop() + crop.top;
 
         // Pivot point for the rotation and scale (in case it's applied)
         blurNode.setPivotX(blurView.getWidth() / 2f - layoutTranslationX);
@@ -127,7 +196,10 @@ public class RenderNodeBlurController implements BlurController {
     }
 
     private void drawSnapshot() {
+        Rect crop = currentCropRect();
+        blurNode.setPosition(0, 0, crop.width(), crop.height());
         RecordingCanvas recordingCanvas = blurNode.beginRecording();
+        recordingCanvas.translate(-crop.left, -crop.top);
         if (frameClearDrawable != null) {
             frameClearDrawable.draw(recordingCanvas);
         }
