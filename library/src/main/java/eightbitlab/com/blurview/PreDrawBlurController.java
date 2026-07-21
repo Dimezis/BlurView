@@ -227,6 +227,11 @@ public final class PreDrawBlurController implements BlurController {
     }
 
     @Override
+    public BlurViewFacade setReservedOffset(@Nullable Integer reservedOffset) {
+        return this;
+    }
+
+    @Override
     public BlurViewFacade setBlurEnabled(boolean enabled) {
         this.blurEnabled = enabled;
         setBlurAutoUpdate(enabled);

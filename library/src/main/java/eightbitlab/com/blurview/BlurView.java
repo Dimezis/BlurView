@@ -166,11 +166,11 @@ public class BlurView extends FrameLayout {
         return blurController.setBlurEnabled(enabled);
     }
 
-    @SuppressLint("NewApi")
-    public void setReservedOffset(@Nullable Integer reservedOffset) {
-        if (usingRenderNode()) {
-            ((RenderNodeBlurController) blurController).setReservedOffset(reservedOffset);
-        }
+    /**
+     * @see BlurViewFacade#setReservedOffset(Integer)
+     */
+    public BlurViewFacade setReservedOffset(@Nullable Integer reservedOffset) {
+        return blurController.setReservedOffset(reservedOffset);
     }
 
     @Override

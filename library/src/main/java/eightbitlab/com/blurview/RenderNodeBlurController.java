@@ -169,12 +169,14 @@ public class RenderNodeBlurController implements BlurController {
         return stale;
     }
 
-    public void setReservedOffset(@Nullable Integer reservedOffset) {
+    @Override
+    public BlurViewFacade setReservedOffset(@Nullable Integer reservedOffset) {
         if (!Objects.equals(this.reservedOffset, reservedOffset)) {
             this.reservedOffset = reservedOffset;
             cropRect = null;
             blurView.invalidate();
         }
+        return this;
     }
 
     private void updateRenderNodeProperties() {
