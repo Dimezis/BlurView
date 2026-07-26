@@ -4,8 +4,10 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.Build;
+import android.view.Surface;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import eightbitlab.com.blurview.internal.OpenGLBlurPipeline;
@@ -88,5 +90,42 @@ class OpenGLBlurAlgorithm implements BlurAlgorithm {
     @Override
     public void destroy() {
         onDetached();
+    }
+
+    /**
+     * Initialises the hardware capture path: sets up the internal {@link OpenGLBlurPipeline}'s
+     * {@link eightbitlab.com.blurview.internal.ExternalTexture} at the given size and returns the
+     * {@link Surface} that a {@link android.graphics.HardwareRenderer} should render into.
+     * Call once on setup and again whenever the capture size changes.
+     */
+    @Nullable
+    Surface getCaptureSurface(int width, int height) {
+        if (pipeline == null) {
+            pipeline = new OpenGLBlurPipeline(BUFFER_COUNT);
+        }
+        pipeline.setSize(width, height);
+        return pipeline.getCaptureSurface(width, height);
+    }
+
+    /**
+     * Blurs the latest frame produced by the {@link android.graphics.HardwareRenderer} into the
+     * pipeline's {@link eightbitlab.com.blurview.internal.ExternalTexture}. Returns the blurred
+     * HardwareBuffer-backed bitmap, or {@code null} if no frame was available.
+     */
+    @Nullable
+    Bitmap blurExternal(float blurRadius) {
+        if (pipeline == null) {
+            return null;
+        }
+        OpenGLBlurPipeline.Lease lease = pipeline.renderExternal(blurRadius);
+        if (lease == null) {
+            return null;
+        }
+        if (previousLease != null) {
+            previousLease.close();
+        }
+        previousLease = currentLease;
+        currentLease = lease;
+        return lease.bitmap;
     }
 }

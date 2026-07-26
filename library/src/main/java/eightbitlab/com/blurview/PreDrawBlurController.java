@@ -1,16 +1,23 @@
 package eightbitlab.com.blurview;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.HardwareRenderer;
+import android.graphics.RecordingCanvas;
+import android.graphics.RenderNode;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.Log;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 /**
  * Blur Controller that handles all blur logic for the attached View.
@@ -61,6 +68,11 @@ public final class PreDrawBlurController implements BlurController {
     // blur radius so the perceived blur strength stays constant regardless of view scale.
     private float capturedScaleX = 1f;
     private float capturedScaleY = 1f;
+
+    // Non-null on API 29-30 when the OpenGL algorithm is used: captures the rootView's RenderNode
+    // via HardwareRenderer into an ExternalTexture, bypassing the software canvas snapshot.
+    @Nullable
+    private Object hardwareCapture; // typed as HardwareCapture; Object avoids NewApi lint on field
 
     private final ViewTreeObserver.OnPreDrawListener drawListener = new ViewTreeObserver.OnPreDrawListener() {
         @Override
@@ -135,8 +147,16 @@ public final class PreDrawBlurController implements BlurController {
 
         blurView.setWillNotDraw(false);
         SizeScaler.Size bitmapSize = sizeScaler.scale(measuredWidth, measuredHeight);
-        internalBitmap = Bitmap.createBitmap(bitmapSize.width, bitmapSize.height, blurAlgorithm.getSupportedBitmapConfig());
-        internalCanvas = new BlurViewCanvas(internalBitmap);
+
+        if (BlurTarget.canRecordRenderNode && blurAlgorithm instanceof OpenGLBlurAlgorithm) {
+            // Hardware capture path (API 29-30): render the rootView's RenderNode into an
+            // ExternalTexture via HardwareRenderer instead of drawing onto a software bitmap.
+            setupHardwareCapture(bitmapSize.width, bitmapSize.height);
+        } else {
+            internalBitmap = Bitmap.createBitmap(bitmapSize.width, bitmapSize.height, blurAlgorithm.getSupportedBitmapConfig());
+            internalCanvas = new BlurViewCanvas(internalBitmap);
+        }
+
         initialized = true;
         // Usually it's not needed, because `onPreDraw` updates the blur anyway.
         // But it handles cases when the PreDraw listener is attached to a different Window, for example
@@ -145,12 +165,47 @@ public final class PreDrawBlurController implements BlurController {
         updateBlur();
     }
 
+    @SuppressLint("NewApi")
+    private void setupHardwareCapture(int captureWidth, int captureHeight) {
+        OpenGLBlurAlgorithm openGL = (OpenGLBlurAlgorithm) blurAlgorithm;
+        Surface surface = openGL.getCaptureSurface(captureWidth, captureHeight);
+        if (surface == null) {
+            // EGL context could not be made current; fall back to software bitmap path
+            internalBitmap = Bitmap.createBitmap(captureWidth, captureHeight, blurAlgorithm.getSupportedBitmapConfig());
+            internalCanvas = new BlurViewCanvas(internalBitmap);
+            return;
+        }
+        if (hardwareCapture == null) {
+            hardwareCapture = new HardwareCapture(surface, captureWidth, captureHeight);
+        } else {
+            ((HardwareCapture) hardwareCapture).resize(captureWidth, captureHeight);
+        }
+    }
+
     @SuppressWarnings("WeakerAccess")
     void updateBlur() {
         if (!blurEnabled || !initialized) {
             return;
         }
+        if (hardwareCapture != null) {
+            updateBlurHardware();
+        } else {
+            updateBlurSoftware();
+        }
+    }
 
+    @SuppressLint("NewApi")
+    private void updateBlurHardware() {
+        ((HardwareCapture) hardwareCapture).captureAndSubmit();
+        OpenGLBlurAlgorithm openGL = (OpenGLBlurAlgorithm) blurAlgorithm;
+        float scaleCompensation = (capturedScaleX + capturedScaleY) / 2f;
+        displayBitmap = openGL.blurExternal(blurRadius / scaleCompensation);
+        if (displayBitmap != null) {
+            blurView.invalidate();
+        }
+    }
+
+    private void updateBlurSoftware() {
         if (frameClearDrawable == null) {
             internalBitmap.eraseColor(Color.TRANSPARENT);
         } else {
@@ -295,7 +350,16 @@ public final class PreDrawBlurController implements BlurController {
         setBlurAutoUpdate(false);
         blurView.removeOnAttachStateChangeListener(attachStateListener);
         blurAlgorithm.destroy();
+        if (hardwareCapture != null) {
+            destroyHardwareCapture();
+        }
         initialized = false;
+    }
+
+    @SuppressLint("NewApi")
+    private void destroyHardwareCapture() {
+        ((HardwareCapture) hardwareCapture).destroy();
+        hardwareCapture = null;
     }
 
     @Override
@@ -345,5 +409,80 @@ public final class PreDrawBlurController implements BlurController {
             blurView.invalidate();
         }
         return this;
+    }
+
+    /**
+     * Manages the {@link HardwareRenderer} + capture {@link RenderNode} for the GPU snapshot path
+     * on API 29-30. Records the capture transform (same math as
+     * {@link #setupInternalCanvasMatrix}) into a RenderNode, renders it via HardwareRenderer into
+     * the {@link eightbitlab.com.blurview.internal.ExternalTexture} surface, and submits the
+     * request to the render thread. Access to {@code PreDrawBlurController}'s fields is via the
+     * enclosing instance.
+     */
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private final class HardwareCapture {
+        private final HardwareRenderer renderer = new HardwareRenderer();
+        private final RenderNode captureNode = new RenderNode("BlurView capture");
+        private int captureWidth;
+        private int captureHeight;
+
+        HardwareCapture(Surface surface, int captureWidth, int captureHeight) {
+            renderer.setSurface(surface);
+            this.captureWidth = captureWidth;
+            this.captureHeight = captureHeight;
+            captureNode.setPosition(0, 0, captureWidth, captureHeight);
+        }
+
+        void resize(int newWidth, int newHeight) {
+            captureWidth = newWidth;
+            captureHeight = newHeight;
+            captureNode.setPosition(0, 0, captureWidth, captureHeight);
+        }
+
+        /**
+         * Records the current BlurView transform into the capture node, then submits a render
+         * request. Updates {@link #capturedScaleX}/{@link #capturedScaleY} for blur-radius
+         * compensation. The render is async; if the render thread hasn't finished by the time
+         * {@link OpenGLBlurAlgorithm#blurExternal} calls
+         * {@link android.graphics.SurfaceTexture#updateTexImage}, the previous frame is used
+         * (one frame behind), which is imperceptible for a blur effect.
+         */
+        void captureAndSubmit() {
+            rootView.getLocationOnScreen(rootLocation);
+            blurView.getLocationOnScreen(blurViewLocation);
+
+            BlurViewTransform t = BlurViewTransform.compute(blurView, blurViewLocation, rootLocation);
+            capturedScaleX = t.scaleX;
+            capturedScaleY = t.scaleY;
+
+            float rootCenterX = t.layoutLeft + blurView.getWidth() / 2f;
+            float rootCenterY = t.layoutTop + blurView.getHeight() / 2f;
+            float scaleFactorW = (float) blurView.getWidth() / captureWidth;
+            float scaleFactorH = (float) blurView.getHeight() / captureHeight;
+            float bitmapCenterX = captureWidth / 2f;
+            float bitmapCenterY = captureHeight / 2f;
+
+            RecordingCanvas c = captureNode.beginRecording();
+            if (frameClearDrawable != null) {
+                frameClearDrawable.draw(c);
+            }
+            // Same transform as setupInternalCanvasMatrix, applied to a RecordingCanvas so that
+            // HardwareRenderer renders exactly the same content region as the software path.
+            c.translate(bitmapCenterX, bitmapCenterY);
+            c.rotate(-t.rotationDeg);
+            c.scale(1f / (scaleFactorW * t.scaleX), 1f / (scaleFactorH * t.scaleY));
+            c.translate(-rootCenterX, -rootCenterY);
+            if (rootView.renderNode != null && rootView.renderNode.hasDisplayList()) {
+                c.drawRenderNode(rootView.renderNode);
+            }
+            captureNode.endRecording();
+
+            renderer.setContentRoot(captureNode);
+            renderer.createRenderRequest().syncAndDraw();
+        }
+
+        void destroy() {
+            renderer.destroy();
+        }
     }
 }
