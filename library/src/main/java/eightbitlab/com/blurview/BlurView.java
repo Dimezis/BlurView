@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.eightbitlab.blurview.R;
 
@@ -168,6 +169,13 @@ public class BlurView extends FrameLayout {
      */
     public BlurViewFacade setBlurEnabled(boolean enabled) {
         return blurController.setBlurEnabled(enabled);
+    }
+
+    /**
+     * @see BlurViewFacade#setReservedOffset(Integer)
+     */
+    public BlurViewFacade setReservedOffset(@Nullable Integer reservedOffset) {
+        return blurController.setReservedOffset(reservedOffset);
     }
 
     @Override

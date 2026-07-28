@@ -45,4 +45,16 @@ public interface BlurViewFacade {
      * @return {@link BlurViewFacade}
      */
     BlurViewFacade setOverlayColor(@ColorInt int overlayColor);
+
+    /**
+     * An optimization for a BlurView that stays mostly in place. Blurs only the area around
+     * the BlurView instead of the whole blur target, reserving the given offset for small
+     * movements. Keep it unset for a BlurView that animates across the screen.
+     * Only has effect on API 31+.
+     *
+     * @param reservedOffset how far the BlurView is expected to move, in pixels,
+     *                       or null (default) to blur the whole target
+     * @return {@link BlurViewFacade}
+     */
+    BlurViewFacade setReservedOffset(@Nullable Integer reservedOffset);
 }

@@ -44,4 +44,9 @@ public class NoOpController implements BlurController {
     public BlurViewFacade setBlurAutoUpdate(boolean enabled) {
         return this;
     }
+
+    @Override
+    public BlurViewFacade setReservedOffset(@Nullable Integer reservedOffset) {
+        return this;
+    }
 }
