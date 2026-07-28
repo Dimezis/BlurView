@@ -134,9 +134,7 @@ public class RenderNodeBlurController implements BlurController {
             out.set(0, 0, target.getWidth(), target.getHeight());
             return;
         }
-        // Be conservative about how much padding the blur needs
-        int blurOffset = (int) Math.ceil(2f * blurRadius * scaleFactor);
-        int padding = blurOffset + offset;
+        int padding = blurOffset() + offset;
         out.set(
             getLeft() - padding,
             getTop() - padding,
@@ -146,6 +144,15 @@ public class RenderNodeBlurController implements BlurController {
         if (!out.intersect(0, 0, target.getWidth(), target.getHeight())) {
             out.setEmpty();
         }
+    }
+
+    // How far the blur reads outside of the pixels it writes.
+    // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/libs/hwui/utils/Blur.cpp;l=29
+    // https://cs.android.com/android/platform/superproject/main/+/main:external/skia/src/effects/imagefilters/SkBlurImageFilter.cpp;l=71
+    private int blurOffset() {
+        float realBlurRadius = blurRadius * scaleFactor;
+        float sigma = 0.57735f * realBlurRadius + 0.5f;
+        return (int) Math.ceil(3f * sigma);
     }
 
     private boolean invalidateCropIfStale() {
