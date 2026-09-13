@@ -186,23 +186,21 @@ public class RenderNodeBlurController implements BlurController {
      * Set up matrix to draw starting from blurView's position
      */
     private void setupCanvasMatrix(Canvas canvas, Size targetSize, Size scaledSize) {
+        BlurViewTransform t = BlurViewTransform.compute(blurView, blurViewLocation, targetLocation);
+
+        float rootCenterX = t.layoutLeft + blurView.getWidth() / 2f;
+        float rootCenterY = t.layoutTop + blurView.getHeight() / 2f;
+
         // https://github.com/Dimezis/BlurView/issues/128
         float scaleFactorH = (float) targetSize.height / scaledSize.height;
         float scaleFactorW = (float) targetSize.width / scaledSize.width;
+        float bitmapCenterX = scaledSize.width / 2f;
+        float bitmapCenterY = scaledSize.height / 2f;
 
-        float scaledLeftPosition = -getLeft() / scaleFactorW;
-        float scaledTopPosition = -getTop() / scaleFactorH;
-
-        canvas.translate(scaledLeftPosition, scaledTopPosition);
-        canvas.scale(1 / scaleFactorW, 1 / scaleFactorH);
-    }
-
-    private int getTop() {
-        return blurViewLocation[1] - targetLocation[1];
-    }
-
-    private int getLeft() {
-        return blurViewLocation[0] - targetLocation[0];
+        canvas.translate(bitmapCenterX, bitmapCenterY);
+        canvas.rotate(-t.rotationDeg);
+        canvas.scale(1f / (scaleFactorW * t.scaleX), 1f / (scaleFactorH * t.scaleY));
+        canvas.translate(-rootCenterX, -rootCenterY);
     }
 
     @Override
