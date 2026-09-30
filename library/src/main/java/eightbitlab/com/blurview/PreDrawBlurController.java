@@ -90,6 +90,8 @@ public final class PreDrawBlurController implements BlurController {
 
     private boolean blurEnabled = true;
     private boolean initialized;
+    // Tracks the current auto-update preference so it survives re-initialization on size changes
+    private boolean blurAutoUpdate = true;
 
     @Nullable
     private Drawable frameClearDrawable;
@@ -125,7 +127,7 @@ public final class PreDrawBlurController implements BlurController {
 
     @SuppressWarnings("WeakerAccess")
     void init(int measuredWidth, int measuredHeight) {
-        setBlurAutoUpdate(true);
+        setBlurAutoUpdate(blurAutoUpdate);
         SizeScaler sizeScaler = new SizeScaler(scaleFactor);
         if (sizeScaler.isZeroSized(measuredWidth, measuredHeight)) {
             // Will be initialized later when the View reports a size change
@@ -326,6 +328,7 @@ public final class PreDrawBlurController implements BlurController {
     }
 
     public BlurViewFacade setBlurAutoUpdate(final boolean enabled) {
+        blurAutoUpdate = enabled;
         rootView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
         blurView.getViewTreeObserver().removeOnPreDrawListener(drawListener);
         if (enabled) {
