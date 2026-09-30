@@ -31,7 +31,7 @@ public class RenderNodeBlurController implements BlurController {
 
     private Drawable frameClearDrawable;
     private int overlayColor;
-    private float blurRadius = 1f;
+    private float blurRadius = BlurController.DEFAULT_BLUR_RADIUS;
     private boolean enabled = true;
 
     // Potentially cached stuff from the slow software path
