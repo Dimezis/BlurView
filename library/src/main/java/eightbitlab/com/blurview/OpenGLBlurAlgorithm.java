@@ -32,10 +32,27 @@ class OpenGLBlurAlgorithm implements BlurAlgorithm {
     private OpenGLBlurPipeline.Lease currentLease;
     private OpenGLBlurPipeline.Lease previousLease;
 
+    // One-shot latch: once EGL/pipeline bring-up fails (e.g. EglSetupException), we stop trying and
+    // keep returning the unblurred snapshot for the lifetime of this algorithm instead of crashing.
+    private boolean pipelineUnavailable;
+
     @Override
     public Bitmap blur(@NonNull Bitmap snapshot, float blurRadius) {
+        if (pipelineUnavailable) {
+            return snapshot;
+        }
         if (pipeline == null) {
-            pipeline = new OpenGLBlurPipeline(BUFFER_COUNT);
+            try {
+                pipeline = new OpenGLBlurPipeline(BUFFER_COUNT);
+            } catch (RuntimeException e) {
+                // EGL/pipeline setup failed (e.g. EglSetupException). Latch off and fall back to the
+                // unblurred snapshot so blurring never crashes the host view.
+                pipelineUnavailable = true;
+                return snapshot;
+            }
+        }
+        if (pipeline == null) {
+            return snapshot;
         }
         pipeline.setSize(snapshot.getWidth(), snapshot.getHeight());
         OpenGLBlurPipeline.Lease lease = pipeline.render(snapshot, blurRadius);
