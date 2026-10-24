@@ -215,6 +215,8 @@ public class RenderNodeBlurController implements BlurController {
             fallbackBlur.destroy();
             fallbackBlur = null;
         }
+        // Safe to recycle: draw() and destroy() both run on the UI thread and never overlap, so no
+        // draw can touch the bitmap after this. A later software draw reallocates it (field is nulled).
         if (cachedBitmap != null) {
             cachedBitmap.recycle();
             cachedBitmap = null;
