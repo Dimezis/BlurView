@@ -5,10 +5,13 @@ package eightbitlab.com.blurview.internal;
  * creation). Thrown from the {@code EglCore} constructor so the OpenGL blur pipeline can treat the
  * pipeline as unavailable and fall back to the unblurred snapshot instead of using an invalid
  * display, config, or context.
+ * <p>
+ * Public so callers outside this package (e.g. {@code OpenGLBlurAlgorithm}) can catch it by name
+ * and distinguish a known setup failure from an unexpected programming error.
  */
-class EglSetupException extends RuntimeException {
+public class EglSetupException extends RuntimeException {
 
-    EglSetupException(String message) {
+    public EglSetupException(String message) {
         super(message);
     }
 }

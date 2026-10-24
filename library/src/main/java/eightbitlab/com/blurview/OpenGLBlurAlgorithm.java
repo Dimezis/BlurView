@@ -4,10 +4,12 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import eightbitlab.com.blurview.internal.EglSetupException;
 import eightbitlab.com.blurview.internal.OpenGLBlurPipeline;
 
 /**
@@ -32,8 +34,9 @@ class OpenGLBlurAlgorithm implements BlurAlgorithm {
     private OpenGLBlurPipeline.Lease currentLease;
     private OpenGLBlurPipeline.Lease previousLease;
 
-    // One-shot latch: once EGL/pipeline bring-up fails (e.g. EglSetupException), we stop trying and
-    // keep returning the unblurred snapshot for the lifetime of this algorithm instead of crashing.
+    // Latch set when EGL/pipeline bring-up fails, so we stop retrying every frame and fall back to the
+    // unblurred snapshot instead of crashing. Reset on detach so a reattach (which rebuilds the
+    // pipeline) can retry after a transient failure - e.g. a surface lost while backgrounded.
     private boolean pipelineUnavailable;
 
     @Override
@@ -44,15 +47,13 @@ class OpenGLBlurAlgorithm implements BlurAlgorithm {
         if (pipeline == null) {
             try {
                 pipeline = new OpenGLBlurPipeline(BUFFER_COUNT);
-            } catch (RuntimeException e) {
-                // EGL/pipeline setup failed (e.g. EglSetupException). Latch off and fall back to the
-                // unblurred snapshot so blurring never crashes the host view.
+            } catch (EglSetupException eglSetupFailed) {
+                // Known EGL bring-up failure. Latch off and fall back to the unblurred snapshot so
+                // blurring never crashes the host view.
+                Log.e("BlurView", "OpenGL blur unavailable, falling back to unblurred snapshot", eglSetupFailed);
                 pipelineUnavailable = true;
                 return snapshot;
             }
-        }
-        if (pipeline == null) {
-            return snapshot;
         }
         pipeline.setSize(snapshot.getWidth(), snapshot.getHeight());
         OpenGLBlurPipeline.Lease lease = pipeline.render(snapshot, blurRadius);
@@ -100,6 +101,9 @@ class OpenGLBlurAlgorithm implements BlurAlgorithm {
             pipeline.release();
             pipeline = null;
         }
+        // The pipeline is rebuilt lazily on the next blur, so clear the latch to allow a retry after
+        // a transient bring-up failure.
+        pipelineUnavailable = false;
     }
 
     @Override

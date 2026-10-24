@@ -27,32 +27,44 @@ class EglCore {
         display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
         int[] version = new int[2];
         if (!EGL14.eglInitialize(display, version, 0, version, 1)) {
+            // Display not initialized yet; nothing to terminate.
             throw new EglSetupException("eglInitialize failed");
         }
 
-        int[] configAttributes = {
-                // Require an ES 3.0-capable config - the pipeline needs VAOs and GLSL ES 3.00.
-                EGL14.EGL_RENDERABLE_TYPE, EGLExt.EGL_OPENGL_ES3_BIT_KHR,
-                EGL14.EGL_SURFACE_TYPE, EGL14.EGL_WINDOW_BIT,
-                EGL14.EGL_RED_SIZE, 8,
-                EGL14.EGL_GREEN_SIZE, 8,
-                EGL14.EGL_BLUE_SIZE, 8,
-                EGL14.EGL_ALPHA_SIZE, 8,
-                EGL14.EGL_NONE
-        };
-        EGLConfig[] configs = new EGLConfig[1];
-        int[] numConfig = new int[1];
-        EGL14.eglChooseConfig(display, configAttributes, 0, configs, 0, 1, numConfig, 0);
-        if (numConfig[0] < 1 || configs[0] == null) {
-            throw new EglSetupException("no matching EGL config");
-        }
-        config = configs[0];
+        // The display is now initialized. Any failure past this point must terminate it before
+        // throwing, otherwise the initialized display leaks (the constructor throw aborts object
+        // construction, so release() is never reachable).
+        try {
+            int[] configAttributes = {
+                    // Require an ES 3.0-capable config - the pipeline needs VAOs and GLSL ES 3.00.
+                    EGL14.EGL_RENDERABLE_TYPE, EGLExt.EGL_OPENGL_ES3_BIT_KHR,
+                    EGL14.EGL_SURFACE_TYPE, EGL14.EGL_WINDOW_BIT,
+                    EGL14.EGL_RED_SIZE, 8,
+                    EGL14.EGL_GREEN_SIZE, 8,
+                    EGL14.EGL_BLUE_SIZE, 8,
+                    EGL14.EGL_ALPHA_SIZE, 8,
+                    EGL14.EGL_NONE
+            };
+            EGLConfig[] configs = new EGLConfig[1];
+            int[] numConfig = new int[1];
+            EGL14.eglChooseConfig(display, configAttributes, 0, configs, 0, 1, numConfig, 0);
+            if (numConfig[0] < 1 || configs[0] == null) {
+                throw new EglSetupException("no matching EGL config");
+            }
+            config = configs[0];
 
-        // EGL_CONTEXT_CLIENT_VERSION = 3 creates an OpenGL ES 3.0 context.
-        int[] contextAttributes = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 3, EGL14.EGL_NONE};
-        context = EGL14.eglCreateContext(display, config, EGL14.EGL_NO_CONTEXT, contextAttributes, 0);
-        if (context == null || context == EGL14.EGL_NO_CONTEXT) {
-            throw new EglSetupException("eglCreateContext failed");
+            // EGL_CONTEXT_CLIENT_VERSION = 3 creates an OpenGL ES 3.0 context.
+            int[] contextAttributes = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 3, EGL14.EGL_NONE};
+            context = EGL14.eglCreateContext(display, config, EGL14.EGL_NO_CONTEXT, contextAttributes, 0);
+            if (context == null || context == EGL14.EGL_NO_CONTEXT) {
+                throw new EglSetupException("eglCreateContext failed");
+            }
+        } catch (RuntimeException setupFailed) {
+            EGL14.eglTerminate(display);
+            display = EGL14.EGL_NO_DISPLAY;
+            context = EGL14.EGL_NO_CONTEXT;
+            config = null;
+            throw setupFailed;
         }
     }
 
