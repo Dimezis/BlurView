@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.Build;
-import android.util.Log;
+import eightbitlab.com.blurview.internal.BlurViewLog;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -58,7 +58,7 @@ class OpenGLBlurAlgorithm implements BlurAlgorithm {
         } catch (RuntimeException pipelineFailed) {
             // EGL bring-up or GL setup/render failed. Latch off, release any partially-built pipeline,
             // and fall back to the unblurred snapshot so blurring never crashes the host view.
-            Log.e("BlurView", "OpenGL blur unavailable, falling back to unblurred snapshot", pipelineFailed);
+            BlurViewLog.error("BlurView", "OpenGL blur unavailable, falling back to unblurred snapshot", pipelineFailed);
             pipelineUnavailable = true;
             if (pipeline != null) {
                 pipeline.release();

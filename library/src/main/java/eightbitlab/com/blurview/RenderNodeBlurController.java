@@ -9,7 +9,7 @@ import android.graphics.RenderNode;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.util.Log;
+import eightbitlab.com.blurview.internal.BlurViewLog;
 import android.view.ViewTreeObserver;
 
 import androidx.annotation.NonNull;
@@ -162,7 +162,7 @@ public class RenderNodeBlurController implements BlurController {
             target.draw(softwareCanvas);
         } catch (Exception e) {
             // Can potentially fail on rendering Hardware Bitmaps or something like that
-            Log.e("BlurView", "Error during snapshot capturing", e);
+            BlurViewLog.error("BlurView", "Error during snapshot capturing", e);
         }
         softwareCanvas.restore();
 

@@ -10,7 +10,7 @@ import android.renderscript.Allocation;
 import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
-import android.util.Log;
+import eightbitlab.com.blurview.internal.BlurViewLog;
 
 import androidx.annotation.NonNull;
 
@@ -73,7 +73,7 @@ public class RenderScriptBlur implements BlurAlgorithm {
         } catch (Exception e) {
             // Can potentially crash because RenderScript context was released by someone else via RenderScript.releaseAllContexts()
             // Some Glide transformations can cause this.
-            Log.e("BlurView", "RenderScript blur failed. Rendering unblurred snapshot", e);
+            BlurViewLog.error("BlurView", "RenderScript blur failed. Rendering unblurred snapshot", e);
         }
         return bitmap;
     }

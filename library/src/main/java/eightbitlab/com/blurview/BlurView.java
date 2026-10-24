@@ -9,13 +9,14 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.FrameLayout;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 
 import com.eightbitlab.blurview.R;
+
+import eightbitlab.com.blurview.internal.BlurViewLog;
 
 /**
  * FrameLayout that blurs its underlying content.
@@ -83,7 +84,7 @@ public class BlurView extends FrameLayout {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (!isHardwareAccelerated()) {
-            Log.e("BlurView", "BlurView can't be used in not hardware-accelerated window!");
+            BlurViewLog.error("BlurView", "BlurView can't be used in not hardware-accelerated window!");
         } else {
             blurController.setBlurAutoUpdate(this.blurAutoUpdate);
         }
@@ -179,6 +180,19 @@ public class BlurView extends FrameLayout {
      */
     public BlurViewFacade setBlurEnabled(boolean enabled) {
         return blurController.setBlurEnabled(enabled);
+    }
+
+    /**
+     * Installs a logger for BlurView's internal error reports, letting the host app
+     * route them to its logging or crash-reporting pipeline for production observability.
+     * By default reports go to {@link android.util.Log}.
+     * <p>
+     * This setting is global to the process, not per-instance.
+     *
+     * @param logger the logger to receive error reports
+     */
+    public static void setLogger(@NonNull BlurLogger logger) {
+        BlurViewLog.setLogger(logger);
     }
 
     @Override
