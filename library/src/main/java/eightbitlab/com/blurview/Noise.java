@@ -13,26 +13,29 @@ import android.graphics.Shader;
 import androidx.annotation.NonNull;
 
 class Noise {
+    // Built lazily from the application Context so no Activity/View context is retained process-wide.
     private static Paint noisePaint;
 
     static void apply(Canvas canvas, Context context, int width, int height) {
-        initPaint(context);
+        if (noisePaint == null) {
+            noisePaint = createNoisePaint(context.getApplicationContext());
+        }
         canvas.drawRect(0, 0, width, height, noisePaint);
     }
 
-    private static void initPaint(Context context) {
-        if (noisePaint == null) {
-            Bitmap alphaBitmap = getNoiseBitmap(context);
-            noisePaint = new Paint();
-            noisePaint.setAntiAlias(true);
-            noisePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP));
-            noisePaint.setShader(new BitmapShader(alphaBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
-        }
+    @NonNull
+    private static Paint createNoisePaint(@NonNull Context appContext) {
+        Bitmap alphaBitmap = getNoiseBitmap(appContext);
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP));
+        paint.setShader(new BitmapShader(alphaBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
+        return paint;
     }
 
     @NonNull
-    private static Bitmap getNoiseBitmap(Context context) {
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), com.eightbitlab.blurview.R.drawable.blue_noise);
+    private static Bitmap getNoiseBitmap(@NonNull Context appContext) {
+        Bitmap bitmap = BitmapFactory.decodeResource(appContext.getResources(), com.eightbitlab.blurview.R.drawable.blue_noise);
         Bitmap alphaBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(alphaBitmap);
         Paint paint = new Paint();
