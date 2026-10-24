@@ -9,7 +9,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import eightbitlab.com.blurview.internal.EglSetupException;
 import eightbitlab.com.blurview.internal.OpenGLBlurPipeline;
 
 /**
@@ -34,9 +33,12 @@ class OpenGLBlurAlgorithm implements BlurAlgorithm {
     private OpenGLBlurPipeline.Lease currentLease;
     private OpenGLBlurPipeline.Lease previousLease;
 
-    // Latch set when EGL/pipeline bring-up fails, so we stop retrying every frame and fall back to the
-    // unblurred snapshot instead of crashing. Reset on detach so a reattach (which rebuilds the
-    // pipeline) can retry after a transient failure - e.g. a surface lost while backgrounded.
+    // Latch set when the OpenGL pipeline fails - either EGL bring-up (EglSetupException from the
+    // pipeline constructor) or lazy GL object setup / rendering (shader compile/link and similar,
+    // thrown as plain RuntimeExceptions from render()). Once set we stop retrying every frame and
+    // fall back to the unblurred snapshot instead of crashing the host view. Reset on detach so a
+    // reattach (which rebuilds the pipeline) can retry after a transient failure - e.g. a surface
+    // lost while backgrounded.
     private boolean pipelineUnavailable;
 
     @Override
@@ -44,19 +46,26 @@ class OpenGLBlurAlgorithm implements BlurAlgorithm {
         if (pipelineUnavailable) {
             return snapshot;
         }
-        if (pipeline == null) {
-            try {
+        OpenGLBlurPipeline.Lease lease;
+        try {
+            if (pipeline == null) {
                 pipeline = new OpenGLBlurPipeline(BUFFER_COUNT);
-            } catch (EglSetupException eglSetupFailed) {
-                // Known EGL bring-up failure. Latch off and fall back to the unblurred snapshot so
-                // blurring never crashes the host view.
-                Log.e("BlurView", "OpenGL blur unavailable, falling back to unblurred snapshot", eglSetupFailed);
-                pipelineUnavailable = true;
-                return snapshot;
             }
+            // GL program/VAO setup happens lazily inside render(), so shader/link failures surface
+            // here (as RuntimeExceptions), not from the constructor - both are covered by this catch.
+            pipeline.setSize(snapshot.getWidth(), snapshot.getHeight());
+            lease = pipeline.render(snapshot, blurRadius);
+        } catch (RuntimeException pipelineFailed) {
+            // EGL bring-up or GL setup/render failed. Latch off, release any partially-built pipeline,
+            // and fall back to the unblurred snapshot so blurring never crashes the host view.
+            Log.e("BlurView", "OpenGL blur unavailable, falling back to unblurred snapshot", pipelineFailed);
+            pipelineUnavailable = true;
+            if (pipeline != null) {
+                pipeline.release();
+                pipeline = null;
+            }
+            return snapshot;
         }
-        pipeline.setSize(snapshot.getWidth(), snapshot.getHeight());
-        OpenGLBlurPipeline.Lease lease = pipeline.render(snapshot, blurRadius);
         if (lease == null) {
             // Context could not be made current or no frame was available - draw the unblurred snapshot.
             return snapshot;
