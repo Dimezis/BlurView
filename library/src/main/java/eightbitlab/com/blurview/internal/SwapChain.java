@@ -9,6 +9,7 @@ import android.media.ImageReader;
 import android.opengl.EGL14;
 import android.opengl.EGLSurface;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -23,6 +24,7 @@ import androidx.annotation.RequiresApi;
 @RequiresApi(Build.VERSION_CODES.Q)
 final class SwapChain {
 
+    private static final String TAG = "BlurView";
     private static final ColorSpace SRGB = ColorSpace.get(ColorSpace.Named.SRGB);
 
     private final EglCore eglCore;
@@ -51,6 +53,10 @@ final class SwapChain {
         imageReader = ImageReader.newInstance(width, height, ImageFormat.PRIVATE, bufferCount,
                 HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE | HardwareBuffer.USAGE_GPU_COLOR_OUTPUT);
         eglSurface = eglCore.createWindowSurface(imageReader.getSurface());
+        if (eglSurface == EGL14.EGL_NO_SURFACE) {
+            Log.e(TAG, "Failed to create EGL window surface (" + width + "x" + height
+                    + "); OpenGL blur will be unavailable");
+        }
     }
 
     /**
@@ -71,11 +77,13 @@ final class SwapChain {
     OpenGLBlurPipeline.Lease acquireLease() {
         Image image = imageReader.acquireLatestImage();
         if (image == null) {
+            Log.e(TAG, "acquireLatestImage returned null; no rendered frame available this pass");
             return null;
         }
         HardwareBuffer buffer = image.getHardwareBuffer();
         Bitmap bitmap = wrapBuffer(buffer);
         if (bitmap == null) {
+            Log.e(TAG, "Failed to wrap acquired image into a bitmap; dropping frame");
             if (buffer != null) {
                 buffer.close();
             }
@@ -100,11 +108,13 @@ final class SwapChain {
     @Nullable
     private static Bitmap wrapBuffer(@Nullable HardwareBuffer buffer) {
         if (buffer == null) {
+            Log.e(TAG, "Acquired image has no HardwareBuffer; cannot wrap into a bitmap");
             return null;
         }
         try {
             return Bitmap.wrapHardwareBuffer(buffer, SRGB);
         } catch (Exception wrapFailed) {
+            Log.e(TAG, "Bitmap.wrapHardwareBuffer failed", wrapFailed);
             return null;
         }
     }
