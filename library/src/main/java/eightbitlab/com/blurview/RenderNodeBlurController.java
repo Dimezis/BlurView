@@ -215,6 +215,10 @@ public class RenderNodeBlurController implements BlurController {
             fallbackBlur.destroy();
             fallbackBlur = null;
         }
+        if (cachedBitmap != null) {
+            cachedBitmap.recycle();
+            cachedBitmap = null;
+        }
     }
 
     @Override
