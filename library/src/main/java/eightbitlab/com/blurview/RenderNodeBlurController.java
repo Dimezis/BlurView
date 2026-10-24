@@ -267,16 +267,19 @@ public class RenderNodeBlurController implements BlurController {
         return this;
     }
 
-    void updateRotation(float rotation) {
-        blurNode.setRotationZ(-rotation);
-    }
-
-    public void updateScaleX(float scaleX) {
-        blurNode.setScaleX(1 / scaleX);
-    }
-
-    public void updateScaleY(float scaleY) {
-        blurNode.setScaleY(1 / scaleY);
+    /**
+     * Single entry point for view-property-driven updates (scaleX, scaleY, rotation).
+     * <p>
+     * The caller (BlurView) has already applied the new value via its super setter before
+     * notifying, so no value needs to be passed in: {@link #updateRenderNodeProperties()}
+     * reads the current transform via {@link BlurViewTransform#compute}. Routing through the
+     * full recompute keeps the blur node pivot, translation, scale, and rotation consistent,
+     * instead of mutating a single property in isolation.
+     */
+    void onViewTransformChanged() {
+        saveOnScreenLocation();
+        updateRenderNodeProperties();
+        blurView.invalidate();
     }
 
     private void saveOnScreenLocation() {

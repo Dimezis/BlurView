@@ -193,21 +193,21 @@ public class BlurView extends FrameLayout {
     @SuppressLint("NewApi")
     public void notifyRotationChanged(float rotation) {
         if (usingRenderNode()) {
-            ((RenderNodeBlurController) blurController).updateRotation(rotation);
+            ((RenderNodeBlurController) blurController).onViewTransformChanged();
         }
     }
 
     @SuppressLint("NewApi")
     public void notifyScaleXChanged(float scaleX) {
         if (usingRenderNode()) {
-            ((RenderNodeBlurController) blurController).updateScaleX(scaleX);
+            ((RenderNodeBlurController) blurController).onViewTransformChanged();
         }
     }
 
     @SuppressLint("NewApi")
     public void notifyScaleYChanged(float scaleY) {
         if (usingRenderNode()) {
-            ((RenderNodeBlurController) blurController).updateScaleY(scaleY);
+            ((RenderNodeBlurController) blurController).onViewTransformChanged();
         }
     }
 
