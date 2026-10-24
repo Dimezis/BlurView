@@ -17,6 +17,15 @@ final class GaussianKernel {
      * Max stored taps (right half). Must match the {@code uOffsets}/{@code uWeights} array size in
      * {@link BlurShaders#BLUR_FRAGMENT}. Radii whose +/-3 sigma reach exceeds this clamp the kernel's
      * tail; the shader renormalizes by the in-bounds weight, so the result stays smooth.
+     * <p>
+     * This cap also bounds the <em>effective</em> blur strength: once a radius is large enough that its
+     * +/-3 sigma reach would need more than {@code MAX_SAMPLES} taps, the extra taps are never stored,
+     * so {@link #sampleCount()} saturates at {@code MAX_SAMPLES} and further increasing the radius no
+     * longer widens the kernel. Visually the blur strength plateaus past that point rather than growing
+     * without bound. This is a deliberate ceiling for the OpenGL path and is not changed by callers; to
+     * blur harder beyond it, downscale the snapshot more (a larger scale factor) rather than raising the
+     * radius alone. Note the RenderEffect and RenderScript paths have no such shared cap, so their
+     * appearance can diverge from this path at large radii.
      */
     static final int MAX_SAMPLES = 24;
 

@@ -90,6 +90,13 @@ Related thread - https://github.com/Dimezis/BlurView/issues/37
 Because blurring on other threads would introduce 1-2 frames of latency.
 On API 31+ the blur is done on the system Render Thread.
 
+## Large blur radii and cross-API differences
+Depending on the API level, BlurView uses one of three underlying blur paths: `RenderEffect` (API 31+), OpenGL (API 29-30), or RenderScript (older). These paths don't share a single kernel implementation, so at large blur radii the result can look slightly different across API levels.
+
+In particular, the OpenGL path caps its Gaussian kernel at a fixed number of samples. Once the radius grows large enough that the kernel would need more samples than that cap allows, the effective blur strength is clamped - increasing the radius further stops widening the blur, so the strength plateaus. The `RenderEffect` and RenderScript paths don't have this same shared cap.
+
+If you need a stronger blur than the OpenGL ceiling provides, increase the scale factor (downscale the snapshot more) rather than relying on a larger radius alone.
+
 ## Compared to other blurring libs
 - BlurView and Haze for Compose are the only libraries that leverage hardware acceleration for View snapshotting and have near zero overhead of snapshotting.
 - Supports TextureView blur on API 31+.

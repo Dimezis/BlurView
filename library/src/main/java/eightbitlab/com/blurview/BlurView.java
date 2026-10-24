@@ -20,6 +20,15 @@ import com.eightbitlab.blurview.R;
 /**
  * FrameLayout that blurs its underlying content.
  * Can have children and draw them over blurred background.
+ * <p>
+ * <strong>Large-radius note:</strong> the blur is backed by one of three platform paths depending on
+ * API level - {@code RenderEffect} (API 31+), OpenGL (API 29-30), or RenderScript (older). These paths
+ * do not share a single kernel implementation, so at large blur radii their appearance can diverge: the
+ * OpenGL path caps its Gaussian kernel at a fixed tap count, which clamps effective blur strength once a
+ * radius grows past that ceiling (the blur plateaus instead of widening further), whereas RenderEffect
+ * and RenderScript have no equivalent shared cap. Expect slightly different looks across API levels at
+ * high radii; to blur harder past the OpenGL ceiling, increase the scale factor (downscale the snapshot
+ * more) rather than relying on radius alone.
  */
 public class BlurView extends FrameLayout {
 
