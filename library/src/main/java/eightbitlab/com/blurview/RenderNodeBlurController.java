@@ -156,7 +156,7 @@ public class RenderNodeBlurController implements BlurController {
         softwareCanvas.save();
         setupCanvasMatrix(softwareCanvas, original, scaled);
         if (frameClearDrawable != null) {
-            frameClearDrawable.draw(canvas);
+            frameClearDrawable.draw(softwareCanvas);
         }
         try {
             target.draw(softwareCanvas);
