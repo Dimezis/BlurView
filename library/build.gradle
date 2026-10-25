@@ -14,7 +14,7 @@ android {
     defaultConfig {
         minSdkVersion 18
         targetSdkVersion 36
-        testInstrumentationRunner "de.mannodermaus.junit5.AndroidJUnit5Builder"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     testOptions {
@@ -38,6 +38,10 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
+
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test:core:1.6.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
 }
 
 task androidJavadocs(type: Javadoc) {

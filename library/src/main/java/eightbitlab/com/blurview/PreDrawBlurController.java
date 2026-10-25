@@ -4,13 +4,14 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import eightbitlab.com.blurview.internal.BlurViewLog;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import eightbitlab.com.blurview.internal.BlurViewLog;
 
 /**
  * Blur Controller that handles all blur logic for the attached View.
@@ -153,29 +154,37 @@ public final class PreDrawBlurController implements BlurController {
             return;
         }
 
+        // Capture the current canvas/bitmap into locals. A synchronous BlurView resize can happen
+        // while rootView.draw() runs below (e.g. a scroll listener in computeScroll() calling
+        // layout()), which re-enters init() and replaces the internalCanvas/internalBitmap fields.
+        // Balancing save()/restore() against the fields would then restore a fresh canvas that has
+        // nothing saved, crashing with "Underflow in restore". See #273.
+        BlurViewCanvas canvas = internalCanvas;
+        Bitmap bitmap = internalBitmap;
+
         if (frameClearDrawable == null) {
-            internalBitmap.eraseColor(Color.TRANSPARENT);
+            bitmap.eraseColor(Color.TRANSPARENT);
         } else {
-            frameClearDrawable.draw(internalCanvas);
+            frameClearDrawable.draw(canvas);
         }
 
-        internalCanvas.save();
-        setupInternalCanvasMatrix();
+        canvas.save();
+        setupInternalCanvasMatrix(canvas, bitmap);
         try {
-            rootView.draw(internalCanvas);
+            rootView.draw(canvas);
         } catch (Exception e) {
             // Can potentially fail on rendering Hardware Bitmaps or something like that
             BlurViewLog.error("BlurView", "Error during snapshot capturing", e);
         }
-        internalCanvas.restore();
+        canvas.restore();
 
-        blurAndSave();
+        blurAndSave(bitmap);
     }
 
     /**
      * Set up matrix to draw starting from blurView's position
      */
-    private void setupInternalCanvasMatrix() {
+    private void setupInternalCanvasMatrix(BlurViewCanvas canvas, Bitmap bitmap) {
         rootView.getLocationOnScreen(rootLocation);
         blurView.getLocationOnScreen(blurViewLocation);
 
@@ -184,10 +193,10 @@ public final class PreDrawBlurController implements BlurController {
         float rootCenterX = t.layoutLeft + blurView.getWidth() / 2f;
         float rootCenterY = t.layoutTop + blurView.getHeight() / 2f;
 
-        float scaleFactorH = (float) blurView.getHeight() / internalBitmap.getHeight();
-        float scaleFactorW = (float) blurView.getWidth() / internalBitmap.getWidth();
-        float bitmapCenterX = internalBitmap.getWidth() / 2f;
-        float bitmapCenterY = internalBitmap.getHeight() / 2f;
+        float scaleFactorH = (float) blurView.getHeight() / bitmap.getHeight();
+        float scaleFactorW = (float) blurView.getWidth() / bitmap.getWidth();
+        float bitmapCenterX = bitmap.getWidth() / 2f;
+        float bitmapCenterY = bitmap.getHeight() / 2f;
 
         // Capture the root content that is visually beneath the BlurView:
         //  1. Shift root so the BlurView's invariant center is at the origin
@@ -197,10 +206,10 @@ public final class PreDrawBlurController implements BlurController {
         //  4. Shift to bitmap center
         // When draw() renders this bitmap onto the view's local canvas and the view system then
         // applies the view's own rotation R and scale, the content matches the background exactly.
-        internalCanvas.translate(bitmapCenterX, bitmapCenterY);
-        internalCanvas.rotate(-t.rotationDeg);
-        internalCanvas.scale(1f / (scaleFactorW * t.scaleX), 1f / (scaleFactorH * t.scaleY));
-        internalCanvas.translate(-rootCenterX, -rootCenterY);
+        canvas.translate(bitmapCenterX, bitmapCenterY);
+        canvas.rotate(-t.rotationDeg);
+        canvas.scale(1f / (scaleFactorW * t.scaleX), 1f / (scaleFactorH * t.scaleY));
+        canvas.translate(-rootCenterX, -rootCenterY);
 
         capturedScaleX = t.scaleX;
         capturedScaleY = t.scaleY;
@@ -240,11 +249,11 @@ public final class PreDrawBlurController implements BlurController {
         return true;
     }
 
-    private void blurAndSave() {
+    private void blurAndSave(Bitmap bitmap) {
         // The bitmap packs scaleX*scaleY more content than at scale=1. Divide the blur radius by
         // the average scale so the perceived blur strength stays constant on screen.
         float scaleCompensation = (capturedScaleX + capturedScaleY) / 2f;
-        displayBitmap = blurAlgorithm.blur(internalBitmap, blurRadius / scaleCompensation);
+        displayBitmap = blurAlgorithm.blur(bitmap, blurRadius / scaleCompensation);
         if (!blurAlgorithm.canModifyBitmap()) {
             // New bitmap each frame, so re-record the display list to draw it. In-place algorithms
             // keep the same instance, which HWUI re-samples without an invalidate.
