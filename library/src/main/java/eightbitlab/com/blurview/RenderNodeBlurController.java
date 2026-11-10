@@ -23,6 +23,12 @@ public class RenderNodeBlurController implements BlurController {
     private final int[] targetLocation = new int[2];
     private final int[] blurViewLocation = new int[2];
 
+    // The part of the target the blur node holds, the part the BlurView needs now, and the part
+    // about to be recorded (left, top, right, bottom in target coordinates). See BlurArea.
+    private final RecordedArea recorded = new RecordedArea();
+    private final int[] neededArea = new int[4];
+    private final int[] nextArea = new int[4];
+
     private final BlurView blurView;
     private final BlurTarget target;
     private final RenderNode blurNode = new RenderNode("BlurView node");
@@ -42,8 +48,7 @@ public class RenderNodeBlurController implements BlurController {
 
     // This tracks BlurView location in scrollable containers, during animations, etc.
     private final ViewTreeObserver.OnPreDrawListener drawListener = () -> {
-        saveOnScreenLocation();
-        updateRenderNodeProperties();
+        followBlurView();
         return true;
     };
 
@@ -88,17 +93,15 @@ public class RenderNodeBlurController implements BlurController {
     // https://cs.android.com/android/platform/superproject/main/+/main:external/skia/src/core/SkImageFilterTypes.cpp;drc=61197364367c9e404c7da6900658f1b16c42d0da;l=2103
     // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/libs/hwui/jni/RenderEffect.cpp;l=39;drc=61197364367c9e404c7da6900658f1b16c42d0da?q=nativeCreateBlurEffect&ss=android%2Fplatform%2Fsuperproject%2Fmain
     private void hardwarePath(Canvas canvas) {
-        // TODO would be good to keep it the size of the BlurView instead of the target, but then the animation
-        //  like translation and rotation would go out of bounds. Not sure if there's a good fix for this
-        blurNode.setPosition(0, 0, target.getWidth(), target.getHeight());
-        updateRenderNodeProperties();
-
-        drawSnapshot();
+        BlurViewTransform t = BlurViewTransform.compute(blurView, blurViewLocation, targetLocation);
+        record(t, BlurArea.reach(blurRadius * scaleFactor));
+        updateRenderNodeProperties(t);
 
         canvas.save();
         // Don't draw outside of the BlurView bounds if parent has clipChildren = false
         canvas.clipRect(0f, 0f, blurView.getWidth(), blurView.getHeight());
-        // Draw on the system canvas
+        // Draw on the system canvas. Drawn even with nothing recorded (the BlurView outside the
+        // target), so a recording made later in onPreDraw() shows without redrawing the BlurView.
         canvas.drawRenderNode(blurNode);
         if (applyNoise) {
             Noise.apply(canvas, blurView.getContext(), blurView.getWidth(), blurView.getHeight());
@@ -109,11 +112,63 @@ public class RenderNodeBlurController implements BlurController {
         canvas.restore();
     }
 
-    private void updateRenderNodeProperties() {
+    /**
+     * Follows the BlurView's position against the target, recording another part of the target
+     * when it moved past what the node holds.
+     */
+    private void followBlurView() {
+        saveOnScreenLocation();
         BlurViewTransform t = BlurViewTransform.compute(blurView, blurViewLocation, targetLocation);
+        if (enabled) {
+            int reach = BlurArea.reach(blurRadius * scaleFactor);
+            boolean needs = computeArea(t, reach, neededArea);
+            if (!recorded.covers(needs, neededArea)) {
+                // Recorded here rather than by invalidating the BlurView: its display list refers to
+                // the node, so neither it nor its parents have to record theirs again.
+                record(t, reach);
+            }
+        }
+        updateRenderNodeProperties(t);
+    }
 
-        float layoutTranslationX = -t.layoutLeft;
-        float layoutTranslationY = -t.layoutTop;
+    /**
+     * Records the part of the target the BlurView shows, with the blur's reach around it and a
+     * grid cell of slack, so a moving BlurView records again once per cell rather than per frame.
+     * <p>
+     * The node is then about the size of the BlurView rather than the target, and so are its layer
+     * and the rasterization of the target into it. The area is taken after the BlurView's scale
+     * and rotation, so it still covers an animating BlurView.
+     */
+    private void record(BlurViewTransform t, int reach) {
+        boolean has = computeArea(t, reach + BlurArea.GRID, nextArea);
+        recorded.set(has, nextArea);
+        if (has) {
+            int[] area = recorded.area;
+            blurNode.setPosition(0, 0, area[2] - area[0], area[3] - area[1]);
+            drawSnapshot();
+        } else {
+            // The BlurView is outside the target, so there is nothing of it to show
+            blurNode.discardDisplayList();
+        }
+    }
+
+    /**
+     * Fills {@code out} with the part of the target the BlurView shows plus {@code reach};
+     * false when that misses the target.
+     */
+    private boolean computeArea(BlurViewTransform t, int reach, int[] out) {
+        // About the BlurView's center, as updateRenderNodeProperties() counter-transforms the node,
+        // so the area covers what the node shows (with a custom pivot, the node itself is off, as
+        // it was before the node was cropped).
+        return BlurArea.compute(t.layoutLeft, t.layoutTop, blurView.getWidth(), blurView.getHeight(),
+                blurView.getWidth() / 2f, blurView.getHeight() / 2f, t.scaleX, t.scaleY, t.rotationDeg,
+                reach, target.getWidth(), target.getHeight(), out);
+    }
+
+    private void updateRenderNodeProperties(BlurViewTransform t) {
+        // The node's origin is the recorded area's top-left in the target, not the target's.
+        float layoutTranslationX = -t.layoutLeft + recorded.area[0];
+        float layoutTranslationY = -t.layoutTop + recorded.area[1];
 
         // Pivot at the center of the BlurView in target coordinates, invariant under the view's transforms.
         blurNode.setPivotX(blurView.getWidth() / 2f - layoutTranslationX);
@@ -135,6 +190,7 @@ public class RenderNodeBlurController implements BlurController {
 
     private void drawSnapshot() {
         RecordingCanvas recordingCanvas = blurNode.beginRecording();
+        recordingCanvas.translate(-recorded.area[0], -recorded.area[1]);
         if (frameClearDrawable != null) {
             frameClearDrawable.draw(recordingCanvas);
         }
@@ -210,7 +266,13 @@ public class RenderNodeBlurController implements BlurController {
 
     @Override
     public void destroy() {
+        // BlurView.setupWith replaces a destroyed controller, which must stop following the view
+        ViewTreeObserver observer = blurView.getViewTreeObserver();
+        if (observer.isAlive()) {
+            observer.removeOnPreDrawListener(drawListener);
+        }
         blurNode.discardDisplayList();
+        recorded.clear();
         if (fallbackBlur != null) {
             fallbackBlur.destroy();
             fallbackBlur = null;
@@ -249,6 +311,8 @@ public class RenderNodeBlurController implements BlurController {
     public BlurViewFacade setBlurRadius(float radius) {
         this.blurRadius = radius;
         applyBlur();
+        // A wider blur reads further past the BlurView than the node may hold
+        followBlurView();
         return this;
     }
 
@@ -273,14 +337,13 @@ public class RenderNodeBlurController implements BlurController {
      * Single entry point for view-property-driven updates (scaleX, scaleY, rotation).
      * <p>
      * The caller (BlurView) has already applied the new value via its super setter before
-     * notifying, so no value needs to be passed in: {@link #updateRenderNodeProperties()}
+     * notifying, so no value needs to be passed in: {@link #followBlurView()}
      * reads the current transform via {@link BlurViewTransform#compute}. Routing through the
      * full recompute keeps the blur node pivot, translation, scale, and rotation consistent,
      * instead of mutating a single property in isolation.
      */
     void onViewTransformChanged() {
-        saveOnScreenLocation();
-        updateRenderNodeProperties();
+        followBlurView();
         blurView.invalidate();
     }
 
