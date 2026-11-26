@@ -33,6 +33,11 @@ public class RenderNodeBlurController implements BlurController {
     private int overlayColor;
     private float blurRadius = BlurController.DEFAULT_BLUR_RADIUS;
     private boolean enabled = true;
+    private int lastNodeWidth = -1;
+    private int lastNodeHeight = -1;
+    @Nullable
+    private RenderEffect cachedBlurEffect;
+    private float cachedEffectRadius = -1f;
 
     // Potentially cached stuff from the slow software path
     @Nullable
@@ -64,7 +69,7 @@ public class RenderNodeBlurController implements BlurController {
         }
         saveOnScreenLocation();
 
-       if (canvas.isHardwareAccelerated()) {
+        if (canvas.isHardwareAccelerated()) {
             if (!target.renderNode.hasDisplayList()) {
                 // The target and the BlurView are presumably in different windows
                 // and the BlurView's Window was traversed before the target's, so
@@ -83,14 +88,23 @@ public class RenderNodeBlurController implements BlurController {
         return true;
     }
 
-    // Not doing any scaleFactor-related manipulations here, because RenderEffect blur internally
-    // already scales down the snapshot depending on the blur radius.
-    // https://cs.android.com/android/platform/superproject/main/+/main:external/skia/src/core/SkImageFilterTypes.cpp;drc=61197364367c9e404c7da6900658f1b16c42d0da;l=2103
-    // https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/libs/hwui/jni/RenderEffect.cpp;l=39;drc=61197364367c9e404c7da6900658f1b16c42d0da?q=nativeCreateBlurEffect&ss=android%2Fplatform%2Fsuperproject%2Fmain
+    // Record the target snapshot into a blurNode downscaled by scaleFactor before applying
+    // RenderEffect. Although SkBlurImageFilter downscales internally for large sigmas, HWUI still
+    // allocates and rasterizes the RenderNode's offscreen layer at its own position bounds first,
+    // so keeping blurNode at 1/scaleFactor cuts both offscreen GPU memory and rasterization cost.
     private void hardwarePath(Canvas canvas) {
+        int nodeWidth = downscaledDimension(target.getWidth(), scaleFactor);
+        int nodeHeight = downscaledDimension(target.getHeight(), scaleFactor);
+        if (nodeWidth <= 0 || nodeHeight <= 0) {
+            return;
+        }
         // TODO would be good to keep it the size of the BlurView instead of the target, but then the animation
         //  like translation and rotation would go out of bounds. Not sure if there's a good fix for this
-        blurNode.setPosition(0, 0, target.getWidth(), target.getHeight());
+        if (nodeWidth != lastNodeWidth || nodeHeight != lastNodeHeight) {
+            blurNode.setPosition(0, 0, nodeWidth, nodeHeight);
+            lastNodeWidth = nodeWidth;
+            lastNodeHeight = nodeHeight;
+        }
         updateRenderNodeProperties();
 
         drawSnapshot();
@@ -111,20 +125,27 @@ public class RenderNodeBlurController implements BlurController {
 
     private void updateRenderNodeProperties() {
         BlurViewTransform t = BlurViewTransform.compute(blurView, blurViewLocation, targetLocation);
+        NodeTransform node = computeNodeTransform(
+                blurView.getWidth(),
+                blurView.getHeight(),
+                t.layoutLeft,
+                t.layoutTop,
+                t.scaleX,
+                t.scaleY,
+                t.rotationDeg,
+                scaleFactor
+        );
 
-        float layoutTranslationX = -t.layoutLeft;
-        float layoutTranslationY = -t.layoutTop;
-
-        // Pivot at the center of the BlurView in target coordinates, invariant under the view's transforms.
-        blurNode.setPivotX(blurView.getWidth() / 2f - layoutTranslationX);
-        blurNode.setPivotY(blurView.getHeight() / 2f - layoutTranslationY);
-        blurNode.setTranslationX(layoutTranslationX);
-        blurNode.setTranslationY(layoutTranslationY);
-        // Counter-scale so the visually expanded area shows the correct underlying content.
-        blurNode.setScaleX(1f / t.scaleX);
-        blurNode.setScaleY(1f / t.scaleY);
+        // Pivot at the center of the BlurView in downscaled target coordinates, invariant under the view's transforms.
+        blurNode.setPivotX(node.pivotX);
+        blurNode.setPivotY(node.pivotY);
+        blurNode.setTranslationX(node.translationX);
+        blurNode.setTranslationY(node.translationY);
+        // Counter-scale and restore the downscaled node back to screen coordinates.
+        blurNode.setScaleX(node.scaleX);
+        blurNode.setScaleY(node.scaleY);
         // Counter-rotate so the blurred content stays aligned with the background.
-        blurNode.setRotationZ(-t.rotationDeg);
+        blurNode.setRotationZ(node.rotationZ);
 
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.S) {
             // There's a bug on API 31 - blurNode doesn't get re-rendered on setting new translation/scale/rotation,
@@ -135,13 +156,16 @@ public class RenderNodeBlurController implements BlurController {
 
     private void drawSnapshot() {
         RecordingCanvas recordingCanvas = blurNode.beginRecording();
+        float invScale = 1f / effectiveScale(scaleFactor);
+        recordingCanvas.scale(invScale, invScale);
         if (frameClearDrawable != null) {
             frameClearDrawable.draw(recordingCanvas);
         }
         recordingCanvas.drawRenderNode(target.renderNode);
-        // Looks like the order of this doesn't matter
-        applyBlur();
         blurNode.endRecording();
+        if (cachedBlurEffect == null) {
+            applyBlur();
+        }
     }
 
     private void softwarePath(Canvas canvas) {
@@ -211,6 +235,10 @@ public class RenderNodeBlurController implements BlurController {
     @Override
     public void destroy() {
         blurNode.discardDisplayList();
+        lastNodeWidth = -1;
+        lastNodeHeight = -1;
+        cachedBlurEffect = null;
+        cachedEffectRadius = -1f;
         if (fallbackBlur != null) {
             fallbackBlur.destroy();
             fallbackBlur = null;
@@ -253,11 +281,12 @@ public class RenderNodeBlurController implements BlurController {
     }
 
     private void applyBlur() {
-        // scaleFactor is only used to increase the blur radius
-        // because RenderEffect already scales down the snapshot when needed.
-        float realBlurRadius = blurRadius * scaleFactor;
-        RenderEffect blur = RenderEffect.createBlurEffect(realBlurRadius, realBlurRadius, Shader.TileMode.CLAMP);
-        blurNode.setRenderEffect(blur);
+        float radius = nodeBlurRadius(blurRadius, scaleFactor);
+        if (cachedBlurEffect == null || cachedEffectRadius != radius) {
+            cachedBlurEffect = RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.CLAMP);
+            cachedEffectRadius = radius;
+        }
+        blurNode.setRenderEffect(cachedBlurEffect);
     }
 
     @Override
@@ -287,5 +316,76 @@ public class RenderNodeBlurController implements BlurController {
     private void saveOnScreenLocation() {
         target.getLocationOnScreen(targetLocation);
         blurView.getLocationOnScreen(blurViewLocation);
+    }
+
+    static float effectiveScale(float scaleFactor) {
+        return Math.max(1f, scaleFactor);
+    }
+
+    static int downscaledDimension(int targetSize, float scaleFactor) {
+        if (targetSize <= 0) {
+            return 0;
+        }
+        return Math.max(1, (int) Math.ceil(targetSize / effectiveScale(scaleFactor)));
+    }
+
+    static float nodeBlurRadius(float blurRadius, float scaleFactor) {
+        float realBlurRadius = blurRadius * scaleFactor;
+        return realBlurRadius / effectiveScale(scaleFactor);
+    }
+
+    static NodeTransform computeNodeTransform(
+            float blurViewWidth,
+            float blurViewHeight,
+            float layoutLeft,
+            float layoutTop,
+            float viewScaleX,
+            float viewScaleY,
+            float rotationDeg,
+            float scaleFactor
+    ) {
+        float scale = effectiveScale(scaleFactor);
+        float invScale = 1f / scale;
+        float pivotX = (blurViewWidth / 2f + layoutLeft) * invScale;
+        float pivotY = (blurViewHeight / 2f + layoutTop) * invScale;
+        float translationX = blurViewWidth / 2f - pivotX;
+        float translationY = blurViewHeight / 2f - pivotY;
+        return new NodeTransform(
+                pivotX,
+                pivotY,
+                translationX,
+                translationY,
+                scale / viewScaleX,
+                scale / viewScaleY,
+                -rotationDeg
+        );
+    }
+
+    static final class NodeTransform {
+        final float pivotX;
+        final float pivotY;
+        final float translationX;
+        final float translationY;
+        final float scaleX;
+        final float scaleY;
+        final float rotationZ;
+
+        NodeTransform(
+                float pivotX,
+                float pivotY,
+                float translationX,
+                float translationY,
+                float scaleX,
+                float scaleY,
+                float rotationZ
+        ) {
+            this.pivotX = pivotX;
+            this.pivotY = pivotY;
+            this.translationX = translationX;
+            this.translationY = translationY;
+            this.scaleX = scaleX;
+            this.scaleY = scaleY;
+            this.rotationZ = rotationZ;
+        }
     }
 }
